@@ -1,0 +1,75 @@
+//
+//  TeamsView.swift
+//  ScoreKeep
+//
+//  Created by Neal Homan on 3/26/24.
+//
+
+import SwiftUI
+import SwiftData
+
+struct TeamsView: View {
+    @Environment(\.modelContext) var modelContext
+    @Query(sort: \Team.name) var teams: [Team]
+    @Query(sort: \Coach.lastName) var coaches: [Coach]
+    //@State private var path = [Team]()
+    @State private var showAddTeamScreen = false
+    @Binding var path: NavigationPath
+
+    var body: some View {
+            List {
+                ForEach(teams) { team in
+                    NavigationLink(value: team) {
+                        HStack {
+                            VStack(alignment: .leading) {
+                                Text(team.name)
+                                    .font(.headline)
+                                Text(team.ageGroup)
+                                    .foregroundStyle(.secondary)
+                            }
+                        }
+                    }
+                }
+                .onDelete(perform: deleteTeam)
+            }
+            .navigationTitle("ScoreKeep Teams")
+            .navigationDestination(for: Team.self) {
+                team in
+                TeamDetailView(path: $path, team: team)
+            }
+            .toolbar{
+                
+                ToolbarItem(placement: .topBarLeading){
+                    EditButton()
+                }
+                ToolbarItem(placement: .topBarTrailing){
+                    Button("Add Team", systemImage: "plus"){
+                        showAddTeamScreen.toggle()
+                    }
+                }
+            }
+            .sheet(isPresented: $showAddTeamScreen) {
+                AddTeamView()
+            }
+            
+        }
+    func deleteTeam(at offsets: IndexSet){
+        for offset in offsets {
+            let team = teams[offset]
+            modelContext.delete(team)
+        }
+    }
+}
+
+#Preview {
+    do {
+        let config = ModelConfiguration(isStoredInMemoryOnly: true)
+        let container = try ModelContainer(for: Team.self, configurations: config)
+        @State var example = NavigationPath()
+        
+        return TeamsView(path: $example)
+            .modelContainer(container)
+    }  catch {
+        return Text("Failed to create preview: \(error.localizedDescription)")
+    }
+}

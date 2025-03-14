@@ -1,0 +1,477 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 56;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		6A8A3D802BB2372300BC7E32 /* ScoreKeepApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6A8A3D7F2BB2372300BC7E32 /* ScoreKeepApp.swift */; };
+		6A8A3D822BB2372300BC7E32 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6A8A3D812BB2372300BC7E32 /* ContentView.swift */; };
+		6A8A3D842BB2372500BC7E32 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 6A8A3D832BB2372500BC7E32 /* Assets.xcassets */; };
+		6A8A3D872BB2372500BC7E32 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 6A8A3D862BB2372500BC7E32 /* Preview Assets.xcassets */; };
+		6A8A3D8E2BB2378A00BC7E32 /* PlateAppearanceView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6A8A3D8D2BB2378A00BC7E32 /* PlateAppearanceView.swift */; };
+		6A8A3D902BB237BB00BC7E32 /* PlayEnums.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6A8A3D8F2BB237BB00BC7E32 /* PlayEnums.swift */; };
+		6A8A3D922BB3509900BC7E32 /* PlayOutcomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6A8A3D912BB3509900BC7E32 /* PlayOutcomeView.swift */; };
+		6A8A3D942BB355AD00BC7E32 /* TeamsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6A8A3D932BB355AD00BC7E32 /* TeamsView.swift */; };
+		6A8A3D962BB3598E00BC7E32 /* ScoreKeepObjects.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6A8A3D952BB3598E00BC7E32 /* ScoreKeepObjects.swift */; };
+		6A8A3D982BB3650600BC7E32 /* AddTeamView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6A8A3D972BB3650600BC7E32 /* AddTeamView.swift */; };
+		6A8A3D9A2BB3655800BC7E32 /* TeamDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6A8A3D992BB3655800BC7E32 /* TeamDetailView.swift */; };
+		6A8A3D9C2BB4A48500BC7E32 /* AddCoachView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6A8A3D9B2BB4A48500BC7E32 /* AddCoachView.swift */; };
+		6A8A3D9E2BB4EA3D00BC7E32 /* EditTeamView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6A8A3D9D2BB4EA3D00BC7E32 /* EditTeamView.swift */; };
+		6A8A3DA02BB72AA300BC7E32 /* CoachesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6A8A3D9F2BB72AA300BC7E32 /* CoachesView.swift */; };
+		6A8A3DA22BB88AFD00BC7E32 /* AddPlayerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6A8A3DA12BB88AFD00BC7E32 /* AddPlayerView.swift */; };
+		6A8A3DA42BB88E4B00BC7E32 /* PlayersView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6A8A3DA32BB88E4B00BC7E32 /* PlayersView.swift */; };
+		6A8A3DA62BBB80DA00BC7E32 /* CoachDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6A8A3DA52BBB80DA00BC7E32 /* CoachDetailView.swift */; };
+		6A8A3DA82BBDD4B900BC7E32 /* PlayerDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6A8A3DA72BBDD4B900BC7E32 /* PlayerDetailView.swift */; };
+		6A8A3DAA2BBE09C600BC7E32 /* MainMenuView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6A8A3DA92BBE09C600BC7E32 /* MainMenuView.swift */; };
+		6A8A3DAC2BBE0F3700BC7E32 /* StartGameView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6A8A3DAB2BBE0F3700BC7E32 /* StartGameView.swift */; };
+		6A8A3DB12BC08D9700BC7E32 /* GameLineupsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6A8A3DB02BC08D9700BC7E32 /* GameLineupsView.swift */; };
+		6A8A3DB32BC5F9F200BC7E32 /* HomeLineupView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6A8A3DB22BC5F9F200BC7E32 /* HomeLineupView.swift */; };
+		6A8A3DB52BC6FF6B00BC7E32 /* GamesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6A8A3DB42BC6FF6B00BC7E32 /* GamesView.swift */; };
+		6A8A3DB82BD8277B00BC7E32 /* VisitorLineupView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6A8A3DB72BD8277A00BC7E32 /* VisitorLineupView.swift */; };
+		6A8A3DBB2BD84C3600BC7E32 /* BookItemView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6A8A3DBA2BD84C3600BC7E32 /* BookItemView.swift */; };
+		6A8A3DBD2BDAE54900BC7E32 /* BookView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6A8A3DBC2BDAE54900BC7E32 /* BookView.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		6A8A3D7C2BB2372300BC7E32 /* ScoreKeep.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ScoreKeep.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		6A8A3D7F2BB2372300BC7E32 /* ScoreKeepApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScoreKeepApp.swift; sourceTree = "<group>"; };
+		6A8A3D812BB2372300BC7E32 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		6A8A3D832BB2372500BC7E32 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		6A8A3D862BB2372500BC7E32 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
+		6A8A3D8D2BB2378A00BC7E32 /* PlateAppearanceView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlateAppearanceView.swift; sourceTree = "<group>"; };
+		6A8A3D8F2BB237BB00BC7E32 /* PlayEnums.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlayEnums.swift; sourceTree = "<group>"; };
+		6A8A3D912BB3509900BC7E32 /* PlayOutcomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlayOutcomeView.swift; sourceTree = "<group>"; };
+		6A8A3D932BB355AD00BC7E32 /* TeamsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TeamsView.swift; sourceTree = "<group>"; };
+		6A8A3D952BB3598E00BC7E32 /* ScoreKeepObjects.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScoreKeepObjects.swift; sourceTree = "<group>"; };
+		6A8A3D972BB3650600BC7E32 /* AddTeamView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddTeamView.swift; sourceTree = "<group>"; };
+		6A8A3D992BB3655800BC7E32 /* TeamDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TeamDetailView.swift; sourceTree = "<group>"; };
+		6A8A3D9B2BB4A48500BC7E32 /* AddCoachView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddCoachView.swift; sourceTree = "<group>"; };
+		6A8A3D9D2BB4EA3D00BC7E32 /* EditTeamView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditTeamView.swift; sourceTree = "<group>"; };
+		6A8A3D9F2BB72AA300BC7E32 /* CoachesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoachesView.swift; sourceTree = "<group>"; };
+		6A8A3DA12BB88AFD00BC7E32 /* AddPlayerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddPlayerView.swift; sourceTree = "<group>"; };
+		6A8A3DA32BB88E4B00BC7E32 /* PlayersView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlayersView.swift; sourceTree = "<group>"; };
+		6A8A3DA52BBB80DA00BC7E32 /* CoachDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoachDetailView.swift; sourceTree = "<group>"; };
+		6A8A3DA72BBDD4B900BC7E32 /* PlayerDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlayerDetailView.swift; sourceTree = "<group>"; };
+		6A8A3DA92BBE09C600BC7E32 /* MainMenuView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainMenuView.swift; sourceTree = "<group>"; };
+		6A8A3DAB2BBE0F3700BC7E32 /* StartGameView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StartGameView.swift; sourceTree = "<group>"; };
+		6A8A3DB02BC08D9700BC7E32 /* GameLineupsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameLineupsView.swift; sourceTree = "<group>"; };
+		6A8A3DB22BC5F9F200BC7E32 /* HomeLineupView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeLineupView.swift; sourceTree = "<group>"; };
+		6A8A3DB42BC6FF6B00BC7E32 /* GamesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GamesView.swift; sourceTree = "<group>"; };
+		6A8A3DB72BD8277A00BC7E32 /* VisitorLineupView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VisitorLineupView.swift; sourceTree = "<group>"; };
+		6A8A3DBA2BD84C3600BC7E32 /* BookItemView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BookItemView.swift; sourceTree = "<group>"; };
+		6A8A3DBC2BDAE54900BC7E32 /* BookView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BookView.swift; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		6A8A3D792BB2372300BC7E32 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		6A8A3D732BB2372300BC7E32 = {
+			isa = PBXGroup;
+			children = (
+				6A8A3D7E2BB2372300BC7E32 /* ScoreKeep */,
+				6A8A3D7D2BB2372300BC7E32 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		6A8A3D7D2BB2372300BC7E32 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				6A8A3D7C2BB2372300BC7E32 /* ScoreKeep.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		6A8A3D7E2BB2372300BC7E32 /* ScoreKeep */ = {
+			isa = PBXGroup;
+			children = (
+				6A8A3DB92BD84C1400BC7E32 /* Scorebook */,
+				6A8A3DB62BC714BD00BC7E32 /* Games */,
+				6A8A3DAF2BBF1C8700BC7E32 /* Teams */,
+				6A8A3DAE2BBF1C6B00BC7E32 /* Players */,
+				6A8A3DAD2BBF1C2F00BC7E32 /* Coaches */,
+				6A8A3D7F2BB2372300BC7E32 /* ScoreKeepApp.swift */,
+				6A8A3D812BB2372300BC7E32 /* ContentView.swift */,
+				6A8A3D8D2BB2378A00BC7E32 /* PlateAppearanceView.swift */,
+				6A8A3D832BB2372500BC7E32 /* Assets.xcassets */,
+				6A8A3D852BB2372500BC7E32 /* Preview Content */,
+				6A8A3D8F2BB237BB00BC7E32 /* PlayEnums.swift */,
+				6A8A3D912BB3509900BC7E32 /* PlayOutcomeView.swift */,
+				6A8A3D952BB3598E00BC7E32 /* ScoreKeepObjects.swift */,
+				6A8A3DA92BBE09C600BC7E32 /* MainMenuView.swift */,
+			);
+			path = ScoreKeep;
+			sourceTree = "<group>";
+		};
+		6A8A3D852BB2372500BC7E32 /* Preview Content */ = {
+			isa = PBXGroup;
+			children = (
+				6A8A3D862BB2372500BC7E32 /* Preview Assets.xcassets */,
+			);
+			path = "Preview Content";
+			sourceTree = "<group>";
+		};
+		6A8A3DAD2BBF1C2F00BC7E32 /* Coaches */ = {
+			isa = PBXGroup;
+			children = (
+				6A8A3DA52BBB80DA00BC7E32 /* CoachDetailView.swift */,
+				6A8A3D9F2BB72AA300BC7E32 /* CoachesView.swift */,
+				6A8A3D9B2BB4A48500BC7E32 /* AddCoachView.swift */,
+			);
+			path = Coaches;
+			sourceTree = "<group>";
+		};
+		6A8A3DAE2BBF1C6B00BC7E32 /* Players */ = {
+			isa = PBXGroup;
+			children = (
+				6A8A3DA72BBDD4B900BC7E32 /* PlayerDetailView.swift */,
+				6A8A3DA32BB88E4B00BC7E32 /* PlayersView.swift */,
+				6A8A3DA12BB88AFD00BC7E32 /* AddPlayerView.swift */,
+			);
+			path = Players;
+			sourceTree = "<group>";
+		};
+		6A8A3DAF2BBF1C8700BC7E32 /* Teams */ = {
+			isa = PBXGroup;
+			children = (
+				6A8A3D9D2BB4EA3D00BC7E32 /* EditTeamView.swift */,
+				6A8A3D992BB3655800BC7E32 /* TeamDetailView.swift */,
+				6A8A3D972BB3650600BC7E32 /* AddTeamView.swift */,
+				6A8A3D932BB355AD00BC7E32 /* TeamsView.swift */,
+			);
+			path = Teams;
+			sourceTree = "<group>";
+		};
+		6A8A3DB62BC714BD00BC7E32 /* Games */ = {
+			isa = PBXGroup;
+			children = (
+				6A8A3DB42BC6FF6B00BC7E32 /* GamesView.swift */,
+				6A8A3DB02BC08D9700BC7E32 /* GameLineupsView.swift */,
+				6A8A3DB22BC5F9F200BC7E32 /* HomeLineupView.swift */,
+				6A8A3DAB2BBE0F3700BC7E32 /* StartGameView.swift */,
+				6A8A3DB72BD8277A00BC7E32 /* VisitorLineupView.swift */,
+			);
+			path = Games;
+			sourceTree = "<group>";
+		};
+		6A8A3DB92BD84C1400BC7E32 /* Scorebook */ = {
+			isa = PBXGroup;
+			children = (
+				6A8A3DBA2BD84C3600BC7E32 /* BookItemView.swift */,
+				6A8A3DBC2BDAE54900BC7E32 /* BookView.swift */,
+			);
+			path = Scorebook;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		6A8A3D7B2BB2372300BC7E32 /* ScoreKeep */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 6A8A3D8A2BB2372500BC7E32 /* Build configuration list for PBXNativeTarget "ScoreKeep" */;
+			buildPhases = (
+				6A8A3D782BB2372300BC7E32 /* Sources */,
+				6A8A3D792BB2372300BC7E32 /* Frameworks */,
+				6A8A3D7A2BB2372300BC7E32 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = ScoreKeep;
+			productName = ScoreKeep;
+			productReference = 6A8A3D7C2BB2372300BC7E32 /* ScoreKeep.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		6A8A3D742BB2372300BC7E32 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 1530;
+				LastUpgradeCheck = 1530;
+				TargetAttributes = {
+					6A8A3D7B2BB2372300BC7E32 = {
+						CreatedOnToolsVersion = 15.3;
+					};
+				};
+			};
+			buildConfigurationList = 6A8A3D772BB2372300BC7E32 /* Build configuration list for PBXProject "ScoreKeep" */;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = 6A8A3D732BB2372300BC7E32;
+			productRefGroup = 6A8A3D7D2BB2372300BC7E32 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				6A8A3D7B2BB2372300BC7E32 /* ScoreKeep */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		6A8A3D7A2BB2372300BC7E32 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				6A8A3D872BB2372500BC7E32 /* Preview Assets.xcassets in Resources */,
+				6A8A3D842BB2372500BC7E32 /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		6A8A3D782BB2372300BC7E32 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				6A8A3D962BB3598E00BC7E32 /* ScoreKeepObjects.swift in Sources */,
+				6A8A3DAC2BBE0F3700BC7E32 /* StartGameView.swift in Sources */,
+				6A8A3D922BB3509900BC7E32 /* PlayOutcomeView.swift in Sources */,
+				6A8A3D822BB2372300BC7E32 /* ContentView.swift in Sources */,
+				6A8A3D9C2BB4A48500BC7E32 /* AddCoachView.swift in Sources */,
+				6A8A3D9A2BB3655800BC7E32 /* TeamDetailView.swift in Sources */,
+				6A8A3DBB2BD84C3600BC7E32 /* BookItemView.swift in Sources */,
+				6A8A3DA42BB88E4B00BC7E32 /* PlayersView.swift in Sources */,
+				6A8A3D8E2BB2378A00BC7E32 /* PlateAppearanceView.swift in Sources */,
+				6A8A3DAA2BBE09C600BC7E32 /* MainMenuView.swift in Sources */,
+				6A8A3DB52BC6FF6B00BC7E32 /* GamesView.swift in Sources */,
+				6A8A3D942BB355AD00BC7E32 /* TeamsView.swift in Sources */,
+				6A8A3D9E2BB4EA3D00BC7E32 /* EditTeamView.swift in Sources */,
+				6A8A3D902BB237BB00BC7E32 /* PlayEnums.swift in Sources */,
+				6A8A3DA02BB72AA300BC7E32 /* CoachesView.swift in Sources */,
+				6A8A3DBD2BDAE54900BC7E32 /* BookView.swift in Sources */,
+				6A8A3D802BB2372300BC7E32 /* ScoreKeepApp.swift in Sources */,
+				6A8A3DA82BBDD4B900BC7E32 /* PlayerDetailView.swift in Sources */,
+				6A8A3DA22BB88AFD00BC7E32 /* AddPlayerView.swift in Sources */,
+				6A8A3DB12BC08D9700BC7E32 /* GameLineupsView.swift in Sources */,
+				6A8A3D982BB3650600BC7E32 /* AddTeamView.swift in Sources */,
+				6A8A3DB32BC5F9F200BC7E32 /* HomeLineupView.swift in Sources */,
+				6A8A3DB82BD8277B00BC7E32 /* VisitorLineupView.swift in Sources */,
+				6A8A3DA62BBB80DA00BC7E32 /* CoachDetailView.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		6A8A3D882BB2372500BC7E32 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.4;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		6A8A3D892BB2372500BC7E32 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.4;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		6A8A3D8B2BB2372500BC7E32 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_ASSET_PATHS = "\"ScoreKeep/Preview Content\"";
+				DEVELOPMENT_TEAM = 7879DXPQ87;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = homan.ScoreKeep;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		6A8A3D8C2BB2372500BC7E32 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_ASSET_PATHS = "\"ScoreKeep/Preview Content\"";
+				DEVELOPMENT_TEAM = 7879DXPQ87;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = homan.ScoreKeep;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		6A8A3D772BB2372300BC7E32 /* Build configuration list for PBXProject "ScoreKeep" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				6A8A3D882BB2372500BC7E32 /* Debug */,
+				6A8A3D892BB2372500BC7E32 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		6A8A3D8A2BB2372500BC7E32 /* Build configuration list for PBXNativeTarget "ScoreKeep" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				6A8A3D8B2BB2372500BC7E32 /* Debug */,
+				6A8A3D8C2BB2372500BC7E32 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 6A8A3D742BB2372300BC7E32 /* Project object */;
+}
