@@ -105,14 +105,12 @@ struct AddTeamView: View {
 }
 
 #Preview {
-    do {
-        let config = ModelConfiguration(isStoredInMemoryOnly: true)
-        let container = try ModelContainer(for: Team.self, configurations: config)
-        let example = Coach(firstName: "firstName", lastName: "lastName", yearsCoaching: 0)
-        
-        return AddTeamView()
-            .modelContainer(container)
-    }  catch {
-        return Text("Failed to create preview: \(error.localizedDescription)")
+    let preview = Preview()
+    let game = Game.defaultGame
+    preview.addSampleGames([game])
+
+    return NavigationStack {
+        AddTeamView()
+            .modelContainer(preview.modelContainer)
     }
 }

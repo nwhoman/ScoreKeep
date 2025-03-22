@@ -10,12 +10,12 @@ import SwiftUI
 
 struct GamesView: View {
     @Environment(\.modelContext) var modelContext
-    @Query(sort: \Game.name) var games: [Game]
+    @Query(sort: \Game.name) private var games: [Game]
     @Query(sort: \Coach.lastName) var coaches: [Coach]
     //@State private var path = [Team]()
     @State private var showAddGameScreen = false
     //@State var startGame: Game = Game(name: "", date: Date(), location: "")
-    @Binding var path: NavigationPath
+    //@Binding var path: NavigationPath
     
     var body: some View {
         List {
@@ -36,7 +36,8 @@ struct GamesView: View {
         .navigationTitle("ScoreKeep Games")
         .navigationDestination(for: Game.self) {
              game in
-            GameLineupsView(path: $path, game: game)
+            GameLineupsView(game: game)
+            //GameLineupsView(path: $path, game: game)
         }
         .toolbar{
             
@@ -50,7 +51,8 @@ struct GamesView: View {
             }
         }
         .navigationDestination(isPresented: $showAddGameScreen){
-            StartGameView(path: $path)
+            StartGameView()
+            //StartGameView(path: $path)
         }
         //.sheet(isPresented: $showAddGameScreen) {
             //StartGameView(path: $path)
@@ -65,16 +67,11 @@ struct GamesView: View {
     }
 }
 
-/*#Preview {
-    do {
-        let config = ModelConfiguration(isStoredInMemoryOnly: true)
-        let container = try ModelContainer(for: Team.self, configurations: config)
-        @State var example = NavigationPath()
-        @Binding var game = Game(name: "djkd", date: Date(), location: "DLLLD")
-        
-        return GamesView(game: game, path: $example)
-            .modelContainer(container)
-    }  catch {
-        return Text("Failed to create preview: \(error.localizedDescription)")
+#Preview {
+    let preview = Preview()
+    preview.addSampleGames([Game.defaultGame])
+    
+    return NavigationStack {
+        GamesView().modelContainer(preview.modelContainer)
     }
-}*/
+}

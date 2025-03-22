@@ -12,11 +12,37 @@ struct BookView: View {
     @Environment(\.modelContext) var modelContext
     @Environment(\.dismiss) var dismiss
     
+    @State var game: Game
+    @State private var selectedTab: String = "Visitor"
+    
     var body: some View {
-        Text(/*@START_MENU_TOKEN@*/"Hello, World!"/*@END_MENU_TOKEN@*/)
+        GeometryReader { geo in
+            TabView(selection: $selectedTab) {
+                BookPageView(game: game, selectedTab: selectedTab)
+                    .tabItem {
+                        Image(systemName: "person.fill")
+                        Text("Visitor - \(game.visitingTeam!.name)")
+                    }.tag("Visitor")
+                BookPageView(game: game, selectedTab: selectedTab)
+                    .tabItem {
+                        Image(systemName: "person.fill")
+                        Text("Home - \(game.homeTeam!.name)")
+                    }.tag("Home")
+            }
+            
+        }
     }
 }
-
 #Preview {
-    BookView()
+    var game = Game.defaultGame
+    let preview = Preview()
+    preview.addSampleGames([game])
+    preview.addSampleLineups(game: game)
+
+    return NavigationStack {
+        BookView(game: game)
+            .modelContainer(preview.modelContainer)
+    }
+
+   
 }

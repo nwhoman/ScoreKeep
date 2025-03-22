@@ -12,7 +12,7 @@ struct StartGameView: View {
     @Environment(\.modelContext) var modelContext
     @Environment(\.dismiss) var dismiss
     @Query(sort: \Team.name) var teams: [Team]
-    @Binding var path: NavigationPath
+    //@Binding var path: NavigationPath
 
     @State var homeTeam: Team = Team(name: "", ageGroup: "")
     @State var visitingTeam: Team = Team(name: "", ageGroup: "")
@@ -31,7 +31,7 @@ struct StartGameView: View {
                 TextField("Game Location", text: $newGame.location)
                 Spacer(minLength: 50)
                 Text("Home Team: \(homeTeam.name)")
-                Picker("", selection: $homeTeam){
+                Picker("pick team", selection: $homeTeam){
                     ForEach(teams, id: \.name){team in
                         Text(team.name)
                             .tag(team as Team)
@@ -39,7 +39,7 @@ struct StartGameView: View {
                 }
                 Spacer(minLength: 50)
                 Text("Visiting Team: \(visitingTeam.name)")
-                Picker("", selection: $visitingTeam){
+                Picker("pick team", selection: $visitingTeam){
                     ForEach(teams, id: \.name){team in
                         Text(team.name)
                             .tag(team as Team)
@@ -57,8 +57,8 @@ struct StartGameView: View {
             startGame.toggle()
         }
         .navigationDestination(isPresented: $startGame) {
-            
-            GameLineupsView(path: $path, game: newGame)
+            GameLineupsView(game: newGame)
+            //GameLineupsView(path: $path, game: newGame)
         }
         .navigationTitle("Create Game")
         
@@ -70,10 +70,10 @@ struct StartGameView: View {
     do {
         let config = ModelConfiguration(isStoredInMemoryOnly: true)
         let container = try ModelContainer(for: Team.self, configurations: config)
-        @State var example = NavigationPath()
+        //@State var example = NavigationPath()
         let team = Team(name: "B-town", ageGroup: "18U")
         
-        return StartGameView(path: $example, homeTeam: team )
+        return StartGameView(homeTeam: team )
             .modelContainer(container)
     }  catch {
         return Text("Failed to create preview: \(error.localizedDescription)")

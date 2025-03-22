@@ -17,6 +17,7 @@ struct PlayerDetailView: View {
     var body: some View {
         Form {
             Section {
+                Text("id: \(player.id)")
                 HStack(content: {
                     Text("First Name:")
                     TextField("Player's First Name:", text: $player.firstName)
@@ -55,14 +56,12 @@ struct PlayerDetailView: View {
 }
 
 #Preview {
-    do {
-        let config = ModelConfiguration(isStoredInMemoryOnly: true)
-        let container = try ModelContainer(for: Team.self, configurations: config)
-        let example = Player(firstName: "example", lastName: "example", age: 5, number: "7")
-        
-        return PlayerDetailView(player: example)
-            .modelContainer(container)
-    }  catch {
-        return Text("Failed to create preview: \(error.localizedDescription)")
+    let preview = Preview()
+    let game = Game.defaultGame
+    preview.addSampleGames([game])
+
+    return NavigationStack {
+        PlayerDetailView(player: game.homeTeam!.players![0])
+            .modelContainer(preview.modelContainer)
     }
 }

@@ -7,6 +7,11 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		6A07B0462D8DDD8F005B7AEE /* BookPageView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6A07B0452D8DDD8F005B7AEE /* BookPageView.swift */; };
+		6A07B0482D8E31AD005B7AEE /* LargePlateAppearanceView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6A07B0472D8E31AD005B7AEE /* LargePlateAppearanceView.swift */; };
+		6A1CDFAA2D8B3FC300183224 /* PracticeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6A1CDFA92D8B3FC300183224 /* PracticeView.swift */; };
+		6A648C1A2D862298001000A3 /* ScoreKeepSamples.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6A648C192D862298001000A3 /* ScoreKeepSamples.swift */; };
+		6A648C1C2D8623D1001000A3 /* Preview.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6A648C1B2D8623D1001000A3 /* Preview.swift */; };
 		6A8A3D802BB2372300BC7E32 /* ScoreKeepApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6A8A3D7F2BB2372300BC7E32 /* ScoreKeepApp.swift */; };
 		6A8A3D822BB2372300BC7E32 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6A8A3D812BB2372300BC7E32 /* ContentView.swift */; };
 		6A8A3D842BB2372500BC7E32 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 6A8A3D832BB2372500BC7E32 /* Assets.xcassets */; };
@@ -28,7 +33,7 @@
 		6A8A3DAA2BBE09C600BC7E32 /* MainMenuView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6A8A3DA92BBE09C600BC7E32 /* MainMenuView.swift */; };
 		6A8A3DAC2BBE0F3700BC7E32 /* StartGameView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6A8A3DAB2BBE0F3700BC7E32 /* StartGameView.swift */; };
 		6A8A3DB12BC08D9700BC7E32 /* GameLineupsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6A8A3DB02BC08D9700BC7E32 /* GameLineupsView.swift */; };
-		6A8A3DB32BC5F9F200BC7E32 /* HomeLineupView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6A8A3DB22BC5F9F200BC7E32 /* HomeLineupView.swift */; };
+		6A8A3DB32BC5F9F200BC7E32 /* LineupView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6A8A3DB22BC5F9F200BC7E32 /* LineupView.swift */; };
 		6A8A3DB52BC6FF6B00BC7E32 /* GamesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6A8A3DB42BC6FF6B00BC7E32 /* GamesView.swift */; };
 		6A8A3DB82BD8277B00BC7E32 /* VisitorLineupView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6A8A3DB72BD8277A00BC7E32 /* VisitorLineupView.swift */; };
 		6A8A3DBB2BD84C3600BC7E32 /* BookItemView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6A8A3DBA2BD84C3600BC7E32 /* BookItemView.swift */; };
@@ -36,6 +41,11 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		6A07B0452D8DDD8F005B7AEE /* BookPageView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BookPageView.swift; sourceTree = "<group>"; };
+		6A07B0472D8E31AD005B7AEE /* LargePlateAppearanceView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LargePlateAppearanceView.swift; sourceTree = "<group>"; };
+		6A1CDFA92D8B3FC300183224 /* PracticeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PracticeView.swift; sourceTree = "<group>"; };
+		6A648C192D862298001000A3 /* ScoreKeepSamples.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScoreKeepSamples.swift; sourceTree = "<group>"; };
+		6A648C1B2D8623D1001000A3 /* Preview.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Preview.swift; sourceTree = "<group>"; };
 		6A8A3D7C2BB2372300BC7E32 /* ScoreKeep.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ScoreKeep.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		6A8A3D7F2BB2372300BC7E32 /* ScoreKeepApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScoreKeepApp.swift; sourceTree = "<group>"; };
 		6A8A3D812BB2372300BC7E32 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
@@ -58,7 +68,7 @@
 		6A8A3DA92BBE09C600BC7E32 /* MainMenuView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainMenuView.swift; sourceTree = "<group>"; };
 		6A8A3DAB2BBE0F3700BC7E32 /* StartGameView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StartGameView.swift; sourceTree = "<group>"; };
 		6A8A3DB02BC08D9700BC7E32 /* GameLineupsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameLineupsView.swift; sourceTree = "<group>"; };
-		6A8A3DB22BC5F9F200BC7E32 /* HomeLineupView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeLineupView.swift; sourceTree = "<group>"; };
+		6A8A3DB22BC5F9F200BC7E32 /* LineupView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LineupView.swift; sourceTree = "<group>"; };
 		6A8A3DB42BC6FF6B00BC7E32 /* GamesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GamesView.swift; sourceTree = "<group>"; };
 		6A8A3DB72BD8277A00BC7E32 /* VisitorLineupView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VisitorLineupView.swift; sourceTree = "<group>"; };
 		6A8A3DBA2BD84C3600BC7E32 /* BookItemView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BookItemView.swift; sourceTree = "<group>"; };
@@ -117,6 +127,8 @@
 			isa = PBXGroup;
 			children = (
 				6A8A3D862BB2372500BC7E32 /* Preview Assets.xcassets */,
+				6A648C192D862298001000A3 /* ScoreKeepSamples.swift */,
+				6A648C1B2D8623D1001000A3 /* Preview.swift */,
 			);
 			path = "Preview Content";
 			sourceTree = "<group>";
@@ -157,9 +169,10 @@
 			children = (
 				6A8A3DB42BC6FF6B00BC7E32 /* GamesView.swift */,
 				6A8A3DB02BC08D9700BC7E32 /* GameLineupsView.swift */,
-				6A8A3DB22BC5F9F200BC7E32 /* HomeLineupView.swift */,
+				6A8A3DB22BC5F9F200BC7E32 /* LineupView.swift */,
 				6A8A3DAB2BBE0F3700BC7E32 /* StartGameView.swift */,
 				6A8A3DB72BD8277A00BC7E32 /* VisitorLineupView.swift */,
+				6A1CDFA92D8B3FC300183224 /* PracticeView.swift */,
 			);
 			path = Games;
 			sourceTree = "<group>";
@@ -169,6 +182,8 @@
 			children = (
 				6A8A3DBA2BD84C3600BC7E32 /* BookItemView.swift */,
 				6A8A3DBC2BDAE54900BC7E32 /* BookView.swift */,
+				6A07B0452D8DDD8F005B7AEE /* BookPageView.swift */,
+				6A07B0472D8E31AD005B7AEE /* LargePlateAppearanceView.swift */,
 			);
 			path = Scorebook;
 			sourceTree = "<group>";
@@ -244,6 +259,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				6A8A3D962BB3598E00BC7E32 /* ScoreKeepObjects.swift in Sources */,
+				6A648C1A2D862298001000A3 /* ScoreKeepSamples.swift in Sources */,
 				6A8A3DAC2BBE0F3700BC7E32 /* StartGameView.swift in Sources */,
 				6A8A3D922BB3509900BC7E32 /* PlayOutcomeView.swift in Sources */,
 				6A8A3D822BB2372300BC7E32 /* ContentView.swift in Sources */,
@@ -251,6 +267,7 @@
 				6A8A3D9A2BB3655800BC7E32 /* TeamDetailView.swift in Sources */,
 				6A8A3DBB2BD84C3600BC7E32 /* BookItemView.swift in Sources */,
 				6A8A3DA42BB88E4B00BC7E32 /* PlayersView.swift in Sources */,
+				6A07B0482D8E31AD005B7AEE /* LargePlateAppearanceView.swift in Sources */,
 				6A8A3D8E2BB2378A00BC7E32 /* PlateAppearanceView.swift in Sources */,
 				6A8A3DAA2BBE09C600BC7E32 /* MainMenuView.swift in Sources */,
 				6A8A3DB52BC6FF6B00BC7E32 /* GamesView.swift in Sources */,
@@ -258,14 +275,17 @@
 				6A8A3D9E2BB4EA3D00BC7E32 /* EditTeamView.swift in Sources */,
 				6A8A3D902BB237BB00BC7E32 /* PlayEnums.swift in Sources */,
 				6A8A3DA02BB72AA300BC7E32 /* CoachesView.swift in Sources */,
+				6A07B0462D8DDD8F005B7AEE /* BookPageView.swift in Sources */,
 				6A8A3DBD2BDAE54900BC7E32 /* BookView.swift in Sources */,
 				6A8A3D802BB2372300BC7E32 /* ScoreKeepApp.swift in Sources */,
 				6A8A3DA82BBDD4B900BC7E32 /* PlayerDetailView.swift in Sources */,
 				6A8A3DA22BB88AFD00BC7E32 /* AddPlayerView.swift in Sources */,
+				6A648C1C2D8623D1001000A3 /* Preview.swift in Sources */,
 				6A8A3DB12BC08D9700BC7E32 /* GameLineupsView.swift in Sources */,
 				6A8A3D982BB3650600BC7E32 /* AddTeamView.swift in Sources */,
-				6A8A3DB32BC5F9F200BC7E32 /* HomeLineupView.swift in Sources */,
+				6A8A3DB32BC5F9F200BC7E32 /* LineupView.swift in Sources */,
 				6A8A3DB82BD8277B00BC7E32 /* VisitorLineupView.swift in Sources */,
+				6A1CDFAA2D8B3FC300183224 /* PracticeView.swift in Sources */,
 				6A8A3DA62BBB80DA00BC7E32 /* CoachDetailView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

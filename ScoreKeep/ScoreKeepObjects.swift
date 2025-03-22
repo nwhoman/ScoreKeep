@@ -7,12 +7,14 @@
 
 import Foundation
 import SwiftData
+import SwiftUI
 
 @Model
 class Team {
     var id: UUID
     var name: String
     var ageGroup: String
+    var lineup: [PlayerPos] = []
     @Relationship(deleteRule: .cascade, inverse: \Coach.team) var coaches: [Coach]?
     @Relationship(deleteRule: .cascade, inverse: \Player.team) var players: [Player]?
     @Relationship(deleteRule: .cascade, inverse: \Game.homeTeam) var homeGames: [Game]?
@@ -27,6 +29,7 @@ class Team {
         self.homeGames = homeGames
         //self.visitingGames = visitingGames
     }
+    
 }
 
 @Model
@@ -44,6 +47,7 @@ class Coach {
         self.yearsCoaching = yearsCoaching
         self.team = team
     }
+
 }
 
 @Model
@@ -68,6 +72,7 @@ class Player {
         self.team = team
         self.position = position
     }
+    
 }
 
 @Model
@@ -79,10 +84,9 @@ class Game {
     var date: Date  //includes time
     var location: String
     var isComplete: Bool = false
-    var homeLineup: [PlayerPos] = []
-    var visitorLineup: [PlayerPos] = []
     
-    init(name: String, date: Date, location: String, homeTeam: Team? = nil, visitingTeam: Team? = nil) {
+    
+    init(name: String, date: Date = .now, location: String, homeTeam: Team? = nil, visitingTeam: Team? = nil) {
         self.id = UUID()
         self.name = name
         self.homeTeam = homeTeam
@@ -91,6 +95,14 @@ class Game {
         self.location = location
         self.isComplete = isComplete
     }
+    
+//    static var defaultGame: Game {
+//        var homeTeam = Team.defaultTeam
+//        var visitingTeam = Team.defaultTeam
+//        let gameName = "\(homeTeam.name) vs \(visitingTeam.name)"
+//        let newGame = Game(name: gameName, date: Date(), location: "", homeTeam: homeTeam, visitingTeam: visitingTeam)
+//        return newGame
+//    }
 }
 
 @Model
@@ -147,25 +159,280 @@ class PlateAppearance {
 }
 
 @Model
-class PlayerPos {
+class PlayerPos: Identifiable, Hashable {
     var id: UUID
     var batting: Int
-    //var player: Player
-    var firstName: String
-    var lastName: String
-    var number: String
+    var player: Player
+    //var firstName: String
+    //var lastName: String
+    //var number: String
     var position: String
-    var game: Game? = nil
     
-    init(batting: Int, firstName: String, lastName: String, number: String, position: String, game: Game) {
+    
+    init(player: Player, position: String, batting: Int = 0) {
         self.id = UUID()
         self.batting = batting
-        self.firstName = firstName
-        self.lastName = lastName
-        self.number = number
+        self.player = player
+        //self.firstName = firstName
+        //self.lastName = lastName
+        //self.number = number
         self.position = position
-        self.game = game
     }
     
+}
+
+struct BattingLineupView: View {
+    
+    let geo: GeometryProxy
+    let team: Team
+    var body: some View {
+        VStack(alignment: .leading) {
+            Text("\(team.name)")
+                .padding(.horizontal, 5)
+                .padding(.top, 5)
+                .frame(width: geo.size.width*0.4, height: 50, alignment: .leading)
+                .border(Color.blue)
+            ForEach(team.lineup, id: \.self) { player in
+                HStack {
+                    Text("\(player.player.number) - \(player.player.lastName), \(player.player.firstName.first!)")
+                    Spacer(minLength: 10)
+                    Text("\(player.position)")
+                }.lineLimit(1)
+                    .minimumScaleFactor(0.5)
+                
+                .padding(.horizontal, 5)
+                .padding(.top, 5)
+                .frame(width: geo.size.width*0.4, height: 75, alignment: .topLeading)
+                .border(Color.blue)
+            }
+        }
+        
+            
+    }
+        
+}
+//#Preview {
+//    
+//    BattingLineupView()
+//}
+struct ScoreView: View {
+    let innings: [Int] = [1, 2, 3, 4, 5, 6, 7]
+    var body: some View {
+        HStack(alignment: .lastTextBaseline) {
+            VStack {
+                Text("Visitor:")
+                    .font(.system(size: 12, weight: .bold))
+                    .frame(width: 45.0, height: 15.0)
+                Text("Home: ")
+                    .font(.system(size: 12, weight: .bold))
+                    .frame(width: 45.0, height: 15.0)
+                    //.padding(.bottom, -10)
+            }
+            VStack(alignment: .leading) {
+                HStack {
+                    
+                    ForEach(innings, id: \.self) {inning in
+                        Text("\(inning)")
+                            .font(.system(size: 12, weight: .bold))
+                            .frame(width: 15.0, height: 15.0)
+                    }
+                }
+                .padding(.bottom, -5)
+                HStack {
+                    
+                    ForEach(innings, id: \.self) {inning in
+                        Text("\(inning)")
+                            .font(.system(size: 12, weight: .bold))
+                            .frame(width: 15.0, height: 15.0)
+                    }
+                }.padding(.bottom, -5)
+                HStack {
+                    
+                    ForEach(innings, id: \.self) {inning in
+                        Text("\(inning)")
+                            .font(.system(size: 12, weight: .bold))
+                            .frame(width: 15.0, height: 15.0)
+                    }
+                }.padding(.bottom, -5)
+            }
+            .frame(width: 150, height: 50)
+        }
+        .frame(width: 400, height: 75, alignment: .leading)
+    }
+}
+
+struct CountView: View {
+    var body: some View {
+        HStack {
+            VStack(alignment: .trailing) {
+                Text("Strikes:")
+                    .font(.title3)
+                Text("Balls:")
+                    .font(.title3)
+                //Text("Outs:")
+                    //.font(.title3)
+            }
+            VStack(alignment: .leading) {
+                HStack {
+                    Image("red-sphere")
+                        .resizable()
+                        .scaledToFill()
+                        .frame(width: 15.0, height: 20.0)
+                        .padding(-2)
+                    Image("red-sphere")
+                        .resizable()
+                        .scaledToFill()
+                        .frame(width: 15.0, height: 20.0)
+                        .padding(-2)
+                    Image("red-sphere")
+                        .resizable()
+                        .scaledToFill()
+                        .frame(width: 15.0, height: 20.0)
+                }
+                HStack{
+                    
+                    Image("blue-sphere")
+                        .resizable()
+                        .scaledToFill()
+                        .frame(width: 15.0, height: 20.0)
+                        .padding(-2)
+                    Image("blue-sphere")
+                        .resizable()
+                        .scaledToFill()
+                        .frame(width: 15.0, height: 20.0)
+                        .padding(-2)
+                    Image("blue-sphere")
+                        .resizable()
+                        .scaledToFill()
+                        .frame(width: 15.0, height: 20.0)
+                        .padding(-2)
+                    Image("blue-sphere")
+                        .resizable()
+                        .scaledToFill()
+                        .frame(width: 15.0, height: 20.0)
+                        .padding(-2)
+                }
+//                HStack {
+//                    Image("green-sphere")
+//                        .resizable()
+//                        .padding(-5)
+//                        .frame(width: 20.0, height: 20.0)
+//                        .padding(-2)
+//                    Image("green-sphere")
+//                        .resizable()
+//                        .padding(-5)
+//                        .frame(width: 20.0, height: 20.0)
+//                        .padding(-2)
+//                    Image("green-sphere")
+//                        .resizable()
+//                        .padding(-5)
+//                        .frame(width: 20.0, height: 20.0)
+//                        .padding(-2)
+//                        
+//                }
+            }
+            
+        }
+        
+    }
+
+}
+
+struct FieldView: View {
+    var base: Int
+    
+    let xoffset: CGFloat
+    let yoffset: CGFloat
+    
+    var body: some View {
+        drawField(xoffset: xoffset, yoffset: yoffset)
+            .fill(Color.green)
+        drawInfield(xoffset: xoffset, yoffset: yoffset)
+            .fill(Color.brown)
+        drawRunnerPath(base: base, xoffset: xoffset, yoffset: yoffset)
+            .stroke(Color.black)
+            .fill(base != 4 ? Color.clear : Color.red)
+        drawFirst(xoffset: xoffset, yoffset: yoffset)
+            .fill(Color.white)
+        drawSecond(xoffset: xoffset, yoffset: yoffset)
+            .fill(Color.white)
+        drawThird(xoffset: xoffset, yoffset: yoffset)
+            .fill(Color.white)
+        drawHome(xoffset: xoffset, yoffset: yoffset)
+            .fill(Color.white)
+    }
+    func drawRunnerPath(base: Int, xoffset: CGFloat, yoffset: CGFloat) -> Path {
+        return Path() { path in
+            if base > 3 {
+                path.move(to: CGPoint(x: 200+xoffset, y: 340+yoffset))
+                path.addLine(to: CGPoint(x: 250+xoffset, y: 290+yoffset))
+                path.addLine(to: CGPoint(x: 200+xoffset, y: 240+yoffset))
+                path.addLine(to: CGPoint(x: 150+xoffset, y: 290+yoffset))
+                path.addLine(to: CGPoint(x: 200+xoffset, y: 340+yoffset))
+            } else if base > 2 {
+                path.move(to: CGPoint(x: 200+xoffset, y: 340+yoffset))
+                path.addLine(to: CGPoint(x: 250+xoffset, y: 290+yoffset))
+                path.addLine(to: CGPoint(x: 200+xoffset, y: 240+yoffset))
+                path.addLine(to: CGPoint(x: 150+xoffset, y: 290+yoffset))
+            } else if base > 1 {
+                path.move(to: CGPoint(x: 200+xoffset, y: 340+yoffset))
+                path.addLine(to: CGPoint(x: 250+xoffset, y: 290+yoffset))
+                path.addLine(to: CGPoint(x: 200+xoffset, y: 240+yoffset))
+            } else if base > 0 {
+                path.move(to: CGPoint(x: 200+xoffset, y: 340+yoffset))
+                path.addLine(to: CGPoint(x: 250+xoffset, y: 290+yoffset))
+            }
+        }
+    }
+    func drawField(xoffset: CGFloat, yoffset: CGFloat) -> Path {
+        
+        return Path() { path in
+            path.move(to: CGPoint(x: 200+xoffset, y: 350+yoffset))
+            path.addLine(to: CGPoint(x: 400+xoffset, y: 150+yoffset))
+            path.addQuadCurve(to: CGPoint(x: 0+xoffset, y: 150+yoffset), control: CGPoint(x: 200+xoffset, y: -100+yoffset))
+            path.addLine(to: CGPoint(x: 200+xoffset, y: 350+yoffset))
+        }
+    }
+    func drawInfield(xoffset: CGFloat, yoffset: CGFloat) -> Path {
+        return Path() { path in
+            path.move(to: CGPoint(x: 200+xoffset, y: 350+yoffset))
+            path.addLine(to: CGPoint(x: 330+xoffset, y: 220+yoffset))
+            path.addQuadCurve(to: CGPoint(x: 70+xoffset, y: 220+yoffset), control: CGPoint(x: 200+xoffset, y: 70+yoffset))
+            path.addLine(to: CGPoint(x: 200+xoffset, y: 350+yoffset))
+        }
+    }
+    func drawFirst(xoffset: CGFloat, yoffset: CGFloat) -> Path {
+        return Path() { path in
+            path.move(to: CGPoint(x: 255+xoffset, y: 290+yoffset))
+            path.addLine(to: CGPoint(x: 250+xoffset, y: 285+yoffset))
+            path.addLine(to: CGPoint(x: 245+xoffset, y: 290+yoffset))
+            path.addLine(to: CGPoint(x: 250+xoffset, y: 295+yoffset))
+        }
+    }
+    func drawSecond(xoffset: CGFloat, yoffset: CGFloat) -> Path {
+        return Path() { path in
+            path.move(to: CGPoint(x: 205+xoffset, y: 240+yoffset))
+            path.addLine(to: CGPoint(x: 200+xoffset, y: 235+yoffset))
+            path.addLine(to: CGPoint(x: 195+xoffset, y: 240+yoffset))
+            path.addLine(to: CGPoint(x: 200+xoffset, y: 245+yoffset))
+        }
+    }
+    func drawThird(xoffset: CGFloat, yoffset: CGFloat) -> Path {
+        return Path() { path in
+            path.move(to: CGPoint(x: 155+xoffset, y: 290+yoffset))
+            path.addLine(to: CGPoint(x: 150+xoffset, y: 285+yoffset))
+            path.addLine(to: CGPoint(x: 145+xoffset, y: 290+yoffset))
+            path.addLine(to: CGPoint(x: 150+xoffset, y: 295+yoffset))
+        }
+    }
+    func drawHome(xoffset: CGFloat, yoffset: CGFloat) -> Path {
+        return Path() { path in
+            path.move(to: CGPoint(x: 205+xoffset, y: 340+yoffset))
+            path.addLine(to: CGPoint(x: 205+xoffset, y: 335+yoffset))
+            path.addLine(to: CGPoint(x: 195+xoffset, y: 335+yoffset))
+            path.addLine(to: CGPoint(x: 195+xoffset, y: 340+yoffset))
+            path.addLine(to: CGPoint(x: 200+xoffset, y: 345+yoffset))
+        }
+    }
 }
 

@@ -44,15 +44,12 @@ struct AddCoachView: View {
 }
 
 #Preview {
-    do {
-        let config = ModelConfiguration(isStoredInMemoryOnly: true)
-        let container = try ModelContainer(for: Coach.self, configurations: config)
-        let exampleCoach = Coach(firstName: "firstName", lastName: "lastName", yearsCoaching: 0)
-        let exampleTeam = Team(name: "example", ageGroup: "example")
-        
-        return AddCoachView(team: exampleTeam)
-            .modelContainer(container)
-    }  catch {
-        return Text("Failed to create preview: \(error.localizedDescription)")
+    let preview = Preview()
+    let game = Game.defaultGame
+    preview.addSampleGames([game])
+    
+    return NavigationStack {
+        AddCoachView(team: game.homeTeam!)
+            .modelContainer(preview.modelContainer)
     }
 }

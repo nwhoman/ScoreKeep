@@ -14,7 +14,7 @@ struct TeamsView: View {
     @Query(sort: \Coach.lastName) var coaches: [Coach]
     //@State private var path = [Team]()
     @State private var showAddTeamScreen = false
-    @Binding var path: NavigationPath
+    ///@Binding var path: NavigationPath
 
     var body: some View {
             List {
@@ -35,7 +35,8 @@ struct TeamsView: View {
             .navigationTitle("ScoreKeep Teams")
             .navigationDestination(for: Team.self) {
                 team in
-                TeamDetailView(path: $path, team: team)
+                TeamDetailView(team: team)
+                //TeamDetailView(path: $path, team: team)
             }
             .toolbar{
                 
@@ -62,14 +63,12 @@ struct TeamsView: View {
 }
 
 #Preview {
-    do {
-        let config = ModelConfiguration(isStoredInMemoryOnly: true)
-        let container = try ModelContainer(for: Team.self, configurations: config)
-        @State var example = NavigationPath()
-        
-        return TeamsView(path: $example)
-            .modelContainer(container)
-    }  catch {
-        return Text("Failed to create preview: \(error.localizedDescription)")
+    let preview = Preview()
+    let game = Game.defaultGame
+    preview.addSampleGames([game])
+
+    return NavigationStack {
+        TeamsView()
+            .modelContainer(preview.modelContainer)
     }
 }

@@ -10,6 +10,7 @@ import SwiftData
 
 @main
 struct ScoreKeepApp: App {
+    
     var body: some Scene {
         WindowGroup {
             ContentView()

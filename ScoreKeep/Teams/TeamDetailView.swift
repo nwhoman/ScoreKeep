@@ -13,7 +13,7 @@ struct TeamDetailView: View {
     @Environment(\.dismiss) var dismiss
     
     @State private var showDeleteAlert = false
-    @Binding var path: NavigationPath
+    //@Binding var path: NavigationPath
     @State private var showEditScreen = false
     @State private var showCoachesScreen = false
     @State private var showPlayersScreen = false
@@ -75,7 +75,7 @@ struct TeamDetailView: View {
                     Text("no players").font(.system(size: 20))
                 } else {
                     List {
-                        ForEach(team.players!.sorted(by: { $0.number < $1.number } ), id: \.firstName) { player in
+                        ForEach(team.players!.sorted(by: { $0.number < $1.number } ), id: \.id) { player in
                             NavigationLink(value: player) {
                                 HStack {
                                     Text("# \(player.number)-\(player.firstName) \(player.lastName)")
@@ -115,7 +115,7 @@ struct TeamDetailView: View {
                                 .font(.system(size: 20))
                             Spacer()
                         }
-                        if team.homeGames!.isEmpty {
+                        if ((team.homeGames?.isEmpty) == nil) {
                             Text("no home games").font(.system(size: 20))
                         } else {
                             List {
@@ -140,7 +140,7 @@ struct TeamDetailView: View {
                                 .font(.system(size: 20))
                             Spacer()
                         }
-                        if team.visitingGames!.isEmpty {
+                        if ((team.visitingGames?.isEmpty) == nil) {
                             Text("no away games").font(.system(size: 20))
                         } else {
                             List {
@@ -158,9 +158,9 @@ struct TeamDetailView: View {
                         }
                     }
                 }
-                .navigationDestination(for: Game.self) { game in
-                    GameLineupsView(path: $path, game: game)
-                }
+//                .navigationDestination(for: Game.self) { game in
+//                    GameLineupsView(game: game)
+//                }
             }
             Spacer(minLength: 30)
             Button("Edit"){
@@ -202,15 +202,12 @@ struct TeamDetailView: View {
 
 
 #Preview {
-    do {
-        let config = ModelConfiguration(isStoredInMemoryOnly: true)
-        let container = try ModelContainer(for: Team.self, configurations: config)
-        let team = Team(name: "B-town", ageGroup: "18U")
-        @State var example = NavigationPath()
+    let preview = Preview()
+    let game = Game.defaultGame
+    preview.addSampleGames([game])
 
-        return TeamDetailView(path: $example, team: team)
-            .modelContainer(container)
-    }  catch {
-        return Text("Failed to create preview: \(error.localizedDescription)")
+    return NavigationStack {
+        TeamDetailView(team: game.homeTeam!)
+            .modelContainer(preview.modelContainer)
     }
 }
