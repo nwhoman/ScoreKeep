@@ -44,6 +44,12 @@ struct LineupView: View {
                         for i in 0..<lineup.count {
                             lineup[i].batting = i+1
                         }
+                        team.lineup = lineup
+                        if selectedTab == "Home" {
+                            game.homeTeam!.lineup = lineup
+                        } else {
+                            game.visitingTeam!.lineup = lineup
+                        }
                         do {
                             try modelContext.save()
                         } catch {

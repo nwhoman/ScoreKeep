@@ -28,7 +28,9 @@ struct Preview {
         }
     }
     func addSampleLineups(game: Game) {
-        game.homeTeam!.lineup = game.createLineup(players: game.homeTeam!.players!)
-        game.visitingTeam!.lineup = game.createLineup(players: game.visitingTeam!.players!)
+        game.homeLineup = game.createLineup(players: game.homeTeam!.players!)
+        game.homeTeam!.lineup = game.homeLineup
+        game.visitingLineup = game.createLineup(players: game.visitingTeam!.players!)
+        game.visitingTeam!.lineup = game.visitingLineup
     }
 }

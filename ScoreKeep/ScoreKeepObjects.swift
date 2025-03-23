@@ -59,8 +59,8 @@ class Player {
     var number: String = ""
     var team: Team? = nil
     var position: String = ""
-    @Relationship(deleteRule: .cascade, inverse: \PlateAppearance.batter) var plateAppearances: [PlateAppearance]?
-    @Relationship(deleteRule: .cascade, inverse: \PlateAppearance.pitcher) var battersFaced: [PlateAppearance]?
+    @Relationship(deleteRule: .cascade, inverse: \OffensivePlateAppearance.batter) var plateAppearances: [OffensivePlateAppearance]?
+    @Relationship(deleteRule: .cascade, inverse: \OffensivePlateAppearance.pitcher) var battersFaced: [OffensivePlateAppearance]?
     
 
     init(firstName: String, lastName: String, age: Int = 0, number: String, team: Team? = nil) {
@@ -80,7 +80,9 @@ class Game {
     var id: UUID
     var name: String
     var homeTeam: Team? = nil
+    var homeLineup: [PlayerPos] = []
     var visitingTeam: Team? = nil
+    var visitingLineup: [PlayerPos] = []
     var date: Date  //includes time
     var location: String
     var isComplete: Bool = false
@@ -112,8 +114,8 @@ class Inning {
     var homeLineup: [Player] = []
     var visitorLineup: [Player] = []
     var game: Game? = nil
-    @Relationship(deleteRule: .cascade, inverse: \PlateAppearance.inning) var homePlateAppearances: [PlateAppearance]?
-    @Relationship(deleteRule: .cascade, inverse: \PlateAppearance.inning) var visitorPlateAppearances: [PlateAppearance]?
+    @Relationship(deleteRule: .cascade, inverse: \OffensivePlateAppearance.inning) var homePlateAppearances: [OffensivePlateAppearance]?
+    @Relationship(deleteRule: .cascade, inverse: \OffensivePlateAppearance.inning) var visitorPlateAppearances: [OffensivePlateAppearance]?
     
     init() {
         self.number = number
@@ -126,7 +128,7 @@ class Inning {
 }
 
 @Model
-class PlateAppearance {
+class OffensivePlateAppearance {
     var id: UUID
     var balls: [Int]
     var strikes: [Int]
@@ -138,7 +140,6 @@ class PlateAppearance {
     var sb: [Int]?
     var lob: Int?
     var batter: Player
-    var pitcher: Player
     var inning: Inning
     
     init(batter: Player, pitcher: Player, inning: Inning) {
@@ -153,8 +154,18 @@ class PlateAppearance {
         self.sb = []
         self.lob = 0
         self.batter = batter
-        self.pitcher = pitcher
         self.inning = inning
+    }
+}
+
+@Model
+class DefensivePlateAppearance {
+    var id: UUID
+    var pitcher: Player
+
+    init(id: UUID, pitcher: Player) {
+        self.id = id
+        self.pitcher = pitcher
     }
 }
 
@@ -194,7 +205,7 @@ struct BattingLineupView: View {
                 .border(Color.blue)
             ForEach(team.lineup, id: \.self) { player in
                 HStack {
-                    Text("\(player.player.number) - \(player.player.lastName), \(player.player.firstName.first!)")
+                    Text("\(player.batting+1)) \(player.player.number) - \(player.player.lastName), \(player.player.firstName.first!)")
                     Spacer(minLength: 10)
                     Text("\(player.position)")
                 }.lineLimit(1)

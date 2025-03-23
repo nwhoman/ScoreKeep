@@ -14,20 +14,32 @@ struct BookView: View {
     
     @State var game: Game
     @State private var selectedTab: String = "Visitor"
+    @State var inning: Int = 1
     
     var body: some View {
         GeometryReader { geo in
-            TabView(selection: $selectedTab) {
-                BookPageView(game: game, selectedTab: selectedTab)
-                    .tabItem {
-                        Image(systemName: "person.fill")
-                        Text("Visitor - \(game.visitingTeam!.name)")
-                    }.tag("Visitor")
-                BookPageView(game: game, selectedTab: selectedTab)
-                    .tabItem {
-                        Image(systemName: "person.fill")
-                        Text("Home - \(game.homeTeam!.name)")
-                    }.tag("Home")
+            ZStack {
+                
+                TabView(selection: $selectedTab) {
+                    BookPageView(game: game, selectedTab: selectedTab)
+                        .tabItem {
+                            Image(systemName: "person.fill")
+                            Text("Visitor - \(game.visitingTeam!.name)")
+                        }.tag("Visitor")
+                    BookPageView(game: game, selectedTab: selectedTab)
+                        .tabItem {
+                            Image(systemName: "person.fill")
+                            Text("Home - \(game.homeTeam!.name)")
+                        }.tag("Home")
+                }
+                VStack {
+                    HStack {
+                        Spacer()
+                        Text("Book")
+                            .font(.headline)
+                    }
+                    Spacer()
+                }
             }
             
         }
