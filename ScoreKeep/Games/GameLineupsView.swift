@@ -102,7 +102,9 @@ struct GameLineupsView: View {
             TeamDetailView(team: team)
         }
         .navigationDestination(isPresented: $startGame) {
-            BookView(game: game)
+            var newGameViewModel = GameViewModel(game: game)
+            
+            BookView(gameViewModel: newGameViewModel)
         }
     }
 }
@@ -120,6 +122,7 @@ func validateLineup(lineup: [PlayerPos]) -> Bool {
     let preview = Preview()
     let game = Game.defaultGame
     preview.addSampleGames([game])
+    preview.addSampleLineups(game: game)
     
     return NavigationStack {
         GameLineupsView(game: game).modelContainer(preview.modelContainer)

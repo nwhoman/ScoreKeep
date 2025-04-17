@@ -37,7 +37,7 @@ extension Game {
         return ["Alabama", "Alaska", "Oregon", "Washington", "California", "Idaho", "Montana", "Utah", "Colorado"].randomElement()!
     }
     static var names: String {
-        return ["Thunder", "Lightning", "Raptors", "Warriors", "Celtics", "Nets", "76ers", "Bulls", "Mavericks", "Nuggets", "Heat", "Bucks", "Cavaliers", "Pistons", "Bucks", "Nuggets", "Heat", "Bucks", "Cavaliers", "Pistons"].randomElement()!
+        return ["Cardinals", "Cubs", "Reds", "Pirates", "Brewers", "Marlins", "Phillies", "Mets", "Nationals", "Braves", "Dodgers", "D-Backs", "Rockies", "Giants", "Padres", "Yankees", "Blue Jays", "Red Socks", "Royals", "Tigers", "Twins", "Mariners", "Astros", "Rangers", "Angels", "White Sox", "Indians", "Orioles", "Athletics"].randomElement()!
     }
     static var location: String {
         return states

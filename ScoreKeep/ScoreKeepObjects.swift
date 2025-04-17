@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import SpriteKit
 import SwiftData
 import SwiftUI
 
@@ -60,7 +61,7 @@ class Player {
     var team: Team? = nil
     var position: String = ""
     @Relationship(deleteRule: .cascade, inverse: \OffensivePlateAppearance.batter) var plateAppearances: [OffensivePlateAppearance]?
-    @Relationship(deleteRule: .cascade, inverse: \OffensivePlateAppearance.pitcher) var battersFaced: [OffensivePlateAppearance]?
+    @Relationship(deleteRule: .cascade, inverse: \DefensivePlateAppearance.pitcher) var battersFaced: [DefensivePlateAppearance]?
     
 
     init(firstName: String, lastName: String, age: Int = 0, number: String, team: Team? = nil) {
@@ -86,7 +87,8 @@ class Game {
     var date: Date  //includes time
     var location: String
     var isComplete: Bool = false
-    
+    var isStarted: Bool = false
+    @Relationship(deleteRule: .cascade, inverse: \Inning.game) var innings: [Inning] = []
     
     init(name: String, date: Date = .now, location: String, homeTeam: Team? = nil, visitingTeam: Team? = nil) {
         self.id = UUID()
@@ -96,76 +98,88 @@ class Game {
         self.date = date
         self.location = location
         self.isComplete = isComplete
+        self.isStarted = isStarted
     }
-    
-//    static var defaultGame: Game {
-//        var homeTeam = Team.defaultTeam
-//        var visitingTeam = Team.defaultTeam
-//        let gameName = "\(homeTeam.name) vs \(visitingTeam.name)"
-//        let newGame = Game(name: gameName, date: Date(), location: "", homeTeam: homeTeam, visitingTeam: visitingTeam)
-//        return newGame
-//    }
 }
 
 @Model
 class Inning {
     var id: UUID = UUID()
-    var number: Int = 0
-    var homeLineup: [Player] = []
-    var visitorLineup: [Player] = []
-    var game: Game? = nil
-    @Relationship(deleteRule: .cascade, inverse: \OffensivePlateAppearance.inning) var homePlateAppearances: [OffensivePlateAppearance]?
-    @Relationship(deleteRule: .cascade, inverse: \OffensivePlateAppearance.inning) var visitorPlateAppearances: [OffensivePlateAppearance]?
+    var number: Int
+    var game: Game
     
-    init() {
+    var visitorOffense: [OffensivePlateAppearance] = []
+    var homeDefense: [DefensivePlateAppearance] = []
+    var homeOffense: [OffensivePlateAppearance] = []
+    var visitorDefense: [DefensivePlateAppearance] = []
+   
+    init(number: Int, game: Game) {
         self.number = number
-        self.homeLineup = homeLineup
-        self.visitorLineup = visitorLineup
         self.game = game
-        self.homePlateAppearances = homePlateAppearances
-        self.visitorPlateAppearances = visitorPlateAppearances
+        
     }
 }
 
 @Model
 class OffensivePlateAppearance {
     var id: UUID
-    var balls: [Int]
-    var strikes: [Int]
-    var fouls: [Int]
+    var order: Int
+    var batter: Player
+    var inning: Int
+    var pitches: [Pitch]
+    var outs: Int
     var outcome: String
+    var baseOccupied: Int
     var rbi: Int
     var run: Bool
     var earnedRun: Bool
     var sb: [Int]?
     var lob: Int?
-    var batter: Player
-    var inning: Inning
+    var active: Bool
     
-    init(batter: Player, pitcher: Player, inning: Inning) {
+    init(order: Int, batter: Player, inning: Int) {
         self.id = UUID()
-        self.balls = []
-        self.strikes = []
-        self.fouls = []
+        self.order = order
+        self.batter = batter
+        self.inning = inning
+        self.pitches = []
+        self.outs = 0
         self.outcome = ""
+        self.baseOccupied = 0
         self.rbi = 0
         self.run = false
         self.earnedRun = false
         self.sb = []
         self.lob = 0
-        self.batter = batter
-        self.inning = inning
+        self.active = false
     }
+    
 }
 
 @Model
 class DefensivePlateAppearance {
     var id: UUID
+    var order: Int
     var pitcher: Player
+    var inning: Int
+    var run: Bool
+    var earnedRun: Bool
+    var po: [String]
+    var assist: [String]
+    var error: [String]
+    var active: Bool
 
-    init(id: UUID, pitcher: Player) {
-        self.id = id
+    init(order: Int, pitcher: Player, inning: Int) {
+        self.id = UUID()
+        self.order = order
         self.pitcher = pitcher
+        self.inning = inning
+        self.run = false
+        self.earnedRun = false
+        self.po = []
+        self.assist = []
+        self.error = []
+        self.active = false
     }
 }
 
@@ -174,28 +188,48 @@ class PlayerPos: Identifiable, Hashable {
     var id: UUID
     var batting: Int
     var player: Player
-    //var firstName: String
-    //var lastName: String
-    //var number: String
     var position: String
-    
     
     init(player: Player, position: String, batting: Int = 0) {
         self.id = UUID()
         self.batting = batting
         self.player = player
-        //self.firstName = firstName
-        //self.lastName = lastName
-        //self.number = number
         self.position = position
     }
+}
+
+class BaseRunner: SKLabelNode {
+    var player: OffensivePlateAppearance
     
+    init(player: OffensivePlateAppearance) {
+        self.player = player
+        
+        super.init(fontNamed: "Trebuchet MS")
+        self.name = player.batter.number
+        self.text = "#\(player.batter.number)"
+        self.fontSize = 20
+        self.fontColor = SKColor.blue
+        self.physicsBody = SKPhysicsBody(circleOfRadius: 25)
+        self.physicsBody?.affectedByGravity = false
+        self.physicsBody?.categoryBitMask = 0x1 << 0
+        self.physicsBody?.contactTestBitMask = 0x1 << 0
+        self.physicsBody?.collisionBitMask = 0x1 << 0
+    }
+    
+    required init?(coder aDecoder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
 }
 
 struct BattingLineupView: View {
     
     let geo: GeometryProxy
     let team: Team
+    
+    var battingOrder: [PlayerPos] {
+        return team.lineup.sorted { $0.batting < $1.batting }
+    }
+    
     var body: some View {
         VStack(alignment: .leading) {
             Text("\(team.name)")
@@ -203,7 +237,7 @@ struct BattingLineupView: View {
                 .padding(.top, 5)
                 .frame(width: geo.size.width*0.4, height: 50, alignment: .leading)
                 .border(Color.blue)
-            ForEach(team.lineup, id: \.self) { player in
+            ForEach(battingOrder, id: \.self) { player in
                 HStack {
                     Text("\(player.batting+1)) \(player.player.number) - \(player.player.lastName), \(player.player.firstName.first!)")
                     Spacer(minLength: 10)
@@ -227,10 +261,13 @@ struct BattingLineupView: View {
 //    BattingLineupView()
 //}
 struct ScoreView: View {
-    let innings: [Int] = [1, 2, 3, 4, 5, 6, 7]
+    @ObservedObject var gameViewModel: GameViewModel
+
+    let innings: [Any] = [1, 2, 3, 4, 5, 6, 7, "R", "H", "E"]
     var body: some View {
         HStack(alignment: .lastTextBaseline) {
-            VStack {
+            VStack(alignment: .trailing) {
+                Spacer()
                 Text("Visitor:")
                     .font(.system(size: 12, weight: .bold))
                     .frame(width: 45.0, height: 15.0)
@@ -239,11 +276,13 @@ struct ScoreView: View {
                     .frame(width: 45.0, height: 15.0)
                     //.padding(.bottom, -10)
             }
+            .frame(width: 70, height: 55)
+            .border(Color.gray, width: 0.5)
             VStack(alignment: .leading) {
                 HStack {
-                    
-                    ForEach(innings, id: \.self) {inning in
-                        Text("\(inning)")
+           
+                    ForEach(0..<innings.count, id: \.self) {inning in
+                        Text("\(innings[inning])")
                             .font(.system(size: 12, weight: .bold))
                             .frame(width: 15.0, height: 15.0)
                     }
@@ -251,78 +290,124 @@ struct ScoreView: View {
                 .padding(.bottom, -5)
                 HStack {
                     
-                    ForEach(innings, id: \.self) {inning in
+                    ForEach(gameViewModel.score["visitor"]!, id: \.self) {inning in
                         Text("\(inning)")
                             .font(.system(size: 12, weight: .bold))
                             .frame(width: 15.0, height: 15.0)
                     }
+                    Text("\(gameViewModel.getTotalScore(team: "visitor"))")
+                        .font(.system(size: 12, weight: .bold))
+                        .frame(width: 15.0, height: 15.0)
+                    Text("\(gameViewModel.getTotalScore(team: "visitor"))") // change to hits
+                        .font(.system(size: 12, weight: .bold))
+                        .frame(width: 15.0, height: 15.0)
+                    Text("\(gameViewModel.getTotalScore(team: "visitor"))") // change to errors
+                        .font(.system(size: 12, weight: .bold))
+                        .frame(width: 15.0, height: 15.0)
                 }.padding(.bottom, -5)
                 HStack {
                     
-                    ForEach(innings, id: \.self) {inning in
+                    ForEach(gameViewModel.score["home"]!, id: \.self) {inning in
                         Text("\(inning)")
                             .font(.system(size: 12, weight: .bold))
                             .frame(width: 15.0, height: 15.0)
                     }
+                    Text("\(gameViewModel.getTotalScore(team: "home"))")
+                        .font(.system(size: 12, weight: .bold))
+                        .frame(width: 15.0, height: 15.0)
+                    Text("\(gameViewModel.getTotalScore(team: "home"))") // change to hits
+                        .font(.system(size: 12, weight: .bold))
+                        .frame(width: 15.0, height: 15.0)
+                    Text("\(gameViewModel.getTotalScore(team: "home"))") // change to errors
+                        .font(.system(size: 12, weight: .bold))
+                        .frame(width: 15.0, height: 15.0)
                 }.padding(.bottom, -5)
             }
-            .frame(width: 150, height: 50)
+            .frame(width: 220, height: 55)
+            .border(Color.gray, width: 0.5)
         }
         .frame(width: 400, height: 75, alignment: .leading)
     }
 }
 
 struct CountView: View {
+    var pitches: [Pitch]
     var body: some View {
         HStack {
             VStack(alignment: .trailing) {
-                Text("Strikes:")
+                Text("S:")
                     .font(.title3)
-                Text("Balls:")
+                Text("B:")
                     .font(.title3)
                 //Text("Outs:")
                     //.font(.title3)
             }
             VStack(alignment: .leading) {
                 HStack {
-                    Image("red-sphere")
-                        .resizable()
-                        .scaledToFill()
-                        .frame(width: 15.0, height: 20.0)
-                        .padding(-2)
-                    Image("red-sphere")
-                        .resizable()
-                        .scaledToFill()
-                        .frame(width: 15.0, height: 20.0)
-                        .padding(-2)
-                    Image("red-sphere")
-                        .resizable()
-                        .scaledToFill()
-                        .frame(width: 15.0, height: 20.0)
+                    ForEach(Array(pitches.enumerated()), id: \.offset) { index, pitch in
+                        if pitch == .strikeSwinging{
+                            ZStack {
+                                Image(systemName: "circle.fill")
+                                    .resizable()
+                                    .foregroundStyle(.black)
+                                
+                                    .scaledToFill()
+                                Text("\(index+1)")
+                                    .font(.headline.bold())
+                                    .foregroundStyle(.white)
+                            }
+                            .frame(width: 15.0, height: 17.0)
+                                
+                        } else if pitch == .strikeLooking {
+                            ZStack {
+                                Image(systemName: "circle.fill")
+                                    .resizable()
+                                    .foregroundStyle(.red)
+                                    .scaledToFill()
+                                Text("\(index+1)")
+                                    .font(.headline.bold())
+                                    .foregroundStyle(.white)
+                            }
+                                .frame(width: 15.0, height: 17.0)
+                        }
+                        else if pitch == .foul {
+                            ZStack {
+                                Image(systemName: "circle.fill")
+                                    .resizable()
+                                    .foregroundStyle(.yellow)
+                                    .scaledToFill()
+                                Text("\(index+1)")
+                                    .font(.headline.bold())
+                                    .minimumScaleFactor(0.85)
+                                    .foregroundStyle(.black)
+                            }
+                                .frame(width: 15.0, height: 17.0)
+                        }
+                    }
+                    Spacer()
                 }
+                .frame(width: 135.0, height: 20.0)
+                .padding(.leading, 0)
                 HStack{
-                    
-                    Image("blue-sphere")
-                        .resizable()
-                        .scaledToFill()
-                        .frame(width: 15.0, height: 20.0)
-                        .padding(-2)
-                    Image("blue-sphere")
-                        .resizable()
-                        .scaledToFill()
-                        .frame(width: 15.0, height: 20.0)
-                        .padding(-2)
-                    Image("blue-sphere")
-                        .resizable()
-                        .scaledToFill()
-                        .frame(width: 15.0, height: 20.0)
-                        .padding(-2)
-                    Image("blue-sphere")
-                        .resizable()
-                        .scaledToFill()
-                        .frame(width: 15.0, height: 20.0)
-                        .padding(-2)
+                    ForEach(Array(pitches.enumerated()), id: \.offset) { index, pitch in
+                        if pitch == .ball{
+                            ZStack {
+                                Image(systemName: "circle.fill")
+                                    .resizable()
+                                    .foregroundStyle(.blue)
+                                    .scaledToFill()
+                                Text("\(index+1)")
+                                    .font(.headline.bold())
+                                    .foregroundStyle(.white)
+                            }
+                                .frame(width: 15.0, height: 17.0)
+                        }
+                    }
+                    Spacer()
                 }
+                .frame(width: 135.0, height: 17.0)
+                .padding(.leading, 0)
+                
 //                HStack {
 //                    Image("green-sphere")
 //                        .resizable()
@@ -344,11 +429,20 @@ struct CountView: View {
             }
             
         }
+        .border(Color.red)
         
     }
 
 }
+#Preview {
 
+    CountView(pitches: [.ball, .strikeSwinging, .ball, .ball, .strikeLooking, .foul, .ball, .foul, .foul, .foul])
+}
+//#Preview {
+//    let game = Game.defaultGame
+//    let gameVM = GameViewModel(game: game)
+//    ScoreView(gameViewModel: gameVM)
+//}
 struct FieldView: View {
     var base: Int
     
@@ -356,21 +450,24 @@ struct FieldView: View {
     let yoffset: CGFloat
     
     var body: some View {
-        drawField(xoffset: xoffset, yoffset: yoffset)
-            .fill(Color.green)
-        drawInfield(xoffset: xoffset, yoffset: yoffset)
-            .fill(Color.brown)
-        drawRunnerPath(base: base, xoffset: xoffset, yoffset: yoffset)
-            .stroke(Color.black)
-            .fill(base != 4 ? Color.clear : Color.red)
-        drawFirst(xoffset: xoffset, yoffset: yoffset)
-            .fill(Color.white)
-        drawSecond(xoffset: xoffset, yoffset: yoffset)
-            .fill(Color.white)
-        drawThird(xoffset: xoffset, yoffset: yoffset)
-            .fill(Color.white)
-        drawHome(xoffset: xoffset, yoffset: yoffset)
-            .fill(Color.white)
+        ZStack{
+            drawField(xoffset: xoffset, yoffset: yoffset)
+                .fill(Color.green)
+            drawInfield(xoffset: xoffset, yoffset: yoffset)
+                .fill(Color.brown)
+            drawRunnerPath(base: base, xoffset: xoffset, yoffset: yoffset)
+                .stroke(Color.black)
+                .fill(base != 4 ? Color.clear : Color.red)
+            drawFirst(xoffset: xoffset, yoffset: yoffset)
+                .fill(Color.white)
+            drawSecond(xoffset: xoffset, yoffset: yoffset)
+                .fill(Color.white)
+            drawThird(xoffset: xoffset, yoffset: yoffset)
+                .fill(Color.white)
+            drawHome(xoffset: xoffset, yoffset: yoffset)
+                .fill(Color.white)
+        }
+        
     }
     func drawRunnerPath(base: Int, xoffset: CGFloat, yoffset: CGFloat) -> Path {
         return Path() { path in
