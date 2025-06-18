@@ -16,7 +16,7 @@ struct BookView: View {
     @State private var selectedTab: String = "Visitor"
     //@State var inningNumber: Int = 1
     //@State var orderNumber = 0
-    //@State var newInning: Inning?
+    //@State var newInning: Inning
     
     var body: some View {
         GeometryReader { geo in
@@ -46,14 +46,20 @@ struct BookView: View {
                                 Text("Start Game")
                                     .font(.headline)
                                     .padding(.horizontal)
-                            
+                        
+                            }
+                        } else {
+                            Button {
+                                gameViewModel.addInning(inning: Inning(number: gameViewModel.inningNumber+1, game: gameViewModel.game), lineup: gameViewModel.halfInning == 0 ? gameViewModel.visitorLineup : gameViewModel.homeLineup, halfInning: gameViewModel.halfInning)
+                            } label: {
+                                Image(systemName: "plus.rectangle")
                             }
                         }
                     }
                     Spacer()
                 }
             }
-            
+
         }
     }
 }

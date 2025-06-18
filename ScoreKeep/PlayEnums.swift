@@ -36,30 +36,45 @@ enum Positions: Codable, CaseIterable {
     case DP
     case EP
 }
+struct PositionDescription {
+    var number: Int             // ie 1, 2, 3
+    var name: String            // ie pitcher, catcher, first,
+    var location: CGPoint
+    var abbreviation: String    // ie P, C, 1B
+}
 
-enum Outcome: Codable {
-    case in_play(type: in_play_type)
-    case walk
-    case hp
-    case strikeout(type: strikeout_type)
+enum PitchOutcome: Codable {
+    case pitch(type: pitch_types)
     
-    enum in_play_type: Codable {
-        case ground_ball
-        case fly_ball
-        case line_out
-        case base_hit(type: hits)
+    enum pitch_types: Codable {
+        case strike(type: strike_type)
+        case ball
+        case in_play(type: in_play_type)
+        case hp
         
-        enum hits: Codable {
-            case single
-            case double
-            case triple
-            case home_run
+        enum strike_type: Codable {
+            case swinging
+            case looking
+            case foul
         }
-        
-    }
-    
-    enum strikeout_type: Codable {
-        case swinging
-        case looking
+        enum in_play_type: Codable {
+            case ground_ball
+            case fly_ball
+            case line_out
+            case base_hit(type: hits)
+            case sac(type: sacs)
+            
+            enum hits: Int, Codable {
+                case single = 1
+                case double = 2
+                case triple = 3
+                case home_run = 4
+            }
+            
+            enum sacs: Codable {
+                case fly
+                case bunt
+            }
+        }
     }
 }

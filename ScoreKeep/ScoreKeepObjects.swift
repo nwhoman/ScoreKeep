@@ -128,14 +128,24 @@ class OffensivePlateAppearance {
     var inning: Int
     var pitches: [Pitch]
     var outs: Int
+    var hit: Int
     var outcome: String
     var baseOccupied: Int
     var rbi: Int
     var run: Bool
     var earnedRun: Bool
-    var sb: [Int]?
+    var sb: [Int]
     var lob: Int?
     var active: Bool
+    var hitLoc: CGPoint {
+        get {
+            CGPoint(x: _hitLocX, y: _hitLocY)
+        }
+        set {
+            self._hitLocX = newValue.x
+            self._hitLocY = newValue.y
+        }
+    }
     
     init(order: Int, batter: Player, inning: Int) {
         self.id = UUID()
@@ -144,6 +154,7 @@ class OffensivePlateAppearance {
         self.inning = inning
         self.pitches = []
         self.outs = 0
+        self.hit = 0
         self.outcome = ""
         self.baseOccupied = 0
         self.rbi = 0
@@ -152,8 +163,10 @@ class OffensivePlateAppearance {
         self.sb = []
         self.lob = 0
         self.active = false
+        self.hitLoc = CGPoint(x: 0.0, y: 0.0)
     }
-    
+    private var _hitLocX: Double = 0.0
+    private var _hitLocY: Double = 0.0
 }
 
 @Model
@@ -195,29 +208,6 @@ class PlayerPos: Identifiable, Hashable {
         self.batting = batting
         self.player = player
         self.position = position
-    }
-}
-
-class BaseRunner: SKLabelNode {
-    var player: OffensivePlateAppearance
-    
-    init(player: OffensivePlateAppearance) {
-        self.player = player
-        
-        super.init(fontNamed: "Trebuchet MS")
-        self.name = player.batter.number
-        self.text = "#\(player.batter.number)"
-        self.fontSize = 20
-        self.fontColor = SKColor.blue
-        self.physicsBody = SKPhysicsBody(circleOfRadius: 25)
-        self.physicsBody?.affectedByGravity = false
-        self.physicsBody?.categoryBitMask = 0x1 << 0
-        self.physicsBody?.contactTestBitMask = 0x1 << 0
-        self.physicsBody?.collisionBitMask = 0x1 << 0
-    }
-    
-    required init?(coder aDecoder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
     }
 }
 
@@ -298,7 +288,7 @@ struct ScoreView: View {
                     Text("\(gameViewModel.getTotalScore(team: "visitor"))")
                         .font(.system(size: 12, weight: .bold))
                         .frame(width: 15.0, height: 15.0)
-                    Text("\(gameViewModel.getTotalScore(team: "visitor"))") // change to hits
+                    Text("\(gameViewModel.getTeamHits()["visitor"] ?? 1)") // change to hits
                         .font(.system(size: 12, weight: .bold))
                         .frame(width: 15.0, height: 15.0)
                     Text("\(gameViewModel.getTotalScore(team: "visitor"))") // change to errors
@@ -315,7 +305,7 @@ struct ScoreView: View {
                     Text("\(gameViewModel.getTotalScore(team: "home"))")
                         .font(.system(size: 12, weight: .bold))
                         .frame(width: 15.0, height: 15.0)
-                    Text("\(gameViewModel.getTotalScore(team: "home"))") // change to hits
+                    Text("\(gameViewModel.getTeamHits()["home"] ?? 0)") // change to hits
                         .font(.system(size: 12, weight: .bold))
                         .frame(width: 15.0, height: 15.0)
                     Text("\(gameViewModel.getTotalScore(team: "home"))") // change to errors
@@ -544,3 +534,28 @@ struct FieldView: View {
     }
 }
 
+
+struct BaseRunnerNode {
+    var player: OffensivePlateAppearance
+    var node: SKLabelNode
+    
+    init(player: OffensivePlateAppearance) {
+        self.player = player
+        self.node = SKLabelNode(fontNamed: "Trebuchet MS")
+        self.node.fontColor = .blue
+        
+    
+        self.node.physicsBody = SKPhysicsBody(circleOfRadius: 25)
+        self.node.physicsBody?.affectedByGravity = false
+    
+        self.node.text = "#\(player.batter.number)"
+        self.node.name = "\(player.batter.number)"
+        self.node.fontSize = 20
+        self.node.fontColor = SKColor.blue
+        self.node.physicsBody?.isDynamic = true
+        self.node.physicsBody?.restitution = 0.0
+        self.node.physicsBody?.categoryBitMask = (1 << 0)
+        self.node.physicsBody?.contactTestBitMask = (1 << 1)
+        self.node.physicsBody?.collisionBitMask = (1 << 1)
+    }
+}

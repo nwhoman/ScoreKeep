@@ -15,8 +15,8 @@ struct SmallPlateAppearanceView: View {
     
     var baseOccupied: Int {
         for i in gameViewModel.baseRunners {
-            if i.batter.number == player.batter.number {
-                return i.baseOccupied
+            if i.player.batter.number == player.batter.number {
+                return i.player.baseOccupied
             }
         }
         return 5
@@ -59,6 +59,12 @@ struct SmallPlateAppearanceView: View {
                             .scaledToFill()
                             .background(.clear)
                             .ignoresSafeArea(edges: .bottom)
+                    case 5:
+                        SpriteView(scene: BasePathScene(size: CGSize(width: geo.size.width*0.5, height: geo.size.height*0.5), gameVM: gameViewModel, baseOccupied: 5, plateAppearance: player,))
+                            .frame(width: geo.size.width*0.75, height: geo.size.height*1.25)
+                            .scaledToFill()
+                            .background(.clear)
+                            .ignoresSafeArea(edges: .bottom)
                     default:
                         SpriteView(scene: BasePathScene(size: CGSize(width: geo.size.width*0.5, height: geo.size.height*0.5), gameVM: gameViewModel, baseOccupied: 0, plateAppearance: player,))
                                 .frame(width: geo.size.width*0.75, height: geo.size.height*1.25)
@@ -66,10 +72,11 @@ struct SmallPlateAppearanceView: View {
                                 .background(.clear)
                                 .ignoresSafeArea(edges: .bottom)
                     }
+                        
                     //}
                     
                     VStack {
-                        Text("\(player.order) \(player.batter.number) \(player.baseOccupied)")
+                        Text("\(player.outcome)")
                             .font(.system(size: 8))
 //                            .frame(width: geo.size.width, height: geo.size.height*0.2)
 //                        HStack {
@@ -94,6 +101,9 @@ struct SmallPlateAppearanceView: View {
                         Spacer()
                         Spacer()
                         Spacer()
+                        HStack {
+                            
+                        }
                         
                         HStack {
                             
@@ -103,22 +113,25 @@ struct SmallPlateAppearanceView: View {
                                 .scaleEffect(0.25)
                                 .padding(.leading, 0)
                                 .padding(.top, -15)
-                            Text(player.rbi > 0 ? "\( player.rbi)" : "")                // rbi if any
+                            Text(player.rbi > 0 ? "\( player.rbi)" : "")       // rbi if any
                                 .padding(.leading,-5)
                                 .font(.system(size: 10).bold())
                                 .frame(width: geo.size.width*0.175, height: geo.size.height*0.2)
                                 .foregroundColor(Color.black)
                                     
                                 .padding(.top, -10)
-                            Text("\(player.baseOccupied)")                //Out # if batter out
-                                .font(.system(size: 14).bold())
-                                .frame(width: geo.size.width*0.2, height: geo.size.height*0.2)
-                                .foregroundColor(Color.red)
-                                    //.background(Color.black)
-                                .overlay(Circle().stroke(style: StrokeStyle(lineWidth: 1)))
-                                .foregroundColor(Color.red)
-                                .padding(.top, -15)
-                                .padding(.leading,-5)
+                            if player.outs > 0 {
+                                Text("\(player.outs)")                //Out # if batter out
+                                    .font(.system(size: 14).bold())
+                                    .frame(width: geo.size.width*0.2, height: geo.size.height*0.2)
+                                    .foregroundColor(Color.red)
+                                        //.background(Color.black)
+                                    .overlay(Circle().stroke(style: StrokeStyle(lineWidth: 1)))
+                                    .foregroundColor(Color.red)
+                                    .padding(.top, -15)
+                                    .padding(.leading,-5)
+                            }
+                            
                         }
                         .frame(width: geo.size.width, height: geo.size.height*0.5)
                         
@@ -127,12 +140,12 @@ struct SmallPlateAppearanceView: View {
                 }
                 .frame(width: 75, height: 75, alignment: .topLeading)
                 
-                .overlay(!player.active ? Rectangle().fill(Color.gray).opacity(0.8) : nil)
+                .overlay(player.outcome.isEmpty ? Rectangle().fill(Color.gray).opacity(0.8) : nil)
 
             }
         }
     }
-
+    
 }
 #Preview {
     var game = Game.defaultGame
@@ -189,24 +202,27 @@ class BasePathScene: SKScene, SKPhysicsContactDelegate {
         
         let path = CGMutablePath()
         path.move(to: homePlate)
-        if baseOccupied == 1 {
+        if baseOccupied == 1 || (plateAppearance.hit == 1 && plateAppearance.outs != 0) {
             path.addLine(to: firstBase)
             basepathNode.path = path
-            basepathNode.strokeColor = .red
-            basepathNode.lineWidth = 2
-        } else if baseOccupied == 2 {
+            basepathNode.strokeColor = .blue
+            basepathNode.lineWidth = 3
+            //addHitLoc()
+        } else if baseOccupied == 2 || (plateAppearance.hit == 2 && plateAppearance.outs != 0) {
             path.addLine(to: firstBase)
             path.addLine(to: secondBase)
             basepathNode.path = path
-            basepathNode.strokeColor = .red
+            basepathNode.strokeColor = .blue
             basepathNode.lineWidth = 3
-        } else if baseOccupied == 3 {
+            //addHitLoc()
+        } else if baseOccupied == 3 || (plateAppearance.hit == 3 && plateAppearance.outs != 0) {
             path.addLine(to: firstBase)
             path.addLine(to: secondBase)
             path.addLine(to: thirdBase)
             basepathNode.path = path
-            basepathNode.strokeColor = .red
-            basepathNode.lineWidth = 2
+            basepathNode.strokeColor = .blue
+            basepathNode.lineWidth = 3
+            //addHitLoc()
         } else if baseOccupied == 4 {
             path.addLine(to: firstBase)
             path.addLine(to: secondBase)
@@ -215,13 +231,56 @@ class BasePathScene: SKScene, SKPhysicsContactDelegate {
             path.closeSubpath()
             basepathNode.fillColor = .blue
             basepathNode.path = path
-            basepathNode.strokeColor = .red
-            basepathNode.lineWidth = 1
+            basepathNode.strokeColor = .blue
+            basepathNode.lineWidth = 3
+            //addHitLoc()
+        } else if baseOccupied == 5 {
+            // show play result
+            let labelNode = SKLabelNode(fontNamed: "Trebuchet MS")
+            labelNode.text = "K"
+            labelNode.name = "K"
+            labelNode.fontSize = 20
+            labelNode.fontColor = plateAppearance.outcome == "KS" ? .black : .red
+            labelNode.position = CGPoint(x: self.frame.midX, y: self.frame.maxY*0.5)
+            labelNode.setScale(0.5)
+            labelNode.isHidden = plateAppearance.outcome == "KS" || plateAppearance.outcome == "KL" ? false : true
+            
+            labelNode.xScale = plateAppearance.outcome == "KS" ? 1 : -1
+            
+            addChild(labelNode)
+            if plateAppearance.outcome.starts(with: "F") {
+                addOutcomeNode(center: CGPoint(x: self.frame.midX, y: self.frame.maxY*0.5), size: 10, name: plateAppearance.outcome, hidden: false, color: .red)
+            }
+            if plateAppearance.outcome.starts(with: "G") {
+                let outcome = plateAppearance.outcome.replacingOccurrences(of: "G", with: "")
+                addOutcomeNode(center: CGPoint(x: self.frame.midX, y: self.frame.maxY*0.5), size: 10, name: outcome, hidden: false, color: .red)
+            }
         }
-        
-        
-        
         addChild(basepathNode)
+        addGenericNode(center: CGPoint(x: self.frame.maxX*0.11, y: self.frame.maxY*0.37), size: self.frame.maxX*0.1, name: "1B", hidden: plateAppearance.hit == 1 ? false : true, color: .black)
+        addGenericNode(center: CGPoint(x: self.frame.maxX*0.11, y: self.frame.maxY*0.37), size: self.frame.maxX*0.1, name: "2B", hidden: plateAppearance.hit == 2 ? false : true, color: .black)
+        addGenericNode(center: CGPoint(x: self.frame.maxX*0.11, y: self.frame.maxY*0.37), size: self.frame.maxX*0.1, name: "3B", hidden: plateAppearance.hit == 3 ? false : true, color: .black)
+        addGenericNode(center: CGPoint(x: self.frame.maxX*0.11, y: self.frame.maxY*0.37), size: self.frame.maxX*0.1, name: "HR", hidden: plateAppearance.hit == 4 ? false : true, color: .black)
+        addGenericNode(center: CGPoint(x: self.frame.maxX*0.11, y: self.frame.maxY*0.37), size: self.frame.maxX*0.1, name: "E", hidden: true, color: .red)
+        addGenericNode(center: CGPoint(x: self.frame.maxX*0.8, y: self.frame.maxY*0.37), size: self.frame.maxX*0.1, name: "HBP", hidden: plateAppearance.outcome != "HBP", color: .blue)
+        addGenericNode(center: CGPoint(x: self.frame.maxX*0.8, y: self.frame.maxY*0.37), size: self.frame.maxX*0.1, name: "BB", hidden: plateAppearance.outcome != "BB", color: .blue)
+        addGenericNode(center: CGPoint(x: self.frame.maxX*0.8, y: self.frame.maxY*0.37), size: self.frame.maxX*0.1, name: "SAC", hidden: plateAppearance.outcome != "SAC", color: .blue)
+        addHitLoc()
+    }
+    func addHitLoc() {
+        let path = CGMutablePath()
+        path.move(to: homePlate)
+        path.addLine(to: CGPoint(x: self.frame.maxX*(plateAppearance.hitLoc.x) , y: 13.0*(plateAppearance.hitLoc.y)+homePlate.y + 5.0)) //self.frame.maxY*(plateAppearance.hitLoc.y)+homePlate.y))
+        print("hitLoc: \(plateAppearance.batter.number) \(CGPoint(x: self.frame.maxX*(plateAppearance.hitLoc.x) , y: self.frame.maxY*(plateAppearance.hitLoc.y)+homePlate.y))")
+        let node = SKShapeNode(path: path)
+        node.strokeColor = .red
+        node.lineWidth = 2
+        
+        //node.xScale = 0.5
+        //node.yScale = 0.5
+        if plateAppearance.hitLoc.y != 0 {
+            addChild(node)
+        }
         
     }
     
@@ -265,5 +324,54 @@ class BasePathScene: SKScene, SKPhysicsContactDelegate {
     override func update(_ currentTime: TimeInterval) {
         // Called before each frame is rendered
         
+    }
+    func addGenericNode(center: CGPoint, size: CGFloat, name: String, hidden: Bool, color: UIColor) {
+        
+        let path = CGMutablePath()
+        path.move(to: CGPoint(x: center.x+size/2, y: center.y+size/2))
+        path.addLine(to: CGPoint(x: center.x-size/2, y: center.y+size/2))
+        path.addArc(center: CGPoint(x: center.x-size/2, y: center.y), radius: size/2, startAngle: .pi/2, endAngle: CGFloat.pi*3/2, clockwise: false)
+        path.addLine(to: CGPoint(x: center.x+size/2, y: center.y-size/2))
+        path.addArc(center: CGPoint(x: center.x+size/2, y: center.y), radius: size/2, startAngle: .pi*3/2, endAngle: CGFloat.pi/2, clockwise: false)
+        
+        let node = SKShapeNode(path: path)
+        node.fillColor = .gray
+        node.strokeColor = .black
+        node.lineWidth = 1
+        node.name = name
+        node.isHidden = hidden
+        //addChild(node)
+        let labelNode = SKLabelNode(fontNamed: "Trebuchet MS")
+        labelNode.text = name
+        labelNode.name = name
+        labelNode.fontSize = 6
+        labelNode.fontColor = color
+        labelNode.position = CGPoint(x: center.x, y: center.y-size/4)
+        labelNode.isHidden = hidden
+        addChild(labelNode)
+    }
+    func addOutcomeNode(center: CGPoint, size: CGFloat, name: String, hidden: Bool, color: UIColor) {
+        let path = CGMutablePath()
+        path.move(to: CGPoint(x: center.x+size/2, y: center.y+size/2))
+        path.addLine(to: CGPoint(x: center.x-size/2, y: center.y+size/2))
+        path.addArc(center: CGPoint(x: center.x-size/2, y: center.y), radius: size/2, startAngle: .pi/2, endAngle: CGFloat.pi*3/2, clockwise: false)
+        path.addLine(to: CGPoint(x: center.x+size/2, y: center.y-size/2))
+        path.addArc(center: CGPoint(x: center.x+size/2, y: center.y), radius: size/2, startAngle: .pi*3/2, endAngle: CGFloat.pi/2, clockwise: false)
+        
+        let node = SKShapeNode(path: path)
+        node.fillColor = .gray
+        node.strokeColor = .black
+        node.lineWidth = 1
+        node.name = name
+        node.isHidden = hidden
+        //addChild(node)
+        let labelNode = SKLabelNode(fontNamed: "Trebuchet MS")
+        labelNode.text = name
+        labelNode.name = name
+        labelNode.fontSize = 12
+        labelNode.fontColor = color
+        labelNode.position = CGPoint(x: center.x, y: center.y)
+        labelNode.isHidden = hidden
+        addChild(labelNode)
     }
 }

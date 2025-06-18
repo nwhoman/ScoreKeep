@@ -27,7 +27,7 @@ class GameViewModel: ObservableObject {
     @Published var batterUp = [0, 0]
     @Published var batter: OffensivePlateAppearance?
     @Published var pitcher: DefensivePlateAppearance?
-    @Published var baseRunners: [OffensivePlateAppearance] = []
+    @Published var baseRunners: [BaseRunnerNode] = []
     
     var defensiveLineup: [String: Player] {
         if halfInning == 0 {
@@ -50,10 +50,10 @@ class GameViewModel: ObservableObject {
     
     func setUpGame() {
         for i in 1...9 {
-            let inning = Inning(number: i, game: game)
+            let inning = Inning(number: i*10, game: game)
             addInning(inning: inning, lineup: game.visitingLineup, halfInning: 0)
             addInning(inning: inning, lineup: game.homeLineup, halfInning: 1)
-            game.innings.append(inning)
+            //game.innings.append(inning)
         }
         getPitcher()
         //getBatter()
@@ -93,6 +93,7 @@ class GameViewModel: ObservableObject {
             
             order += 1
         }
+        game.innings.append(inning)
     }
     
     func getBatter() {
@@ -103,11 +104,11 @@ class GameViewModel: ObservableObject {
             inning.visitorOffense[batterUp[halfInning]].active = true
             self.batter!.active = true
             
-            baseRunners.insert(self.batter!, at: 0)
+            baseRunners.insert(BaseRunnerNode(player: self.batter!), at: 0)
         } else {
             self.batter = inning.homeOffense[batterUp[halfInning]]
             self.batter!.active = true
-            baseRunners.insert(self.batter!, at: 0)
+            baseRunners.insert(BaseRunnerNode(player: self.batter!), at: 0)
         }
         
     }
@@ -143,7 +144,8 @@ class GameViewModel: ObservableObject {
     
     func incrementScore(team: Int) {
         if team == 0 {
-            score["visitor"]![inningNumber - 1] += 1
+            print(inningNumber)
+            score["visitor"]![inningNumber/10 - 1] += 1
         } else {
             score["home"]![inningNumber - 1] += 1
         }
@@ -153,23 +155,44 @@ class GameViewModel: ObservableObject {
         return score[team]!.reduce(0, +)
     }
     
+    func getTeamHits() -> [String: Int] { // 0 for visitor 1 for home
+        var vHits = 0
+        var hHits = 0
+        for inning in self.game.innings {
+            vHits += inning.visitorOffense.count(where: {$0.hit > 0})
+            hHits += inning.homeOffense.count(where: {$0.hit > 0})
+        }
+        return [
+            "visitor": vHits,
+            "home": hHits
+        ]
+    }
+    
     func moveRunners(bases: Int, runnerToAdvance: Int) { //0, 1, 2, 3 for which base runner is at 0 = home
         if runnerToAdvance == 0 {
             for runner in baseRunners {
-                runner.baseOccupied += bases
+                runner.player.baseOccupied += bases
             }
         } else if runnerToAdvance == 1 {
             for i in 1..<baseRunners.count {
-                baseRunners[i].baseOccupied += bases
+                baseRunners[i].player.baseOccupied += bases
             }
         } else if runnerToAdvance == 2 {
             for i in 2..<baseRunners.count {
-                baseRunners[i].baseOccupied += bases
+                baseRunners[i].player.baseOccupied += bases
             }
         } else {
             for i in 3..<baseRunners.count {
-                baseRunners[i].baseOccupied += bases
+                baseRunners[i].player.baseOccupied += bases
             }
         }
+    }
+    func getBaserunner(number: String) -> BaseRunnerNode {
+        for runner in baseRunners {
+            if runner.player.batter.number == number {
+                return runner
+            }
+        }
+        return self.baseRunners[0]
     }
 }

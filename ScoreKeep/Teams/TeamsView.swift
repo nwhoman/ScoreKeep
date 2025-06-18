@@ -14,7 +14,7 @@ struct TeamsView: View {
     @Query(sort: \Coach.lastName) var coaches: [Coach]
     //@State private var path = [Team]()
     @State private var showAddTeamScreen = false
-    ///@Binding var path: NavigationPath
+    //@Binding var path: NavigationPath
 
     var body: some View {
             List {

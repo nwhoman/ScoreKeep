@@ -31,7 +31,12 @@ struct BookPageView: View {
     var body: some View {
         GeometryReader { geo in
             VStack {
-                Text("Batting: \(gameViewModel.batterUp[gameViewModel.halfInning])")
+                HStack {
+                    Text("Batting: \(gameViewModel.batterUp[gameViewModel.halfInning])")
+                    Text("\(gameViewModel.batterUp[gameViewModel.halfInning])")
+                        //Text("\(gameViewModel.i)")
+                }
+                
                 // score by inning + RHE
                 HStack {
                     ScoreView(gameViewModel: gameViewModel)
@@ -91,7 +96,7 @@ struct InningsView: View {
             ForEach(innings.sorted(by: {$0.number < $1.number}), id: \.self) { inning in
                 HStack(alignment: .top) {
                     VStack(alignment: .leading) {
-                        Text("\(inning.number)")
+                        Text("\(inning.number)\(inning.number/10)")
                         .frame(width: 75, height: 50, alignment: .center)
                         .border(Color.blue)
                         ForEach(teamBatting ? inning.visitorOffense.sorted(by: {$0.order < $1.order}) : inning.homeOffense.sorted(by: {$0.order < $1.order}), id: \.self) { player in
@@ -99,12 +104,22 @@ struct InningsView: View {
                                 
                                 SmallPlateAppearanceView(gameViewModel: gameViewModel, player: player, scale: 0.15)
                                     .onTapGesture {
-                                        player.active = true
-                                        gameViewModel.batter = player
-                                        gameViewModel.inningNumber = inning.number
-                                        gameViewModel.balls = 0
-                                        gameViewModel.strikes = 0
-                                        gameViewModel.baseRunners.insert(player, at: 0)
+                                        
+                                        
+                                        
+                                        if player.outcome.isEmpty {
+                                            player.active = true
+                                            gameViewModel.batter = player
+                                            gameViewModel.inningNumber = inning.number
+                                            let brNode = BaseRunnerNode(player: player)
+                                            gameViewModel.baseRunners.insert(brNode, at: 0)
+                                            gameViewModel.balls = 0
+                                            gameViewModel.strikes = 0
+                                            gameViewModel.batterUp[gameViewModel.halfInning] += 1
+                                        } else {
+                                            print("\(player.hit), \(player.outcome)")
+                                        }
+                                        
                                         showLargeView.toggle()
                                         
                                     }

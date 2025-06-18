@@ -80,6 +80,8 @@ struct AddTeamView: View {
                         newTeam.name = name
                         newTeam.ageGroup = ageGroup
                         modelContext.insert(newTeam)
+                        try? modelContext.save()
+
                         dismiss()
                         /*if (!showCoachPlayer){
                             showCoachPlayer = true
@@ -112,5 +114,6 @@ struct AddTeamView: View {
     return NavigationStack {
         AddTeamView()
             .modelContainer(preview.modelContainer)
+
     }
 }

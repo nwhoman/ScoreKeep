@@ -8,6 +8,7 @@
 import SwiftUI
 
 struct LargePlateAppearanceView: View {
+    @Environment(\.modelContext) var modelContext
     @ObservedObject var gameViewModel: GameViewModel
     var player: OffensivePlateAppearance
     //@Binding var outs: Int
@@ -46,17 +47,20 @@ struct LargePlateAppearanceView: View {
 //                    .frame(width: geo.size.width, height: geo.size.height*0.1)
                     
                     ZStack {
-                        FieldViewScene(gameVM: gameViewModel, plateAppearance: player, scale: scale, largeView: true)
-                        //PlateAppearanceView(scale: 1.0, xoffset: 0, yoffset: 0)
-                            .frame(width: geo.size.width, height: geo.size.height)
+                            FieldViewScene(gameVM: gameViewModel, plateAppearance: player, scale: scale, largeView: true)
+                                .frame(width: geo.size.width, height: geo.size.height)
+                                .padding(.top, 25)
                         
                         VStack {
+                            ScoreView(gameViewModel: gameViewModel)
                             HStack {
-                                ScoreView(gameViewModel: gameViewModel)
+                                Text("#\(player.batter.number) - \(player.batter.lastName), \(player.batter.firstName)")
                             }
-                            Spacer()
                             
-                            Text("\(gameViewModel.batter!.batter.firstName) \(gameViewModel.batter!.batter.lastName)")
+                            Spacer()
+            
+                            
+                            
                             HStack {
                                 if gameViewModel.batter!.rbi > 0 {
                                     VStack(alignment: .center) {
@@ -66,19 +70,18 @@ struct LargePlateAppearanceView: View {
                                             .font(.system(size: 30).bold())
                                             
                                             .foregroundColor(Color.black)
-                                        
+                        
                                             .padding(.top, -10)
                                     }
                                     .frame(width: geo.size.width*0.4, height: geo.size.height*0.15)
                                 }
-                                
                             }
                             .frame(width: geo.size.width, height: geo.size.height*0.25)
                             //.border(Color.black, width: 1)
                         }
                     }
                     .frame(width: geo.size.width, height: geo.size.height*0.75, alignment: .topLeading)
-                    
+        
                     Spacer()
                 }
                 .frame(width: geo.size.width, height: geo.size.height, alignment: .topLeading)
