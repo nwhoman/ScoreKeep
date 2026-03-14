@@ -15,11 +15,19 @@ struct BookPageView: View {
     //@Binding var orderNumber: Int
     //@Binding var inningNumber: Int
     @State var showLargeView: Bool = false
+    @State var largeView: Bool = true
     
     var selectedTab: String
     var innings: [Inning] {
-        gameViewModel.game.innings.sorted { $0.number < $1.number }
+        if selectedTab == "Visitor" {
+            
+            return gameViewModel.visitorInnings.sorted { $0.number < $1.number }
+
+        } else {
+            return gameViewModel.homeInnings.sorted { $0.number < $1.number }
+        }
     }
+    
     var team: Team {
         if selectedTab == "Home" {
             return gameViewModel.game.homeTeam!
@@ -29,31 +37,41 @@ struct BookPageView: View {
     }
     
     var body: some View {
-        GeometryReader { geo in
-            VStack {
-                HStack {
-                    Text("Batting: \(gameViewModel.batterUp[gameViewModel.halfInning])")
-                    Text("\(gameViewModel.batterUp[gameViewModel.halfInning])")
-                        //Text("\(gameViewModel.i)")
-                }
-                
-                // score by inning + RHE
-                HStack {
-                    ScoreView(gameViewModel: gameViewModel)
-                        .padding()
-                    
-                }
-                ScrollView() {
+        NavigationStack {
+            GeometryReader { geo in
+                VStack {
                     HStack {
-                        BattingLineupView(geo: geo, team: team)
-                            //.padding(.leading)
-                            .border(Color.blue)
-                        ScrollView(Axis.Set.horizontal) {
-                            InningsView(gameViewModel: gameViewModel, showLargeView: $showLargeView, team: team, innings: innings, selectedTab: selectedTab)
-                                
+                        Text("Batting: \(gameViewModel.batterUp[gameViewModel.halfInning])")
+                        Text("\(gameViewModel.inningNumber)")
+                        //Text("\(gameViewModel.i)")
+                    }
+                    
+                    // score by inning + RHE
+                    HStack {
+                        ScoreView(gameViewModel: gameViewModel)
+                            .padding(.horizontal)
+                        
+                    }
+                    HStack {
+                        NavigationLink {
+                            BoxScoreView(gameViewModel: gameViewModel)
+                        } label: {
+                            Text("Box Score")
                         }
                         
-                        Spacer()
+                    }
+                    ScrollView() {
+                        HStack(alignment: .top) {
+                            BattingLineupView(geo: geo, team: team)
+                            //.padding(.leading)
+                                .border(Color.blue)
+                            ScrollView(Axis.Set.horizontal) {
+                                InningsView(gameViewModel: gameViewModel, showLargeView: $showLargeView, largeView: $largeView, team: team, innings: innings, selectedTab: selectedTab)
+                                
+                            }
+                            
+                            Spacer()
+                        }
                     }
                 }
             }
@@ -76,6 +94,8 @@ struct BookPageView: View {
 struct InningsView: View {
     @ObservedObject var gameViewModel: GameViewModel
     @Binding var showLargeView: Bool
+    @Binding var largeView: Bool
+
     //@Binding var orderNumber: Int
     //@Binding var inningNumber: Int
     //@State var currentPlayer: OffensivePlateAppearance?
@@ -96,33 +116,43 @@ struct InningsView: View {
             ForEach(innings.sorted(by: {$0.number < $1.number}), id: \.self) { inning in
                 HStack(alignment: .top) {
                     VStack(alignment: .leading) {
-                        Text("\(inning.number)\(inning.number/10)")
+                        Text("\(inning.number)--\(inning.number/10)")
                         .frame(width: 75, height: 50, alignment: .center)
                         .border(Color.blue)
-                        ForEach(teamBatting ? inning.visitorOffense.sorted(by: {$0.order < $1.order}) : inning.homeOffense.sorted(by: {$0.order < $1.order}), id: \.self) { player in
+                        Text("\(gameViewModel.inningNumber)--\(gameViewModel.batterUp[gameViewModel.halfInning])")
+                        ForEach(inning.offense.sorted(by: {$0.order < $1.order}), id: \.self) { player in
                             GeometryReader { geo in
                                 
                                 SmallPlateAppearanceView(gameViewModel: gameViewModel, player: player, scale: 0.15)
                                     .onTapGesture {
-                                        
-                                        
-                                        
-                                        if player.outcome.isEmpty {
-                                            player.active = true
-                                            gameViewModel.batter = player
-                                            gameViewModel.inningNumber = inning.number
-                                            let brNode = BaseRunnerNode(player: player)
-                                            gameViewModel.baseRunners.insert(brNode, at: 0)
-                                            gameViewModel.balls = 0
-                                            gameViewModel.strikes = 0
-                                            gameViewModel.batterUp[gameViewModel.halfInning] += 1
-                                        } else {
-                                            print("\(player.hit), \(player.outcome)")
+                                        if !gameViewModel.game.isComplete {
+                                            
+                                            if (teamBatting && gameViewModel.halfInning == 0 && gameViewModel.inningNumber == inning.number && gameViewModel.batterUp[gameViewModel.halfInning] == player.order) || (!teamBatting && gameViewModel.halfInning == 1 && gameViewModel.inningNumber == inning.number && gameViewModel.batterUp[gameViewModel.halfInning] == player.order) {
+                                                if player.outcome.isEmpty {
+                                                    player.active = true
+                                                    gameViewModel.batter = player
+                                                    //gameViewModel.inningNumber = inning.number
+                                                    let brNode = BaseRunnerNode(player: player)
+                                                    gameViewModel.baseRunners.insert(brNode, at: 0)
+                                                    gameViewModel.balls = 0
+                                                    gameViewModel.strikes = 0
+                                                    gameViewModel.incrementBatterUp()
+                                                    showLargeView.toggle()
+                                                } else {
+                                                    print("\(player.hit), \(player.outcome)")
+                                                    showLargeView.toggle()
+                                                }
+                                            } else {
+                                                if player.active {
+                                                    gameViewModel.batter = player
+                                                    showLargeView.toggle()
+                                                    largeView = false
+                                                }
+                                                
+                                            }
+                                            
                                         }
-                                        
-                                        showLargeView.toggle()
-                                        
-                                    }
+                                }
                             }
                         }
                         .frame(width: 75, height: 75, alignment: .topLeading)
@@ -131,17 +161,46 @@ struct InningsView: View {
                 }
             }
         }
+        .navigationDestination(isPresented: $gameViewModel.game.isComplete) {
+            GameSummaryView()
+        }
         .sheet(isPresented: $showLargeView, onDismiss: {
-            //gameViewModel.incrementBatterUp()
-            //innings[inningNumber-1].visitorOffense[orderNumber].active = true
+            //  update game viewmodel, check outs and switch sides
+            gameViewModel.checkGameComplete()
+            if gameViewModel.outs == 3 {
+                gameViewModel.outs = 0
+                gameViewModel.balls = 0
+                gameViewModel.strikes = 0
+                
+                gameViewModel.baseRunners.removeAll()
+                gameViewModel.pitches.removeAll()
+                
+                if gameViewModel.halfInning == 0 {
+                    gameViewModel.halfInning = 1
+                } else {
+                    gameViewModel.halfInning = 0
+                    gameViewModel.inningNumber += 10
+                }
+                                
+            } else { // if dismiss sheet before batter is finished
+                if gameViewModel.batter?.outcome == [] {
+                    gameViewModel.baseRunners.remove(at: 0)
+                    gameViewModel.decrementBatterUp()
+                }
+                // check for walk-off win
+            }
+            
+            if !largeView {
+                largeView.toggle()
+            }
         })
         {
-            LargePlateAppearanceView(gameViewModel: gameViewModel, player: gameViewModel.batter!)
+            LargePlateAppearanceView(gameViewModel: gameViewModel, player: gameViewModel.batter!, largeView: $largeView)
                 .presentationBackground(alignment: .top) {
                     LinearGradient(colors: [Color.gray, Color.green], startPoint: .bottomLeading, endPoint: .topTrailing)
-              }
-            
-              .presentationCornerRadius(50)
+                }
+                .presentationCornerRadius(50)
         }
+        
     }
 }

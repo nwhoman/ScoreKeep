@@ -11,7 +11,7 @@ struct LargePlateAppearanceView: View {
     @Environment(\.modelContext) var modelContext
     @ObservedObject var gameViewModel: GameViewModel
     var player: OffensivePlateAppearance
-    //@Binding var outs: Int
+    @Binding var largeView: Bool
     var scale: CGFloat = 1
     //@State var firstBase: OffensivePlateAppearance?
     //@State var secondBase: OffensivePlateAppearance?
@@ -26,65 +26,45 @@ struct LargePlateAppearanceView: View {
         GeometryReader { geo in
             
             VStack(alignment: .leading) {
-//                    HStack {
-//                        Text("1B")
-//                            .font(.system(size: 28))
-//                            .frame(width: geo.size.width*0.2, height: geo.size.height*0.2)
-//                            .padding(.horizontal, -2)
-//                        Text("2B")
-//                            .font(.system(size: 28))
-//                            .frame(width: geo.size.width*0.2, height: geo.size.height*0.2)
-//                            .padding(.horizontal, -2)
-//                        Text("3B")
-//                            .font(.system(size: 28))
-//                            .frame(width: geo.size.width*0.2, height: geo.size.height*0.2)
-//                            .padding(.horizontal, -2)
-//                        Text("HR")
-//                            .font(.system(size: 28))
-//                            .frame(width: geo.size.width*0.2, height: geo.size.height*0.2)
-//                            .padding(.horizontal, -2)
-//                    }
-//                    .frame(width: geo.size.width, height: geo.size.height*0.1)
+                ZStack {
+                    FieldViewScene(gameVM: gameViewModel, plateAppearance: player, scale: scale, largeView: largeView)
+                        .frame(width: geo.size.width, height: geo.size.height)
+                        .padding(.top, 25)
                     
-                    ZStack {
-                            FieldViewScene(gameVM: gameViewModel, plateAppearance: player, scale: scale, largeView: true)
-                                .frame(width: geo.size.width, height: geo.size.height)
-                                .padding(.top, 25)
-                        
-                        VStack {
-                            ScoreView(gameViewModel: gameViewModel)
-                            HStack {
-                                Text("#\(player.batter.number) - \(player.batter.lastName), \(player.batter.firstName)")
-                            }
-                            
-                            Spacer()
-            
-                            
-                            
-                            HStack {
-                                if gameViewModel.batter!.rbi > 0 {
-                                    VStack(alignment: .center) {
-                                        Text("RBI")
-                                        Text("2")
-                                            .padding(.leading,-0)
-                                            .font(.system(size: 30).bold())
-                                            
-                                            .foregroundColor(Color.black)
-                        
-                                            .padding(.top, -10)
-                                    }
-                                    .frame(width: geo.size.width*0.4, height: geo.size.height*0.15)
-                                }
-                            }
-                            .frame(width: geo.size.width, height: geo.size.height*0.25)
-                            //.border(Color.black, width: 1)
+                    VStack {
+                        ScoreView(gameViewModel: gameViewModel)
+                        HStack {
+                            Text("#\(player.batter.number) - \(player.batter.lastName), \(player.batter.firstName)")
                         }
-                    }
-                    .frame(width: geo.size.width, height: geo.size.height*0.75, alignment: .topLeading)
+                        
+                        Spacer()
         
-                    Spacer()
+                        
+                        
+                        HStack {
+                            if gameViewModel.batter!.rbi > 0 {
+                                VStack(alignment: .center) {
+                                    Text("RBI")
+                                    Text("\(player.rbi)")
+                                        .padding(.leading,-0)
+                                        .font(.system(size: 30).bold())
+                                        
+                                        .foregroundColor(Color.black)
+                    
+                                        .padding(.top, -10)
+                                }
+                                .frame(width: geo.size.width*0.4, height: geo.size.height*0.15)
+                            }
+                        }
+                        .frame(width: geo.size.width, height: geo.size.height*0.25)
+                        //.border(Color.black, width: 1)
+                    }
                 }
-                .frame(width: geo.size.width, height: geo.size.height, alignment: .topLeading)
+                .frame(width: geo.size.width, height: geo.size.height*0.75, alignment: .topLeading)
+    
+                Spacer()
+            }
+            .frame(width: geo.size.width, height: geo.size.height, alignment: .topLeading)
                 //.border(Color.black, width: 1)
                 
             
@@ -104,8 +84,9 @@ struct LargePlateAppearanceView: View {
     gameVM.setUpGame()
     gameVM.getBatter()
     gameVM.getPitcher()
+    let player = OffensivePlateAppearance.defaultPlateAppearance
     //var player = game.innings[0].visitorOffense[0]
     
-    return LargePlateAppearanceView(gameViewModel: gameVM, player: gameVM.batter!)
+    return LargePlateAppearanceView(gameViewModel: gameVM, player: player, largeView: .constant(false))
         .modelContainer(preview.modelContainer)
 }

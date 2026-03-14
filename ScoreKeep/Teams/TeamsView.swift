@@ -11,7 +11,7 @@ import SwiftData
 struct TeamsView: View {
     @Environment(\.modelContext) var modelContext
     @Query(sort: \Team.name) var teams: [Team]
-    @Query(sort: \Coach.lastName) var coaches: [Coach]
+   // @Query(sort: \Coach.lastName) var coaches: [Coach]
     //@State private var path = [Team]()
     @State private var showAddTeamScreen = false
     //@Binding var path: NavigationPath

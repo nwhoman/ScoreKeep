@@ -27,10 +27,10 @@ struct GameLineupsView: View {
             VStack {
                 Spacer(minLength: 70)
                 TabView(selection: $selectedTab) {
-                    LineupView(game: game, lineup: game.homeTeam!.lineup, selectedTab: selectedTab)
+                    LineupView(game: game, lineup: game.homeTeam!.lineup, showAlert: $showAlert, showTeamAlert: $showHomeAlert, selectedTab: selectedTab)
                         .tabItem { Text("\(game.homeTeam!.name)") }.tag("Home")
                     
-                    LineupView(game: game, lineup: game.visitingTeam!.lineup, selectedTab: selectedTab)
+                    LineupView(game: game, lineup: game.visitingTeam!.lineup, showAlert: $showAlert, showTeamAlert: $showVisitorAlert,selectedTab: selectedTab)
                         .tabItem { Text("\(game.visitingTeam!.name)") }.tag("Visitor")
                     
                 }
@@ -63,7 +63,7 @@ struct GameLineupsView: View {
                             showHomeAlert.toggle()
                             showAlert.toggle()
                         }
-                        
+                
                         
                     } label: {
                         VStack{
@@ -95,7 +95,7 @@ struct GameLineupsView: View {
                 }
                 Spacer()
             }
-            
+        
         }
         .navigationDestination(for: Team.self) {
             team in
@@ -103,20 +103,54 @@ struct GameLineupsView: View {
         }
         .navigationDestination(isPresented: $startGame) {
             var newGameViewModel = GameViewModel(game: game)
-            
             BookView(gameViewModel: newGameViewModel)
         }
     }
 }
 func validateLineup(lineup: [PlayerPos]) -> Bool {
     let positions: [String] = ["P", "C", "1B", "2B", "3B", "SS", "LF", "CF", "RF"]
-    for pos in positions {
-        if !lineup.contains(where: { $0.position == pos }) {
+    let order = lineup.sorted { $0.batting < $1.batting }
+    if order.count < 9 {
+        print("<9")
+        return false
+    }
+    if order.contains(where: { $0.position == "F" }) {
+        if order.last?.position != "F" {
+            print("last not F")
+            return false
+        } else if !order.contains(where: { $0.position == "DP" }) {
+            print("no DP")
             return false
         }
+        let newLineup = order.filter { $0.position != "F" && $0.position != "DP" && $0.position != "EP"}
+        
+        if newLineup.count != 8 {
+            print("not 8")
+            return false
+        }
+        print("all good with F")
+        return true
     }
+    if order.contains(where: { $0.position == "DP" }) {
+        print("contains DP")
+        return false
+    }
+    let newLineup = order.filter { $0.position != "EP"}
+    if newLineup.count < 9 {
+        print("no flex <9")
+        return false
+    }
+    print("all good")
     return true
 }
+
+func checkFlex(lineup: [PlayerPos]) -> Bool {
+    
+    if lineup.contains(where: { $0.position == "F" }) && !lineup.contains(where: { $0.position == "DP" }) {
+        return false
+    }
+    return true
+}  //|| !lineup.contains(where: { $0.position == "DP" })
 
 #Preview {
     let preview = Preview()

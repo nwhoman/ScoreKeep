@@ -16,8 +16,9 @@ struct LineupView: View {
 
     @State var selected: Player?
        
-    @State var showAlert: Bool = false
     @State var lineup: [PlayerPos]
+    @Binding var showAlert: Bool
+    @Binding var showTeamAlert: Bool
     
     var selectedTab: String
 
@@ -39,21 +40,26 @@ struct LineupView: View {
                     Spacer()
                     
                     Button("Save Lineup"){
-                        team.lineup.removeAll()
-                        team.lineup = lineup
-                        for i in 0..<lineup.count {
-                            lineup[i].batting = i+1
-                        }
-                        team.lineup = lineup
-                        if selectedTab == "Home" {
-                            game.homeTeam!.lineup = lineup
+                        if validateLineup(lineup: lineup) {
+                            team.lineup.removeAll()
+                            team.lineup = lineup
+                            for i in 0..<lineup.count {
+                                lineup[i].batting = i+1
+                            }
+                            team.lineup = lineup
+                            if selectedTab == "Home" {
+                                game.homeTeam!.lineup = lineup
+                            } else {
+                                game.visitingTeam!.lineup = lineup
+                            }
+                            do {
+                                try modelContext.save()
+                            } catch {
+                                print("\(error)")
+                            }
                         } else {
-                            game.visitingTeam!.lineup = lineup
-                        }
-                        do {
-                            try modelContext.save()
-                        } catch {
-                            print("\(error)")
+                            showAlert = true
+                            showTeamAlert = true
                         }
                     }
                 }
@@ -133,23 +139,27 @@ struct RosterView: View {
                         VStack {
                             List {
                                 ForEach(lineup.sorted(by: { $0.batting < $1.batting }), id: \.id) { player in
-                                    VStack(alignment: .leading) {
-                                        Text("#\(player.player.number)")
-                                        Text("\(player.player.lastName), \(player.player.firstName) - \(player.position)")
-                                            .lineLimit(1)
-                                            .minimumScaleFactor(0.5)
-                                        //Text("#\(player.batting)")
+                                    HStack {
+                                        Text("\(player.batting))")
+                                            .font(.caption)
+                                        VStack(alignment: .leading) {
+                                            Text("#\(player.player.number)")
+                                            Text("\(player.player.lastName), \(player.player.firstName) - \(player.position)")
+                                                .lineLimit(1)
+                                                .minimumScaleFactor(0.5)
+                                            //Text("#\(player.batting)")
                                             
-                                    }
-                                    .padding(.horizontal, -5)
-                                    .font(.caption)
-                                    .onTapGesture {
-                                        
-                                        lineup.remove(at: lineup.firstIndex(of: player)!)
-                                        for i in 0..<lineup.count {
-                                            lineup[i].batting = i+1
                                         }
-                                        try? modelContext.save()
+                                        .padding(.horizontal, -5)
+                                        .font(.caption)
+                                        .onTapGesture {
+                                            
+                                            lineup.remove(at: lineup.firstIndex(of: player)!)
+                                            for i in 0..<lineup.count {
+                                                lineup[i].batting = i+1
+                                            }
+                                            try? modelContext.save()
+                                        }
                                     }
                                 }
                             }
@@ -216,7 +226,7 @@ struct RosterItemView: View {
     preview.addSampleGames([game])
 
     return NavigationStack {
-        LineupView(game: game, lineup: game.homeTeam!.lineup, selectedTab: "Home")
+        LineupView(game: game, lineup: game.homeTeam!.lineup, showAlert: .constant(false), showTeamAlert: .constant(false), selectedTab: "Home")
             .modelContainer(preview.modelContainer)
     }
 }

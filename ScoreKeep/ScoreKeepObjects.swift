@@ -89,6 +89,7 @@ class Game {
     var isComplete: Bool = false
     var isStarted: Bool = false
     @Relationship(deleteRule: .cascade, inverse: \Inning.game) var innings: [Inning] = []
+    //@Relationship(deleteRule: .cascade, inverse: \Inning.game) var homeInnings: [Inning] = []
     
     init(name: String, date: Date = .now, location: String, homeTeam: Team? = nil, visitingTeam: Team? = nil) {
         self.id = UUID()
@@ -107,16 +108,17 @@ class Inning {
     var id: UUID = UUID()
     var number: Int
     var game: Game
+    var half: Int
     
-    var visitorOffense: [OffensivePlateAppearance] = []
-    var homeDefense: [DefensivePlateAppearance] = []
-    var homeOffense: [OffensivePlateAppearance] = []
-    var visitorDefense: [DefensivePlateAppearance] = []
+    var offense: [OffensivePlateAppearance] = []
+    var defense: [DefensivePlateAppearance] = []
+    //var homeOffense: [OffensivePlateAppearance] = []
+    //var visitorDefense: [DefensivePlateAppearance] = []
    
-    init(number: Int, game: Game) {
+    init(number: Int, game: Game, half: Int) {
         self.number = number
         self.game = game
-        
+        self.half = half
     }
 }
 
@@ -129,13 +131,17 @@ class OffensivePlateAppearance {
     var pitches: [Pitch]
     var outs: Int
     var hit: Int
-    var outcome: String
+    var outcome: [String]
     var baseOccupied: Int
     var rbi: Int
     var run: Bool
     var earnedRun: Bool
     var sb: [Int]
     var lob: Int?
+    var bb: Int = 0
+    var hp: Int = 0
+    var sac: Int = 0
+    var re: Int = 0
     var active: Bool
     var hitLoc: CGPoint {
         get {
@@ -155,7 +161,7 @@ class OffensivePlateAppearance {
         self.pitches = []
         self.outs = 0
         self.hit = 0
-        self.outcome = ""
+        self.outcome = []
         self.baseOccupied = 0
         self.rbi = 0
         self.run = false
@@ -211,6 +217,75 @@ class PlayerPos: Identifiable, Hashable {
     }
 }
 
+struct PlayerStats: Identifiable, Hashable {
+    var id: UUID
+    var plateAppearances: Int = 0
+    //var atBats: Int = 0
+    var hits: Int = 0
+    var doubles: Int = 0
+    var triples: Int = 0
+    var homeRuns: Int = 0
+    var runs: Int = 0
+    var rbi: Int = 0
+    var bb: Int = 0
+    var k: Int = 0
+    var hp: Int = 0
+    var sac: Int = 0
+    
+    init() {
+        self.id = UUID()
+        //self.atBats = self.plateAppearances - self.bb - self.hp - self.sac
+    }
+    var atBats: Int {
+        return self.plateAppearances - self.bb - self.hp - self.sac
+    }
+    var statSummary: [Int] {
+        return [self.plateAppearances, self.atBats, self.hits, self.doubles, self.triples, self.homeRuns, self.runs, self.rbi, self.bb, self.k, self.hp, self.sac]
+    }
+}
+
+struct TeamStats: Identifiable, Hashable {
+    var id: UUID
+    var plateAppearances: Int = 0
+    //var atBats: Int = 0
+    var hits: Int = 0
+    var doubles: Int = 0
+    var triples: Int = 0
+    var homeRuns: Int = 0
+    var runs: Int = 0
+    var rbi: Int = 0
+    var bb: Int = 0
+    var k: Int = 0
+    var hp: Int = 0
+    var sac: Int = 0
+    
+    init() {
+        self.id = UUID()
+        //self.atBats = self.plateAppearances - self.bb - self.hp - self.sac
+    }
+    var atBats: Int {
+        return self.plateAppearances - self.bb - self.hp - self.sac
+    }
+    var statSummary: [Int] {
+        return [self.plateAppearances, self.hits, self.doubles, self.triples, self.homeRuns, self.runs, self.rbi, self.bb, self.k, self.hp, self.sac]
+    }
+}
+
+enum StatLabels: String, Codable, CaseIterable {
+    case PA
+    case AB
+    case H
+    case double = "2B"
+    case triple = "3B"
+    case HR
+    case R
+    case RBI
+    case BB
+    case K
+    case HP
+    case SAC
+}
+
 struct BattingLineupView: View {
     
     let geo: GeometryProxy
@@ -229,7 +304,7 @@ struct BattingLineupView: View {
                 .border(Color.blue)
             ForEach(battingOrder, id: \.self) { player in
                 HStack {
-                    Text("\(player.batting+1)) \(player.player.number) - \(player.player.lastName), \(player.player.firstName.first!)")
+                    Text("\(player.batting)) \(player.player.number) - \(player.player.lastName), \(player.player.firstName.first!)")
                     Spacer(minLength: 10)
                     Text("\(player.position)")
                 }.lineLimit(1)
@@ -257,15 +332,21 @@ struct ScoreView: View {
     var body: some View {
         HStack(alignment: .lastTextBaseline) {
             VStack(alignment: .trailing) {
-                Spacer()
+                //Spacer()
+                Text(" ")
+                    .font(.system(size: 12, weight: .bold))
+                    .frame(width: 45.0, height: 15.0)
+                    .padding(.bottom, -5)
                 Text("Visitor:")
                     .font(.system(size: 12, weight: .bold))
                     .frame(width: 45.0, height: 15.0)
+                    .padding(.bottom, -5)
                 Text("Home: ")
                     .font(.system(size: 12, weight: .bold))
                     .frame(width: 45.0, height: 15.0)
-                    //.padding(.bottom, -10)
+                    .padding(.bottom, -5)
             }
+            .padding(.bottom, 10)
             .frame(width: 70, height: 55)
             .border(Color.gray, width: 0.5)
             VStack(alignment: .leading) {
@@ -313,12 +394,76 @@ struct ScoreView: View {
                         .frame(width: 15.0, height: 15.0)
                 }.padding(.bottom, -5)
             }
+            .padding(.bottom, 10)
             .frame(width: 220, height: 55)
             .border(Color.gray, width: 0.5)
         }
         .frame(width: 400, height: 75, alignment: .leading)
     }
 }
+
+struct RbiView: View {
+    var rbis: Int
+    var body: some View {
+        HStack {
+            Spacer()
+            ForEach(0..<rbis, id: \.self) {_ in
+                ZStack {
+                    Image(systemName: "circle.fill")
+                        .resizable()
+                        .foregroundStyle(.black)
+                        .scaledToFill()
+                    
+                }
+                    .frame(width: 15.0, height: 17.0)
+                    .padding(-3)
+            }
+        }
+        .frame(width: 60, height: 17)
+    }
+}
+//#Preview {
+//
+//    RbiView(rbis: 1)
+//}
+
+struct SacOutView: View {
+    var player: OffensivePlateAppearance
+//    var out: Int = 1
+//    var sac: Int = 1
+    
+    var body: some View {
+        GeometryReader { geo in
+            HStack {
+                Spacer()
+                if player.outs != 0 {
+                    Text("\(player.outs)")                //Out # if batter out
+                        .font(.system(size: 14).bold())
+                        .frame(width: geo.size.width, height: geo.size.height)
+
+                        .overlay(Circle().stroke(style: StrokeStyle(lineWidth: 1)))
+                        .foregroundColor(Color.red)
+                        //.padding(.leading, -10)
+                }
+                if player.sac != 0 {
+                    Text("SAC")                //Out # if batter out
+                        .font(.system(size: 12).bold())
+                        .frame(width: geo.size.width, height: geo.size.height)
+                        .foregroundColor(Color.blue)
+                        .padding(.leading, -20)
+                    
+                        
+                }
+                Spacer()
+            }
+            .frame(width: geo.size.width*0.75, height: 17)
+            //.border(Color.black)
+        }
+    }
+}
+//#Preview {
+//    SacOutView()
+//}
 
 struct CountView: View {
     var pitches: [Pitch]
@@ -344,6 +489,7 @@ struct CountView: View {
                                     .scaledToFill()
                                 Text("\(index+1)")
                                     .font(.headline.bold())
+                                    .minimumScaleFactor(0.85)
                                     .foregroundStyle(.white)
                             }
                             .frame(width: 15.0, height: 17.0)
@@ -356,6 +502,7 @@ struct CountView: View {
                                     .scaledToFill()
                                 Text("\(index+1)")
                                     .font(.headline.bold())
+                                    .minimumScaleFactor(0.85)
                                     .foregroundStyle(.white)
                             }
                                 .frame(width: 15.0, height: 17.0)
@@ -388,6 +535,7 @@ struct CountView: View {
                                     .scaledToFill()
                                 Text("\(index+1)")
                                     .font(.headline.bold())
+                                    .minimumScaleFactor(0.85)
                                     .foregroundStyle(.white)
                             }
                                 .frame(width: 15.0, height: 17.0)
@@ -398,28 +546,11 @@ struct CountView: View {
                 .frame(width: 135.0, height: 17.0)
                 .padding(.leading, 0)
                 
-//                HStack {
-//                    Image("green-sphere")
-//                        .resizable()
-//                        .padding(-5)
-//                        .frame(width: 20.0, height: 20.0)
-//                        .padding(-2)
-//                    Image("green-sphere")
-//                        .resizable()
-//                        .padding(-5)
-//                        .frame(width: 20.0, height: 20.0)
-//                        .padding(-2)
-//                    Image("green-sphere")
-//                        .resizable()
-//                        .padding(-5)
-//                        .frame(width: 20.0, height: 20.0)
-//                        .padding(-2)
-//                        
-//                }
             }
             
         }
-        .border(Color.red)
+        .padding(.top, 10)
+        //.border(pitches.count > 1 ? Color.red : Color.clear)
         
     }
 

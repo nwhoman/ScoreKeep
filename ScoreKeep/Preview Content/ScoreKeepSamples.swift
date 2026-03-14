@@ -78,8 +78,22 @@ extension Game {
         var lineup: [PlayerPos] = []
         
         for i in 0..<positions.count {
-            lineup.append(PlayerPos(player: players[i], position: positions[i], batting: i ))
+            lineup.append(PlayerPos(player: players[i], position: positions[i], batting: i+1 ))
         }
         return lineup
+    }
+}
+
+extension OffensivePlateAppearance {
+    static var defaultPlateAppearance: OffensivePlateAppearance {
+        var appearance: OffensivePlateAppearance = OffensivePlateAppearance(order: 1, batter: Player(firstName: Player.firstNames, lastName: Player.lastNames, number: Player.numbers), inning: 1)
+        appearance.hit = 2
+        appearance.outcome = ["2B"]
+        appearance.run = true
+        appearance.rbi = 2
+        appearance.baseOccupied = 2
+        appearance.pitches = [.ball, .strikeLooking, .strikeSwinging, .ball, .foul]
+        
+        return appearance
     }
 }

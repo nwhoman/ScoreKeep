@@ -12,16 +12,12 @@ struct BookView: View {
     @Environment(\.modelContext) var modelContext
     @Environment(\.dismiss) var dismiss
     @ObservedObject var gameViewModel: GameViewModel
-    //let game: Game
     @State private var selectedTab: String = "Visitor"
-    //@State var inningNumber: Int = 1
-    //@State var orderNumber = 0
-    //@State var newInning: Inning
     
     var body: some View {
         GeometryReader { geo in
             ZStack {
-        
+
                 TabView(selection: $selectedTab) {
                     BookPageView(gameViewModel: gameViewModel, selectedTab: selectedTab)
                         .tabItem {
@@ -34,6 +30,7 @@ struct BookView: View {
                             Text("Home - \(gameViewModel.game.homeTeam!.name)")
                         }.tag("Home")
                 }
+
                 VStack {
                     HStack {
                         Spacer()
@@ -46,11 +43,10 @@ struct BookView: View {
                                 Text("Start Game")
                                     .font(.headline)
                                     .padding(.horizontal)
-                        
                             }
                         } else {
                             Button {
-                                gameViewModel.addInning(inning: Inning(number: gameViewModel.inningNumber+1, game: gameViewModel.game), lineup: gameViewModel.halfInning == 0 ? gameViewModel.visitorLineup : gameViewModel.homeLineup, halfInning: gameViewModel.halfInning)
+                                gameViewModel.addInning(inning: Inning(number: gameViewModel.inningNumber+1, game: gameViewModel.game, half: gameViewModel.halfInning), lineup: gameViewModel.halfInning == 0 ? gameViewModel.visitorLineup : gameViewModel.homeLineup, halfInning: gameViewModel.halfInning)
                             } label: {
                                 Image(systemName: "plus.rectangle")
                             }
@@ -59,24 +55,29 @@ struct BookView: View {
                     Spacer()
                 }
             }
-
+        }
+        .onAppear {
+            if !gameViewModel.game.isStarted {
+                gameViewModel.setUpGame()
+                gameViewModel.game.isStarted = true
+            }
         }
     }
 }
 func advanceLineup() {
     //game.innings[inningNumber-1].visitorOffense[orderNumber].active = true
 }
+
 #Preview {
     var game = Game.defaultGame
     let preview = Preview()
     preview.addSampleGames([game])
     preview.addSampleLineups(game: game)
     //setUpGame(game: game)
-    
+
     return NavigationStack {
         BookView(gameViewModel: GameViewModel(game: game))
             .modelContainer(preview.modelContainer)
     }
-
    
 }
