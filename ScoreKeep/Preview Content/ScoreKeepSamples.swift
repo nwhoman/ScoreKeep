@@ -84,6 +84,15 @@ extension Game {
     }
 }
 
+extension PlayerPos {
+    
+    static var defaultPos: PlayerPos {
+        let positions: [String] = ["P", "C", "1B", "2B", "3B", "SS", "LF", "CF", "RF"]
+        return PlayerPos(player: Player.newPlayer, position: positions.randomElement()!)
+    }
+    
+}
+
 extension OffensivePlateAppearance {
     static var defaultPlateAppearance: OffensivePlateAppearance {
         var appearance: OffensivePlateAppearance = OffensivePlateAppearance(order: 1, batter: Player(firstName: Player.firstNames, lastName: Player.lastNames, number: Player.numbers), inning: 1)
