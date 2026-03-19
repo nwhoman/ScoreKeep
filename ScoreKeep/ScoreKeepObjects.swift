@@ -387,7 +387,7 @@ struct BattingLineupView: View {
     @State var showAlert: Bool = false
     let geo: GeometryProxy
     let team: Team
-    let tab: String
+    //let tab: String
     
     
     var battingOrder: [[PlayerPos]] {
