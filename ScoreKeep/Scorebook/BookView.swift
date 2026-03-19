@@ -46,7 +46,8 @@ struct BookView: View {
                             }
                         } else {
                             Button {
-                                gameViewModel.addInning(inning: Inning(number: gameViewModel.inningNumber+1, game: gameViewModel.game, half: gameViewModel.halfInning), lineup: gameViewModel.halfInning == 0 ? gameViewModel.visitorLineup : gameViewModel.homeLineup, halfInning: gameViewModel.halfInning)
+                                //gameViewModel.addInning(inning: Inning(number: gameViewModel.inningNumber+1, game: gameViewModel.game, half: gameViewModel.halfInning), lineup: gameViewModel.halfInning == 0 ? gameViewModel.visitorLineup : gameViewModel.homeLineup, halfInning: gameViewModel.halfInning)
+                                gameViewModel.addInning(inning: Inning(number: gameViewModel.inningNumber+1, game: gameViewModel.game, half: gameViewModel.halfInning), lineup: gameViewModel.halfInning == 0 ? gameViewModel.game.visitingLineup : gameViewModel.game.homeLineup, halfInning: gameViewModel.halfInning)
                             } label: {
                                 Image(systemName: "plus.rectangle")
                             }

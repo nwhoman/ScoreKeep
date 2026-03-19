@@ -12,8 +12,8 @@ class GameViewModel: ObservableObject {
     var game: Game
     @Published var visitors: [Player]
     @Published var home: [Player]
-    @Published var visitorLineup: [PlayerPos]
-    @Published var homeLineup: [PlayerPos]
+    @Published var visitorLineup: [[PlayerPos]] = []
+    @Published var homeLineup: [[PlayerPos]] = []
     @Published var score = [
         "visitor": [0, 0, 0, 0, 0, 0, 0],
         "home": [0, 0, 0, 0, 0, 0, 0]
@@ -51,8 +51,8 @@ class GameViewModel: ObservableObject {
         self.game = game
         self.visitors = game.visitingTeam!.players!
         self.home = game.homeTeam!.players!
-        self.visitorLineup = game.visitingLineup.sorted(by: {$0.batting < $1.batting})
-        self.homeLineup = game.homeLineup.sorted(by: {$0.batting < $1.batting})
+        self.visitorLineup = setInitialLineup(halfInning: 0)
+        self.homeLineup = setInitialLineup(halfInning: 1)
         //setUpGame()
         //getBatter()
     }
@@ -91,6 +91,57 @@ class GameViewModel: ObservableObject {
                 }
                 game.innings.append(inning)
             }
+    }
+    
+    func setInitialLineup(halfInning: Int) -> [[PlayerPos]]{
+        var lineup: [[PlayerPos]] = []
+        if halfInning == 0 {
+            
+            for each in game.visitingLineup.sorted(by: {$0.batting < $1.batting}) {
+                lineup.append([each])
+            }
+            return lineup
+        } else {
+            for each in game.homeLineup.sorted(by: {$0.batting < $1.batting}) {
+                lineup.append([each])
+            }
+            return lineup
+        }
+    }
+    
+    func insertSubIntoLineup(newPlayerPos: PlayerPos, selectedPlayer: PlayerPos) {
+        var tempArray: [[PlayerPos]] = []
+        var tempSlot: [PlayerPos] = []
+        if self.halfInning == 0 {
+            
+            for each in self.visitorLineup {
+                tempSlot = each
+                if each.last!.id == selectedPlayer.id {
+                    tempSlot.append(newPlayerPos)
+                }
+                print("\(tempSlot)")
+                tempArray.append(tempSlot)
+            }
+            self.visitorLineup = tempArray
+        } else {
+            for each in self.homeLineup {
+                tempSlot = each
+                if each.last!.id == selectedPlayer.id {
+                    tempSlot.append(newPlayerPos)
+                }
+                tempArray.append(tempSlot)
+            }
+            self.homeLineup = tempArray
+        }
+        for each in game.innings {
+            for app in each.offense {
+                
+                if !app.active && app.batter == selectedPlayer.player {
+                    print("\(app.batter.number)")
+                    app.batter = newPlayerPos.player
+                }
+            }
+        }
     }
     
     func cleanInning(inning: Inning, halfInning: Int) {
