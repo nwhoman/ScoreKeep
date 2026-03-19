@@ -311,6 +311,54 @@ struct TeamStats: Identifiable, Hashable {
     }
 }
 
+func getPlayerStats(plateAppearances: [OffensivePlateAppearance]) -> PlayerStats {
+    var playerStats = PlayerStats()
+    
+    for appearance in plateAppearances {
+        if appearance.active {
+            
+            
+            playerStats.plateAppearances += 1
+            if appearance.hit != 0 {
+                playerStats.hits += 1
+                if appearance.hit == 2 {
+                    playerStats.doubles += 1
+                } else if appearance.hit == 3 {
+                    playerStats.triples += 1
+                } else if appearance.hit == 4 {
+                    playerStats.homeRuns += 1
+                }
+            }
+            playerStats.rbi += appearance.rbi
+            if appearance.run {
+                playerStats.runs += 1
+            }
+            playerStats.bb += appearance.bb
+            
+            if appearance.pitches.count(where: {$0 == .strikeLooking || $0 == .strikeSwinging || $0 == .foul}) >= 3 && appearance.pitches.last == .strikeLooking || appearance.pitches.last == .strikeSwinging {
+                playerStats.k += 1
+            }
+            playerStats.hp += appearance.hp
+            playerStats.sac += appearance.sac
+            
+        }
+        
+    }
+    //var atBats: Int = 0
+    
+    return playerStats
+}
+
+func decomposeLineup(lineup: [[PlayerPos]]) -> [PlayerPos] {
+    var tempArray:[PlayerPos] = []
+    for orderPosition in lineup {
+        for each in orderPosition {
+            tempArray.append(each)
+        }
+    }
+    return tempArray
+}
+
 enum StatLabels: String, Codable, CaseIterable {
     case PA
     case AB

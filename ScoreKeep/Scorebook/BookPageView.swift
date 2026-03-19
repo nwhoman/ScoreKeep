@@ -162,7 +162,7 @@ struct InningsView: View {
             }
         }
         .navigationDestination(isPresented: $gameViewModel.game.isComplete) {
-            GameSummaryView()
+            GameSummaryView(gameViewModel: gameViewModel, game: gameViewModel.game)
         }
         .sheet(isPresented: $showLargeView, onDismiss: {
             //  update game viewmodel, check outs and switch sides
