@@ -62,7 +62,7 @@ struct BookPageView: View {
                     }
                     ScrollView() {
                         HStack(alignment: .top) {
-                            BattingLineupView(gameVM: gameViewModel, geo: geo, team: team)
+                            BattingLineupView(gameVM: gameViewModel, geo: geo, team: team, tab: selectedTab)
                             //.padding(.leading)
                                 .border(Color.blue)
                             ScrollView(Axis.Set.horizontal) {
