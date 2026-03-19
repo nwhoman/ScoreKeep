@@ -302,5 +302,18 @@ class GameViewModel: ObservableObject {
                 self.game.isComplete = true
             }
         }
+        if self.game.isComplete {
+            self.game.visitingLineup = decomposeLineup(lineup: self.visitorLineup)
+            self.game.homeLineup = decomposeLineup(lineup: self.homeLineup)
+            
+            for inning in game.innings {
+                for app in inning.offense {
+                    inning.offense.removeAll(where: { !$0.active })
+                }
+                for app in inning.defense {
+                    inning.defense.removeAll(where: { !$0.active })
+                }
+            }
+        }
     }
 }

@@ -101,6 +101,46 @@ class Game {
         self.isComplete = isComplete
         self.isStarted = isStarted
     }
+    
+    func getTeamStats(team: Int) -> PlayerStats {
+        var innings: [Inning] = []
+        if team == 0 {
+            innings = self.innings.filter { $0.half == 0 }
+        } else {
+            innings = self.innings.filter { $0.half == 1 }
+        }
+        
+        var stats = PlayerStats()
+        var appearances: [OffensivePlateAppearance] = []
+        
+        for inning in innings {
+            for appearance in inning.offense {
+                if appearance.active {
+                    appearances.append(appearance)
+                }
+            }
+        }
+        stats = getPlayerStats(plateAppearances: appearances)
+        
+        return stats
+    }
+    func getPlayerGameStats(player: Player) -> PlayerStats {
+        //var innings: [Inning] = []
+    //        if team == 0 {
+    //            innings = self.innings.filter { $0.half == 0 }
+    //        } else {
+    //            innings = self.innings.filter { $0.half == 1 }
+    //        }
+        
+        var stats = PlayerStats()
+        var appearances: [OffensivePlateAppearance] = []
+        
+        for inning in self.innings {
+            appearances.append(contentsOf: inning.offense.filter { $0.batter.id == player.id } )
+        }
+        stats = getPlayerStats(plateAppearances: appearances)
+        return stats
+    }
 }
 
 @Model

@@ -1,0 +1,1985 @@
+diff --git a/ScoreKeep.xcodeproj/project.pbxproj b/ScoreKeep.xcodeproj/project.pbxproj
+index 84455d1..38be081 100644
+--- a/ScoreKeep.xcodeproj/project.pbxproj
++++ b/ScoreKeep.xcodeproj/project.pbxproj
+@@ -20,7 +20,6 @@
+ 		6A8A3D822BB2372300BC7E32 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6A8A3D812BB2372300BC7E32 /* ContentView.swift */; };
+ 		6A8A3D842BB2372500BC7E32 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 6A8A3D832BB2372500BC7E32 /* Assets.xcassets */; };
+ 		6A8A3D872BB2372500BC7E32 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 6A8A3D862BB2372500BC7E32 /* Preview Assets.xcassets */; };
+-		6A8A3D8E2BB2378A00BC7E32 /* PlateAppearanceView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6A8A3D8D2BB2378A00BC7E32 /* PlateAppearanceView.swift */; };
+ 		6A8A3D902BB237BB00BC7E32 /* PlayEnums.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6A8A3D8F2BB237BB00BC7E32 /* PlayEnums.swift */; };
+ 		6A8A3D922BB3509900BC7E32 /* PlayOutcomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6A8A3D912BB3509900BC7E32 /* PlayOutcomeView.swift */; };
+ 		6A8A3D942BB355AD00BC7E32 /* TeamsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6A8A3D932BB355AD00BC7E32 /* TeamsView.swift */; };
+@@ -62,7 +61,6 @@
+ 		6A8A3D812BB2372300BC7E32 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+ 		6A8A3D832BB2372500BC7E32 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+ 		6A8A3D862BB2372500BC7E32 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
+-		6A8A3D8D2BB2378A00BC7E32 /* PlateAppearanceView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlateAppearanceView.swift; sourceTree = "<group>"; };
+ 		6A8A3D8F2BB237BB00BC7E32 /* PlayEnums.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlayEnums.swift; sourceTree = "<group>"; };
+ 		6A8A3D912BB3509900BC7E32 /* PlayOutcomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlayOutcomeView.swift; sourceTree = "<group>"; };
+ 		6A8A3D932BB355AD00BC7E32 /* TeamsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TeamsView.swift; sourceTree = "<group>"; };
+@@ -126,7 +124,6 @@
+ 				6A8A3DAD2BBF1C2F00BC7E32 /* Coaches */,
+ 				6A8A3D7F2BB2372300BC7E32 /* ScoreKeepApp.swift */,
+ 				6A8A3D812BB2372300BC7E32 /* ContentView.swift */,
+-				6A8A3D8D2BB2378A00BC7E32 /* PlateAppearanceView.swift */,
+ 				6A8A3D832BB2372500BC7E32 /* Assets.xcassets */,
+ 				6A8A3D852BB2372500BC7E32 /* Preview Content */,
+ 				6A8A3D8F2BB237BB00BC7E32 /* PlayEnums.swift */,
+@@ -290,7 +287,6 @@
+ 				6A8A3DA42BB88E4B00BC7E32 /* PlayersView.swift in Sources */,
+ 				6A07B0482D8E31AD005B7AEE /* LargePlateAppearanceView.swift in Sources */,
+ 				6ACEF64D2F66280C00B1C803 /* ShowSubsView.swift in Sources */,
+-				6A8A3D8E2BB2378A00BC7E32 /* PlateAppearanceView.swift in Sources */,
+ 				6A07B0702D9C84F5005B7AEE /* FieldViewScene.swift in Sources */,
+ 				6A8A3DAA2BBE09C600BC7E32 /* MainMenuView.swift in Sources */,
+ 				6A8A3DB52BC6FF6B00BC7E32 /* GamesView.swift in Sources */,
+diff --git a/ScoreKeep/ContentView.swift b/ScoreKeep/ContentView.swift
+index a23f157..cf0d55d 100644
+--- a/ScoreKeep/ContentView.swift
++++ b/ScoreKeep/ContentView.swift
+@@ -11,7 +11,9 @@ struct ContentView: View {
+     var body: some View {
+         //PlateAppearanceView()
+         MainMenuView()
++            
+     }
++        
+ }
+ 
+ #Preview {
+diff --git a/ScoreKeep/Games/BoxScoreView.swift b/ScoreKeep/Games/BoxScoreView.swift
+index 0b2f6a6..6f5c43f 100644
+--- a/ScoreKeep/Games/BoxScoreView.swift
++++ b/ScoreKeep/Games/BoxScoreView.swift
+@@ -12,30 +12,10 @@ struct BoxScoreView: View {
+     @Environment(\.dismiss) var dismiss
+     @ObservedObject var gameViewModel: GameViewModel
+     
+-    private var visitingTeam: [PlayerPos] {
+-        return gameViewModel.game.visitingLineup.sorted { $0.batting < $1.batting }
++    var teams:[Team] {
++        [gameViewModel.game.visitingTeam!, gameViewModel.game.homeTeam!]
+     }
+     
+-    private var homeTeam: [PlayerPos] {
+-        return gameViewModel.game.homeLineup.sorted { $0.batting < $1.batting }
+-    }
+-    
+-    private var plateAppearances: [OffensivePlateAppearance] {
+-        return []
+-    }
+-    var battingOrder: [[PlayerPos]] {
+-        var displayLineup: [[PlayerPos]] = []
+-        
+-        if gameViewModel.halfInning == 1 {
+-            displayLineup.append(contentsOf: gameViewModel.homeLineup.sorted(by: { $0.last!.batting < $1.last!.batting} ))
+-        } else {
+-            displayLineup.append(contentsOf: gameViewModel.visitorLineup.sorted(by: { $0.last!.batting < $1.last!.batting} ))
+-        }
+-        return displayLineup
+-    }
+-    
+-    
+-    
+     var body: some View {
+         NavigationStack {
+             GeometryReader { geo in
+@@ -44,95 +24,56 @@ struct BoxScoreView: View {
+                         ScoreView(gameViewModel: gameViewModel)
+                             .padding(.horizontal)
+                     }
+-                    ScrollView {
+-                        Text("\(gameViewModel.game.visitingTeam!.name)")
+-                        ScrollView(.horizontal) {
+-                            var team: PlayerStats {
+-                                return gameViewModel.getTeamStats(team: 0)
+-                            }
+-                            HStack {
+-                                Text("Player")
+-                                Spacer(minLength: 90)
+-                                HStack {
+-                                    ForEach(StatLabels.allCases, id: \.self) { stat in
+-                                        Text("\(stat.rawValue)")
+-                                            .frame(width: geo.size.width / 15)
+-                                    }
+-                                }
+-                                .frame(width: geo.size.width * 0.9)
+-                            }
+-                            .font(.caption2)
+-                        
+-                            ForEach(visitingTeam, id: \.self) { player in
+-                                var plateAppearances: [OffensivePlateAppearance] {
+-                                    return gameViewModel.getPlayerPA(innings: gameViewModel.visitorInnings, player: player.player)
++                    ForEach(teams, id: \.self) { team in
++                        ScrollView {
++                            Text("\(team.name)")
++                            ScrollView(.horizontal) {
++                                var index = teams.firstIndex(of: team)!
++                                var team: PlayerStats {
++                                    return gameViewModel.getTeamStats(team: index)
+                                 }
+-                                var playerStats: PlayerStats {
+-                                    return gameViewModel.getPlayerStats(plateAppearances: plateAppearances)
+-                                }
+-                            
+                                 HStack {
+-                                    Text("\(player.player.lastName), \(player.player.firstName.prefix(1))")
+-                                        .frame(width: geo.size.width * 0.3, alignment: .init(horizontal: .leading, vertical: .center))
+-                                        .font(.caption2)
++                                    Text("Player")
++                                    Spacer(minLength: 90)
+                                     HStack {
+-                                        ForEach(playerStats.statSummary, id: \.self) { stat in
+-                                            Text("\(stat)")
++                                        ForEach(StatLabels.allCases, id: \.self) { stat in
++                                            Text("\(stat.rawValue)")
+                                                 .frame(width: geo.size.width / 15)
+                                         }
+                                     }
+                                     .frame(width: geo.size.width * 0.9)
+                                 }
++                                .font(.caption2)
+                                 
+-                            }
+-                            HStack {
+-                                Text("Totals")
+-                                    .frame(width: geo.size.width * 0.3, alignment: .init(horizontal: .leading, vertical: .center))
+-                                    .font(.caption2)
+-                                HStack {
+-                                    ForEach(team.statSummary, id: \.self) { stat in
+-                                        Text("\(stat)")
+-                                            .frame(width: geo.size.width / 15)
++                                ForEach(selectTeam(index: index), id: \.self) { player in
++                                    var plateAppearances: [OffensivePlateAppearance] {
++                                        return gameViewModel.getPlayerPA(innings: gameViewModel.visitorInnings, player: player.player)
+                                     }
+-                                }
+-                                .frame(width: geo.size.width * 0.9)
+-                            }
+-                        }
+-                        Text("\(gameViewModel.game.homeTeam!.name)")
+-                        ScrollView(.horizontal) {
+-                            var team: PlayerStats {
+-                                return gameViewModel.getTeamStats(team: 1)
+-                            }
+-                            HStack {
+-                                Text("Player")
+-                                Spacer(minLength: 90)
+-                                HStack {
+-                                    ForEach(StatLabels.allCases, id: \.self) { stat in
+-                                        Text("\(stat.rawValue)")
+-                                            .frame(width: geo.size.width / 15)
++                                    var playerStats: PlayerStats {
++                                        return gameViewModel.getPlayerStats(plateAppearances: plateAppearances)
+                                     }
++                                    
++                                    HStack {
++                                        Text("\(player.player.lastName), \(player.player.firstName.prefix(1))")
++                                            .frame(width: geo.size.width * 0.3, alignment: .init(horizontal: .leading, vertical: .center))
++                                            .font(.caption2)
++                                        HStack {
++                                            ForEach(playerStats.statSummary, id: \.self) { stat in
++                                                Text("\(stat)")
++                                                    .frame(width: geo.size.width / 15)
++                                            }
++                                        }
++                                        .frame(width: geo.size.width * 0.9)
++                                    }
++                                    
+                                 }
+-                                .frame(width: geo.size.width * 0.9)
+-                            }
+-                            .font(.caption2)
+-                        
+-                            ForEach(homeTeam, id: \.self) { player in
+-                                var plateAppearances: [OffensivePlateAppearance] {
+-                                    return gameViewModel.getPlayerPA(innings: gameViewModel.visitorInnings, player: player.player)
+-                                }
+-                                var playerStats: PlayerStats {
+-                                    return gameViewModel.getPlayerStats(plateAppearances: plateAppearances)
+-                                }
+-                                
++                                Divider()
+                                 HStack {
+-                                    Text("\(player.player.lastName), \(player.player.firstName.prefix(1))")
+-                                        .font(.caption2)
+-                                        .minimumScaleFactor(0.5)
++                                    Text("Totals")
+                                         .frame(width: geo.size.width * 0.3, alignment: .init(horizontal: .leading, vertical: .center))
+-                                        
+-                                    //Spacer(minLength: 90)
++                                        .font(.caption2)
+                                     HStack {
+-                                        ForEach(playerStats.statSummary, id: \.self) { stat in
++                                        ForEach(team.statSummary, id: \.self) { stat in
+                                             Text("\(stat)")
+                                                 .frame(width: geo.size.width / 15)
+                                         }
+@@ -140,19 +81,9 @@ struct BoxScoreView: View {
+                                     .frame(width: geo.size.width * 0.9)
+                                 }
+                             }
+-                            HStack {
+-                                Text("Totals")
+-                                    .frame(width: geo.size.width * 0.3, alignment: .init(horizontal: .leading, vertical: .center))
+-                                    .font(.caption2)
+-                                HStack {
+-                                    ForEach(team.statSummary, id: \.self) { stat in
+-                                        Text("\(stat)")
+-                                            .frame(width: geo.size.width / 15)
+-                                    }
+-                                }
+-                                .frame(width: geo.size.width * 0.9)
+-                            }
+-                        
++                            Divider()
++                            Divider()
++                            
+                         }
+                     }
+                 }
+@@ -161,6 +92,9 @@ struct BoxScoreView: View {
+         }
+         
+     }
++    func selectTeam(index: Int) -> [PlayerPos] {
++        return index == 0 ? decomposeLineup(lineup: gameViewModel.visitorLineup) : decomposeLineup(lineup: gameViewModel.homeLineup)
++    }
+ }
+ 
+ #Preview {
+@@ -173,3 +107,6 @@ struct BoxScoreView: View {
+     return BoxScoreView(gameViewModel: GameViewModel(game: game))
+         .modelContainer(preview.modelContainer)
+     }
++
++
++
+diff --git a/ScoreKeep/Games/GameLineupsView.swift b/ScoreKeep/Games/GameLineupsView.swift
+index 58af60a..8cf3eb3 100644
+--- a/ScoreKeep/Games/GameLineupsView.swift
++++ b/ScoreKeep/Games/GameLineupsView.swift
+@@ -11,6 +11,7 @@ import SwiftUI
+ struct GameLineupsView: View {
+     @Environment(\.modelContext) var modelContext
+     @Environment(\.dismiss) var dismiss
++    @Binding var navPath: NavigationPath
+     
+     var game: Game
+     
+@@ -21,89 +22,91 @@ struct GameLineupsView: View {
+     @State var startGame: Bool = false
+ 
+     var body: some View {
+-        ZStack {
+-            
+-            
+-            VStack {
+-                Spacer(minLength: 70)
+-                TabView(selection: $selectedTab) {
+-                    LineupView(game: game, lineup: game.homeTeam!.lineup, showAlert: $showAlert, showTeamAlert: $showHomeAlert, selectedTab: selectedTab)
+-                        .tabItem { Text("\(game.homeTeam!.name)") }.tag("Home")
+-                    
+-                    LineupView(game: game, lineup: game.visitingTeam!.lineup, showAlert: $showAlert, showTeamAlert: $showVisitorAlert,selectedTab: selectedTab)
+-                        .tabItem { Text("\(game.visitingTeam!.name)") }.tag("Visitor")
+-                    
+-                }
+-                .alert(isPresented: $showAlert) {
+-                    showHomeAlert ? Alert(title: Text("Home Team Lineup Error"), message: Text("Please check that all the positions are filled"), dismissButton: .default(Text("OK"))) : Alert(title: Text("Visiting Team Lineup Error"), message: Text("Please check that all the positions are filled"), dismissButton: .default(Text("OK")))
+-                }
+-            }
+-            VStack{
+-                HStack {
+-                    VStack(alignment: .leading) {
+-                        Text(game.name)
+-                        Text("\(game.date.formatted(date: .complete, time: .omitted))")
+-                        Text("\(game.date.formatted(date: .omitted, time: .complete))")
+-                        Text("At: \(game.location)")
++        NavigationStack {
++            ZStack {
++                
++                
++                VStack {
++                    Spacer(minLength: 70)
++                    TabView(selection: $selectedTab) {
++                        LineupView(game: game, lineup: game.homeTeam!.lineup, showAlert: $showAlert, showTeamAlert: $showHomeAlert, selectedTab: selectedTab)
++                            .tabItem { Text("\(game.homeTeam!.name)") }.tag("Home")
++                        
++                        LineupView(game: game, lineup: game.visitingTeam!.lineup, showAlert: $showAlert, showTeamAlert: $showVisitorAlert,selectedTab: selectedTab)
++                            .tabItem { Text("\(game.visitingTeam!.name)") }.tag("Visitor")
++                        
+                     }
+-                    .font(.system(size: 14))
+-                    .padding(.leading)
+-                    Spacer()
+-                    Button {
+-                        // Verify both teams' lineups
+-                        if validateLineup(lineup: game.homeTeam!.lineup) {
+-                            if validateLineup(lineup: game.visitingTeam!.lineup) {
+-                               // destination Start Game
+-                                startGame.toggle()
++                    .alert(isPresented: $showAlert) {
++                        showHomeAlert ? Alert(title: Text("Home Team Lineup Error"), message: Text("Please check that all the positions are filled"), dismissButton: .default(Text("OK"))) : Alert(title: Text("Visiting Team Lineup Error"), message: Text("Please check that all the positions are filled"), dismissButton: .default(Text("OK")))
++                    }
++                }
++                VStack{
++                    HStack {
++                        VStack(alignment: .leading) {
++                            Text(game.name)
++                            Text("\(game.date.formatted(date: .complete, time: .omitted))")
++                            Text("\(game.date.formatted(date: .omitted, time: .complete))")
++                            Text("At: \(game.location)")
++                        }
++                        .font(.system(size: 14))
++                        .padding(.leading)
++                        Spacer()
++                        Button {
++                            // Verify both teams' lineups
++                            if validateLineup(lineup: game.homeTeam!.lineup) {
++                                if validateLineup(lineup: game.visitingTeam!.lineup) {
++                                    // destination Start Game
++                                    startGame.toggle()
++                                } else {
++                                    showVisitorAlert.toggle()
++                                    showAlert.toggle()
++                                }
+                             } else {
+-                                showVisitorAlert.toggle()
++                                showHomeAlert.toggle()
+                                 showAlert.toggle()
+                             }
+-                        } else {
+-                            showHomeAlert.toggle()
+-                            showAlert.toggle()
+-                        }
+-                
+-                        
+-                    } label: {
+-                        VStack{
+-                            Image(systemName: "figure.baseball")
+-                                .font(.system(size: 32))
+-                                .foregroundStyle(.blue)
+                             
+-                            Text("Start Game")
+-                                .font(.caption)
+-                                .padding(.horizontal)
++                            
++                        } label: {
++                            VStack{
++                                Image(systemName: "figure.baseball")
++                                    .font(.system(size: 32))
++                                    .foregroundStyle(.blue)
++                                
++                                Text("Start Game")
++                                    .font(.caption)
++                                    .padding(.horizontal)
++                            }
++                            
++                            .background {
++                                RoundedRectangle(cornerRadius: 6)
++                                    .fill(Color(.lightGray))
++                                    .stroke(.blue, lineWidth: 2)
++                            }
++                            .padding(.horizontal)
+                         }
+-                        
+-                        .background {
+-                            RoundedRectangle(cornerRadius: 6)
+-                                .fill(Color(.lightGray))
+-                                .stroke(.blue, lineWidth: 2)
++                    }
++                    
++                    HStack {
++                        NavigationLink(value: selectedTab == "Home" ? game.homeTeam! : game.visitingTeam!) {
++                            Text(selectedTab == "Home" ? game.homeTeam!.name : game.visitingTeam!.name)
+                         }
+                         .padding(.horizontal)
++                        .padding(.top, 10)
++                        Spacer()
+                     }
+-                }
+-                
+-                HStack {
+-                    NavigationLink(value: selectedTab == "Home" ? game.homeTeam! : game.visitingTeam!) {
+-                        Text(selectedTab == "Home" ? game.homeTeam!.name : game.visitingTeam!.name)
+-                    }
+-                    .padding(.horizontal)
+-                    .padding(.top, 10)
+                     Spacer()
+                 }
+-                Spacer()
++                
++            }
++            .navigationDestination(for: Team.self) {
++                team in
++                TeamDetailView(team: team)
++            }
++            .navigationDestination(isPresented: $startGame) {
++                let newGameViewModel = GameViewModel(game: game)
++                BookView(gameViewModel: newGameViewModel, navPath: $navPath)
+             }
+-        
+-        }
+-        .navigationDestination(for: Team.self) {
+-            team in
+-            TeamDetailView(team: team)
+-        }
+-        .navigationDestination(isPresented: $startGame) {
+-            var newGameViewModel = GameViewModel(game: game)
+-            BookView(gameViewModel: newGameViewModel)
+         }
+     }
+ }
+@@ -153,12 +156,15 @@ func checkFlex(lineup: [PlayerPos]) -> Bool {
+ }  //|| !lineup.contains(where: { $0.position == "DP" })
+ 
+ #Preview {
++    @Previewable @State var navPath = NavigationPath()
++
+     let preview = Preview()
+     let game = Game.defaultGame
+     preview.addSampleGames([game])
+     preview.addSampleLineups(game: game)
+     
+     return NavigationStack {
+-        GameLineupsView(game: game).modelContainer(preview.modelContainer)
++        GameLineupsView(navPath: $navPath, game: game)
++            .modelContainer(preview.modelContainer)
+     }
+ }
+diff --git a/ScoreKeep/Games/GameSummaryView.swift b/ScoreKeep/Games/GameSummaryView.swift
+index 3ab98e4..45e7401 100644
+--- a/ScoreKeep/Games/GameSummaryView.swift
++++ b/ScoreKeep/Games/GameSummaryView.swift
+@@ -8,11 +8,124 @@
+ import SwiftUI
+ 
+ struct GameSummaryView: View {
++    @Environment(\.modelContext) var modelContext
++    @Environment(\.dismiss) var dismiss
++    @ObservedObject var gameViewModel: GameViewModel
++    @Binding var navPath: NavigationPath
++
++    @State var game: Game
++    @State var goHome: Bool = false
++    
++    var teams:[Team] {
++        [game.visitingTeam!, game.homeTeam!]
++    }
++    var lineups: [[PlayerPos]] {
++        [game.visitingLineup, game.homeLineup]
++    }
++    
+     var body: some View {
+-        Text(/*@START_MENU_TOKEN@*/"Hello, World!"/*@END_MENU_TOKEN@*/)
++        NavigationStack {
++            GeometryReader { geo in
++                VStack(alignment: .leading) {
++                    HStack {
++                        //ScoreView(gameViewModel: gameViewModel)
++                          //  .padding(.horizontal)
++                    }
++                    ForEach(teams, id: \.id) { team in
++                        ScrollView {
++                            Text("\(team.name)")
++                            ScrollView(.horizontal) {
++                                var index = teams.firstIndex(of: team)!
++                                var team: PlayerStats {
++                                    return game.getTeamStats(team: index)
++                                }
++                                HStack {
++                                    Text("Player")
++                                    Spacer(minLength: 90)
++                                    HStack {
++                                        ForEach(StatLabels.allCases, id: \.self) { stat in
++                                            Text("\(stat.rawValue)")
++                                                .frame(width: geo.size.width / 15)
++                                        }
++                                    }
++                                    .frame(width: geo.size.width * 0.9)
++                                }
++                                .font(.caption2)
++                                
++                                ForEach(lineups[index], id: \.self) { player in
++//
++                                    var playerStats: PlayerStats {
++                                        return game.getPlayerGameStats(player: player.player)
++                                    }
++//                                    
++                                    HStack {
++                                        Text("\(player.player.lastName), \(player.player.firstName.prefix(1))")
++                                            .frame(width: geo.size.width * 0.3, alignment: .init(horizontal: .leading, vertical: .center))
++                                            .font(.caption2)
++                                        HStack {
++                                            ForEach(playerStats.statSummary, id: \.self) { stat in
++                                                Text("\(stat)")
++                                                    .frame(width: geo.size.width / 15)
++                                            }
++                                        }
++                                        .frame(width: geo.size.width * 0.9)
++                                    }
++//                                    
++                                }
++                                Divider()
++                                HStack {
++                                    Text("Totals")
++                                        .frame(width: geo.size.width * 0.3, alignment: .init(horizontal: .leading, vertical: .center))
++                                        .font(.caption2)
++                                    HStack {
++                                        ForEach(team.statSummary, id: \.self) { stat in
++                                            Text("\(stat)")
++                                                .frame(width: geo.size.width / 15)
++                                        }
++                                    }
++                                    .frame(width: geo.size.width * 0.9)
++                                }
++                            }
++                            Divider()
++                            Divider()
++                            
++                        }
++                    }
++                }
++            }.toolbar {
++                Button {
++                    navPath = NavigationPath()
++                } label: {
++                    Image(systemName: "arrow.left")
++                }
++//                    NavigationLink {
++//                        ContentView()
++//                    } label: {
++//                        
++//                    }
++                
++            }
++            .navigationBarBackButtonHidden(true)
++            
++            
++        }
++        
++    }
++    func selectTeam(index: Int) -> [PlayerPos] {
++        return index == 0 ? decomposeLineup(lineup: gameViewModel.visitorLineup) : decomposeLineup(lineup: gameViewModel.homeLineup)
+     }
+ }
+ 
+ #Preview {
+-    GameSummaryView()
+-}
++    @Previewable @State var navPath = NavigationPath()
++
++    var game = Game.defaultGame
++    let preview = Preview()
++    preview.addSampleGames([game])
++    preview.addSampleLineups(game: game)
++    //setUpGame(game: game)
++    
++    return GameSummaryView(gameViewModel: GameViewModel(game: game), navPath: $navPath, game: game)
++        .modelContainer(preview.modelContainer)
++    }
++
+diff --git a/ScoreKeep/Games/GamesView.swift b/ScoreKeep/Games/GamesView.swift
+index 8c5630c..592cae8 100644
+--- a/ScoreKeep/Games/GamesView.swift
++++ b/ScoreKeep/Games/GamesView.swift
+@@ -15,7 +15,7 @@ struct GamesView: View {
+     //@State private var path = [Team]()
+     @State private var showAddGameScreen = false
+     //@State var startGame: Game = Game(name: "", date: Date(), location: "")
+-    //@Binding var path: NavigationPath
++    @Binding var navPath: NavigationPath
+     
+     var body: some View {
+         List {
+@@ -36,13 +36,19 @@ struct GamesView: View {
+         .navigationTitle("ScoreKeep Games")
+         .navigationDestination(for: Game.self) {
+              game in
+-            GameLineupsView(game: game)
+-            //GameLineupsView(path: $path, game: game)
++            GameLineupsView(navPath: $navPath, game: game)
+         }
+         .toolbar{
+             
+             ToolbarItem(placement: .topBarLeading){
+-                EditButton()
++                HStack {
++                    EditButton()
++                    Button {
++                        navPath = NavigationPath()
++                    } label: {
++                        Image(systemName: "arrow.left")
++                    }
++                }
+             }
+             ToolbarItem(placement: .topBarTrailing){
+                 Button("Add Game", systemImage: "plus"){
+@@ -51,7 +57,7 @@ struct GamesView: View {
+             }
+         }
+         .navigationDestination(isPresented: $showAddGameScreen){
+-            StartGameView()
++            StartGameView(navPath: $navPath)
+             //StartGameView(path: $path)
+         }
+         //.sheet(isPresented: $showAddGameScreen) {
+@@ -68,10 +74,12 @@ struct GamesView: View {
+ }
+ 
+ #Preview {
++    @Previewable @State var navPath = NavigationPath()
+     let preview = Preview()
+     preview.addSampleGames([Game.defaultGame])
+     
+     return NavigationStack {
+-        GamesView().modelContainer(preview.modelContainer)
++        GamesView(navPath: $navPath)
++            .modelContainer(preview.modelContainer)
+     }
+ }
+diff --git a/ScoreKeep/Games/LineupView.swift b/ScoreKeep/Games/LineupView.swift
+index 62182fe..ff85c0b 100644
+--- a/ScoreKeep/Games/LineupView.swift
++++ b/ScoreKeep/Games/LineupView.swift
+@@ -33,7 +33,7 @@ struct LineupView: View {
+      
+     
+     var body: some View {
+-       
++        NavigationStack {
+             VStack(alignment: .leading) {
+                 HStack {
+                     
+@@ -70,7 +70,7 @@ struct LineupView: View {
+             }
+             .background(Color.clear)
+             
+-        
++        }
+     }
+ }
+ 
+@@ -116,62 +116,64 @@ struct RosterView: View {
+     }
+     
+     var body: some View {
+-        GeometryReader { geo in
+-            VStack {
+-                HStack {
+-                    GroupBox(label: Text("Roster")) {
+-                        VStack {
+-                            
+-                            List {
+-                                ForEach(unusedPlayers, id: \.id) { player in
+-                                    RosterItemView(player: player, lineup: $lineup, unusedPositions: unusedPositions, position: "")
++        NavigationStack {
++            GeometryReader { geo in
++                VStack {
++                    HStack {
++                        GroupBox(label: Text("Roster")) {
++                            VStack {
+                                 
++                                List {
++                                    ForEach(unusedPlayers, id: \.id) { player in
++                                        RosterItemView(player: player, lineup: $lineup, unusedPositions: unusedPositions, position: "")
++                                        
++                                    }
+                                 }
++                                .padding(.horizontal, -5)
++                                .listStyle(.plain)
+                             }
+-                            .padding(.horizontal, -5)
+-                            .listStyle(.plain)
+                         }
+-                    }
+-                    .clipShape(.rect(cornerRadius: 20))
+-                    
+-                    Spacer()
+-                    GroupBox(label: Text("Lineup")) {
+-                        VStack {
+-                            List {
+-                                ForEach(lineup.sorted(by: { $0.batting < $1.batting }), id: \.id) { player in
+-                                    HStack {
+-                                        Text("\(player.batting))")
++                        .clipShape(.rect(cornerRadius: 20))
++                        
++                        Spacer()
++                        GroupBox(label: Text("Lineup")) {
++                            VStack {
++                                List {
++                                    ForEach(lineup.sorted(by: { $0.batting < $1.batting }), id: \.id) { player in
++                                        HStack {
++                                            Text("\(player.batting))")
++                                                .font(.caption)
++                                            VStack(alignment: .leading) {
++                                                Text("#\(player.player.number)")
++                                                Text("\(player.player.lastName), \(player.player.firstName) - \(player.position)")
++                                                    .lineLimit(1)
++                                                    .minimumScaleFactor(0.5)
++                                                //Text("#\(player.batting)")
++                                                
++                                            }
++                                            .padding(.horizontal, -5)
+                                             .font(.caption)
+-                                        VStack(alignment: .leading) {
+-                                            Text("#\(player.player.number)")
+-                                            Text("\(player.player.lastName), \(player.player.firstName) - \(player.position)")
+-                                                .lineLimit(1)
+-                                                .minimumScaleFactor(0.5)
+-                                            //Text("#\(player.batting)")
+-                                            
+-                                        }
+-                                        .padding(.horizontal, -5)
+-                                        .font(.caption)
+-                                        .onTapGesture {
+-                                            
+-                                            lineup.remove(at: lineup.firstIndex(of: player)!)
+-                                            for i in 0..<lineup.count {
+-                                                lineup[i].batting = i+1
++                                            .onTapGesture {
++                                                
++                                                lineup.remove(at: lineup.firstIndex(of: player)!)
++                                                for i in 0..<lineup.count {
++                                                    lineup[i].batting = i+1
++                                                }
++                                                try? modelContext.save()
+                                             }
+-                                            try? modelContext.save()
+                                         }
+                                     }
+                                 }
++                                .padding(.horizontal, -5)
++                                .listStyle(.plain)
+                             }
+-                            .padding(.horizontal, -5)
+-                            .listStyle(.plain)
+                         }
++                        .clipShape(.rect(cornerRadius: 20))
+                     }
+-                    .clipShape(.rect(cornerRadius: 20))
++                    .padding(10)
+                 }
+-                .padding(10)
++                .background(Color.clear)
+             }
+-            .background(Color.clear)
+         }
+     }
+ }
+@@ -186,33 +188,35 @@ struct RosterItemView: View {
+     @State var position: String
+ 
+     var body: some View {
+-        GeometryReader { geo in
+-            HStack(alignment: .bottom) {
+-                VStack(alignment: .leading) {
+-                    Text("#\(player.number)")
+-                    Text("\(player.lastName), \(player.firstName)")
+-                }
+-                .font(.caption)
+-                Spacer()
+-                VStack {
+-                    Picker("", selection: $position){
+-                        ForEach(unusedPositions, id: \.self){ position in
+-                            Text(position)
+-                                .tag(position as String)
++        NavigationStack {
++            GeometryReader { geo in
++                HStack(alignment: .bottom) {
++                    VStack(alignment: .leading) {
++                        Text("#\(player.number)")
++                        Text("\(player.lastName), \(player.firstName)")
++                    }
++                    .font(.caption)
++                    Spacer()
++                    VStack {
++                        Picker("", selection: $position){
++                            ForEach(unusedPositions, id: \.self){ position in
++                                Text(position)
++                                    .tag(position as String)
++                            }
+                         }
++                        .frame(width: 5, height: geo.size.height)
++                        
+                     }
+-                    .frame(width: 5, height: geo.size.height)
+-              
++                    
++                }
++                .padding(.horizontal, -5)
++                .onChange(of: position) {
++                    if (position == "") { return }
++                    let order: Int = lineup.count + 1
++                    lineup.append(PlayerPos(player: player, position: position, batting: order))
++                    try? modelContext.save()
++                    position = ""
+                 }
+-                
+-            }
+-            .padding(.horizontal, -5)
+-            .onChange(of: position) {
+-                if (position == "") { return }
+-                let order: Int = lineup.count + 1
+-                lineup.append(PlayerPos(player: player, position: position, batting: order))
+-                try? modelContext.save()
+-                position = ""
+             }
+         }
+     }
+diff --git a/ScoreKeep/Games/StartGameView.swift b/ScoreKeep/Games/StartGameView.swift
+index 061f33f..12ba237 100644
+--- a/ScoreKeep/Games/StartGameView.swift
++++ b/ScoreKeep/Games/StartGameView.swift
+@@ -12,7 +12,7 @@ struct StartGameView: View {
+     @Environment(\.modelContext) var modelContext
+     @Environment(\.dismiss) var dismiss
+     @Query(sort: \Team.name) var teams: [Team]
+-    //@Binding var path: NavigationPath
++    @Binding var navPath: NavigationPath
+ 
+     @State var homeTeam: Team = Team(name: "", ageGroup: "")
+     @State var visitingTeam: Team = Team(name: "", ageGroup: "")
+@@ -21,44 +21,51 @@ struct StartGameView: View {
+     @State var newGame: Game = Game(name: "", date: Date(), location: "")
+     @State var gameDate: Date = Date()
+     @State var startGame: Bool = false
++    @State var gameLength: String = ""
+     
+     var body: some View {
+-        VStack(alignment: .leading) {
+-            Form{
+-                Spacer(minLength: 50)
+-                //TextField("Name of Game", text: $newGame.name) 
+-                DatePicker("Date:", selection: $newGame.date)
+-                TextField("Game Location", text: $newGame.location)
+-                Spacer(minLength: 50)
+-                Text("Home Team: \(homeTeam.name)")
+-                Picker("pick team", selection: $homeTeam){
+-                    ForEach(teams, id: \.name){team in
+-                        Text(team.name)
+-                            .tag(team as Team)
++        NavigationStack {
++            VStack(alignment: .leading) {
++                Form{
++                    Spacer(minLength: 50)
++                    //TextField("Name of Game", text: $newGame.name)
++                    DatePicker("Date:", selection: $newGame.date)
++                    TextField("Game Location", text: $newGame.location)
++                    Spacer(minLength: 50)
++                    Text("Home Team: \(homeTeam.name)")
++                    Picker("pick team", selection: $homeTeam){
++                        ForEach(teams, id: \.name){team in
++                            Text(team.name)
++                                .tag(team as Team)
++                        }
+                     }
+-                }
+-                Spacer(minLength: 50)
+-                Text("Visiting Team: \(visitingTeam.name)")
+-                Picker("pick team", selection: $visitingTeam){
+-                    ForEach(teams, id: \.name){team in
+-                        Text(team.name)
+-                            .tag(team as Team)
++                    Spacer(minLength: 50)
++                    Text("Visiting Team: \(visitingTeam.name)")
++                    Picker("pick team", selection: $visitingTeam){
++                        ForEach(teams, id: \.name){team in
++                            Text(team.name)
++                                .tag(team as Team)
++                        }
++                    }
++                    Spacer()
++                    HStack {
++                        Text("Game Length: ")
++                        TextField("Innings", text: $gameLength)
+                     }
+                 }
+-                //Spacer(minLength: 50)
+             }
+         }
+         Button("Create Game"){
+             newGame.homeTeam = homeTeam
+             newGame.visitingTeam = visitingTeam
+             newGame.name = "\(homeTeam.name) vs. \(visitingTeam.name)"
++            //newGame.targetInnings = Int(gameLength) ?? 7
+             modelContext.insert(newGame)
+             try? modelContext.save()
+             startGame.toggle()
+         }
+         .navigationDestination(isPresented: $startGame) {
+-            GameLineupsView(game: newGame)
+-            //GameLineupsView(path: $path, game: newGame)
++            GameLineupsView(navPath: $navPath, game: newGame)
+         }
+         .navigationTitle("Create Game")
+         
+@@ -67,16 +74,19 @@ struct StartGameView: View {
+ }
+ 
+ #Preview {
++    @Previewable @State var navPath = NavigationPath()
++    let preview = Preview()
++    let config = ModelConfiguration(isStoredInMemoryOnly: true)
+     do {
+-        let config = ModelConfiguration(isStoredInMemoryOnly: true)
+         let container = try ModelContainer(for: Team.self, configurations: config)
+-        //@State var example = NavigationPath()
+-        let team = Team(name: "B-town", ageGroup: "18U")
+-        
+-        return StartGameView(homeTeam: team )
+-            .modelContainer(container)
+-    }  catch {
+-        return Text("Failed to create preview: \(error.localizedDescription)")
++    } catch {
++        print("Failed to create container: \(error)")
+     }
++    let team = Team(name: "B-town", ageGroup: "18U")
++    return NavigationStack {
++        StartGameView(navPath: $navPath, homeTeam: team )
++             .modelContainer(preview.modelContainer)
++    }
++    
+    // StartGameView()
+ }
+diff --git a/ScoreKeep/MainMenuView.swift b/ScoreKeep/MainMenuView.swift
+index 51a67ed..3e8aeac 100644
+--- a/ScoreKeep/MainMenuView.swift
++++ b/ScoreKeep/MainMenuView.swift
+@@ -9,11 +9,13 @@ import SwiftUI
+ 
+ struct MainMenuView: View {
+     @Environment(\.modelContext) var modelContext
+-    //@State var path: NavigationPath = .init()
++    @Environment(\.dismiss) var dismiss
++
++    @State var navPath: NavigationPath = NavigationPath()
+     @State private var showAddTeamScreen: Bool = false
+     
+     var body: some View {
+-        NavigationStack { //path: $path.animation(.bouncy)) {
++        NavigationStack (path: $navPath.animation(.bouncy)) {
+             List {
+                 NavigationLink("Teams", value: "Teams")
+                 NavigationLink("Play Game", value: "Play Game")
+@@ -23,10 +25,10 @@ struct MainMenuView: View {
+             .navigationDestination(for: String.self) {
+                 name in
+                 if name == "Teams" {
+-                    TeamsView()
++                    TeamsView(navPath: $navPath)
+                     //TeamsView(path: $path)
+                 } else if name == "Play Game" {
+-                    GamesView()
++                    GamesView(navPath: $navPath)
+                     //StartGameView(path: $path)
+                     //GamesView(path: $path)
+                 }
+@@ -38,6 +40,9 @@ struct MainMenuView: View {
+                 Text("Add Default Data")
+             }
+         }
++        .onAppear {
++            dismiss()
++        }
+     }
+     func addSampleData(_ examples: [Game]) {
+         
+diff --git a/ScoreKeep/PlateAppearanceView.swift b/ScoreKeep/PlateAppearanceView.swift
+deleted file mode 100644
+index dc7906c..0000000
+--- a/ScoreKeep/PlateAppearanceView.swift
++++ /dev/null
+@@ -1,186 +0,0 @@
+-//
+-//  PlateAppearance.swift
+-//  ScoreKeep
+-//
+-//  Created by Neal Homan on 3/25/24.
+-//
+-
+-import Foundation
+-import SwiftUI
+-
+-struct PlateAppearanceView: View {
+-    @Environment(\.dismiss) var dismiss
+-
+-    @State private var totalBalls: Int = 0
+-    @State private var totalStrikes: Int = 0
+-    @State private var pitchCount: Int = 0
+-    @State private var balls = [Int]()
+-    @State private var strikes = [Int]()
+-    @State private var fouls = [Int]()
+-    @State private var baseRunners = [Int]()
+-    @State private var showPlayOutcome: Bool = false
+-    @State var base: Int = 0
+-    var scale: CGFloat = 0.35
+-    var xoffset: CGFloat = 0
+-    var yoffset: CGFloat = 0
+-    
+-    var body: some View {
+-        GeometryReader { geometry in
+-            ZStack {
+-                FieldView(base: base, xoffset: xoffset, yoffset: yoffset)
+-            }
+-            .frame(width: geometry.size.width, height: geometry.size.height*0.15)
+-            .scaleEffect(scale)
+-        }
+-    }
+-}
+-
+-#Preview {
+-    var scale: CGFloat = 0.55
+-    var xoffset: CGFloat = 0
+-    var yoffset: CGFloat = 0
+-    PlateAppearanceView(scale: scale, xoffset: xoffset, yoffset: yoffset)
+-}
+-//        VStack(alignment: .leading) {
+-//            Spacer()
+-//            Spacer()
+-//            HStack {
+-//                VStack{
+-//                    Text("Pitcher:").fontWeight(.bold)
+-//                        .font(.system(size: 25))
+-//                    HStack{
+-//                        Text("B: ").fontWeight(.bold).font(.system(size: 25))
+-//                        Text("\(totalBalls)").fontWeight(.bold).font(.system(size: 25))
+-//                    }
+-//                    
+-//                    HStack{
+-//                        Text("S: ").fontWeight(.bold).font(.system(size: 25))
+-//                        Text("\(totalStrikes)").fontWeight(.bold).font(.system(size: 25))
+-//                    }
+-//                }
+-//                Spacer()
+-//
+-//                VStack{
+-//                    Text("Runner:").fontWeight(.bold)
+-//                        .font(.system(size: 25))
+-//                    HStack{
+-//                        Text("3: ").fontWeight(.bold).font(.system(size: 25))
+-//                        if baseRunners.count > 2 {
+-//                            Text("\(baseRunners[2])")
+-//                                .fontWeight(.bold).font(.system(size: 25))
+-//                        }
+-//                    }
+-//                    HStack{
+-//                        Text("2: ").fontWeight(.bold).font(.system(size: 25))
+-//                        if baseRunners.count > 1 {
+-//                            Text("\(baseRunners[1])")
+-//                                .fontWeight(.bold).font(.system(size: 25))
+-//                        }
+-//                    }
+-//                    HStack{
+-//                        Text("1: ").fontWeight(.bold).font(.system(size: 25))
+-//                        if baseRunners.count > 0 {
+-//                            Text("\(baseRunners[0])")
+-//                                .fontWeight(.bold).font(.system(size: 25))
+-//                        }
+-//                    }
+-//                }
+-//            }
+-//            Spacer()
+-//
+-//            Text("Count:").fontWeight(.bold)
+-//                .font(.system(size: 25))
+-//            HStack{
+-//                Text("B: ").fontWeight(.bold).font(.system(size: 25))
+-//                if !balls.isEmpty {
+-//                    ForEach(balls, id: \.self) {
+-//                        Text("\($0)")
+-//                            .fontWeight(.bold).font(.system(size: 25))
+-//                    }
+-//                }
+-//            }
+-//            HStack{
+-//                Text("S: ").fontWeight(.bold).font(.system(size: 25))
+-//                if !strikes.isEmpty {
+-//                    ForEach(strikes, id: \.self) {
+-//                        Text("\($0)")
+-//                            .fontWeight(.bold).font(.system(size: 25))
+-//                    }
+-//                }
+-//            }
+-//            HStack{
+-//                Text("F: ").fontWeight(.bold).font(.system(size: 25))
+-//                if !fouls.isEmpty {
+-//                    ForEach(fouls, id: \.self) {
+-//                        Text("\($0)")
+-//                            .fontWeight(.bold).font(.system(size: 25))
+-//                    }
+-//                }
+-//            }
+-//            Spacer()
+-//            Text("Pitch:").fontWeight(.bold).font(.system(size: 25))
+-//           
+-//            List(pitches, id: \.self) { pitch in
+-//                Button(pitch){
+-//                    switch pitch {
+-//                    case "Ball":
+-//                        pitchCount = pitchCount + 1
+-//                        totalBalls = totalBalls + 1
+-//                        balls.append(pitchCount)
+-//                        if balls.count == 4 {
+-//                            baseRunners.insert(totalBalls, at: 0)
+-//                            pitchCount = 0
+-//                            balls = []
+-//                            strikes = []
+-//                            fouls = []
+-//                            //walk
+-//                        }
+-//                    case "Strike":
+-//                        pitchCount = pitchCount + 1
+-//                        totalStrikes = totalStrikes + 1
+-//                        strikes.append(pitchCount)
+-//                        if strikes.count == 3 {
+-//                            pitchCount = 0
+-//                            balls = []
+-//                            strikes = []
+-//                            fouls = []
+-//                            //strikeout
+-//                        }
+-//                    case "Foul":
+-//                        pitchCount = pitchCount + 1
+-//                        totalStrikes = totalStrikes + 1
+-//                        fouls.append(pitchCount)
+-//                        if strikes.count < 2 {
+-//                            strikes.append(pitchCount)
+-//                        }
+-//                    case "In Play":
+-//                        pitchCount = 0
+-//                        totalStrikes = totalStrikes + 1
+-//                        balls = []
+-//                        strikes = []
+-//                        fouls = []
+-//                        showPlayOutcome = true
+-//                    case "HP":
+-//                        pitchCount = pitchCount + 1
+-//                        baseRunners.insert(pitchCount, at: 0)
+-//                        pitchCount = 0
+-//                        totalBalls = totalBalls + 1
+-//                        balls = []
+-//                        strikes = []
+-//                        fouls = []
+-//                        // adv br 1 base
+-//                    default:
+-//                        print("what happened?")
+-//                    }
+-//                }
+-//            }
+-//            .frame(width: 125, height: 280, alignment: .leading)
+-//            
+-//        }
+-//        .padding()
+-//        .sheet(isPresented: $showPlayOutcome, content: {
+-//            PlayOutcomeView()
+-//        })
+-//    }
+-
+-
+diff --git a/ScoreKeep/Preview Content/ScoreKeepSamples.swift b/ScoreKeep/Preview Content/ScoreKeepSamples.swift
+index 9ec18d9..3294bfc 100644
+--- a/ScoreKeep/Preview Content/ScoreKeepSamples.swift	
++++ b/ScoreKeep/Preview Content/ScoreKeepSamples.swift	
+@@ -70,6 +70,7 @@ extension Game {
+         let home: Team = self.defaultTeam
+         let visitor: Team = self.defaultTeam
+         let location: String = home.name.components(separatedBy: " ").first ?? ("\(home.name)")
++        let innings: Int = 1
+         return Game(name: "\(visitor.name) v \(home.name)", location: "\(location) Stadium", homeTeam: home, visitingTeam: visitor)
+     }
+     
+diff --git a/ScoreKeep/ScoreKeepObjects.swift b/ScoreKeep/ScoreKeepObjects.swift
+index 7bcf6b8..bb67d8b 100644
+--- a/ScoreKeep/ScoreKeepObjects.swift
++++ b/ScoreKeep/ScoreKeepObjects.swift
+@@ -86,6 +86,7 @@ class Game {
+     var visitingLineup: [PlayerPos] = []
+     var date: Date  //includes time
+     var location: String
++    //var targetInnings: Int = 7
+     var isComplete: Bool = false
+     var isStarted: Bool = false
+     @Relationship(deleteRule: .cascade, inverse: \Inning.game) var innings: [Inning] = []
+@@ -101,6 +102,46 @@ class Game {
+         self.isComplete = isComplete
+         self.isStarted = isStarted
+     }
++    
++    func getTeamStats(team: Int) -> PlayerStats {
++        var innings: [Inning] = []
++        if team == 0 {
++            innings = self.innings.filter { $0.half == 0 }
++        } else {
++            innings = self.innings.filter { $0.half == 1 }
++        }
++        
++        var stats = PlayerStats()
++        var appearances: [OffensivePlateAppearance] = []
++        
++        for inning in innings {
++            for appearance in inning.offense {
++                if appearance.active {
++                    appearances.append(appearance)
++                }
++            }
++        }
++        stats = getPlayerStats(plateAppearances: appearances)
++        
++        return stats
++    }
++    func getPlayerGameStats(player: Player) -> PlayerStats {
++        //var innings: [Inning] = []
++//        if team == 0 {
++//            innings = self.innings.filter { $0.half == 0 }
++//        } else {
++//            innings = self.innings.filter { $0.half == 1 }
++//        }
++        
++        var stats = PlayerStats()
++        var appearances: [OffensivePlateAppearance] = []
++        
++        for inning in self.innings {
++            appearances.append(contentsOf: inning.offense.filter { $0.batter.id == player.id } )
++        }
++        stats = getPlayerStats(plateAppearances: appearances)
++        return stats
++    }
+ }
+ 
+ @Model
+@@ -271,6 +312,44 @@ struct TeamStats: Identifiable, Hashable {
+     }
+ }
+ 
++func getPlayerStats(plateAppearances: [OffensivePlateAppearance]) -> PlayerStats {
++    var playerStats = PlayerStats()
++    
++    for appearance in plateAppearances {
++        if appearance.active {
++            
++            
++            playerStats.plateAppearances += 1
++            if appearance.hit != 0 {
++                playerStats.hits += 1
++                if appearance.hit == 2 {
++                    playerStats.doubles += 1
++                } else if appearance.hit == 3 {
++                    playerStats.triples += 1
++                } else if appearance.hit == 4 {
++                    playerStats.homeRuns += 1
++                }
++            }
++            playerStats.rbi += appearance.rbi
++            if appearance.run {
++                playerStats.runs += 1
++            }
++            playerStats.bb += appearance.bb
++            
++            if appearance.pitches.count(where: {$0 == .strikeLooking || $0 == .strikeSwinging || $0 == .foul}) >= 3 && appearance.pitches.last == .strikeLooking || appearance.pitches.last == .strikeSwinging {
++                playerStats.k += 1
++            }
++            playerStats.hp += appearance.hp
++            playerStats.sac += appearance.sac
++            
++        }
++        
++    }
++    //var atBats: Int = 0
++    
++    return playerStats
++}
++
+ enum StatLabels: String, Codable, CaseIterable {
+     case PA
+     case AB
+@@ -286,6 +365,16 @@ enum StatLabels: String, Codable, CaseIterable {
+     case SAC
+ }
+ 
++func decomposeLineup(lineup: [[PlayerPos]]) -> [PlayerPos] {
++    var tempArray:[PlayerPos] = []
++    for orderPosition in lineup {
++        for each in orderPosition {
++            tempArray.append(each)
++        }
++    }
++    return tempArray.sorted { $0.batting < $1.batting }
++}
++
+ struct BattingLineupView: View {
+     @ObservedObject var gameVM: GameViewModel
+     @State var showSubPages: Bool = false
+diff --git a/ScoreKeep/Scorebook/BookPageView.swift b/ScoreKeep/Scorebook/BookPageView.swift
+index ec79de3..fb1dd91 100644
+--- a/ScoreKeep/Scorebook/BookPageView.swift
++++ b/ScoreKeep/Scorebook/BookPageView.swift
+@@ -11,6 +11,8 @@ struct BookPageView: View {
+     @Environment(\.modelContext) var modelContext
+     @Environment(\.dismiss) var dismiss
+     @ObservedObject var gameViewModel: GameViewModel
++    @Binding var navPath: NavigationPath
++
+     //@Binding var game: Game
+     //@Binding var orderNumber: Int
+     //@Binding var inningNumber: Int
+@@ -69,8 +71,6 @@ struct BookPageView: View {
+                                 InningsView(gameViewModel: gameViewModel, showLargeView: $showLargeView, largeView: $largeView, team: team, innings: innings, selectedTab: selectedTab)
+                                 
+                             }
+-                            
+-                            Spacer()
+                         }
+                     }
+                 }
+@@ -81,13 +81,15 @@ struct BookPageView: View {
+ }
+ 
+ #Preview {
++    @Previewable @State var navPath = NavigationPath()
++
+     var game = Game.defaultGame
+     let preview = Preview()
+     preview.addSampleGames([game])
+     preview.addSampleLineups(game: game)
+     //setUpGame(game: game)
+     
+-    return BookPageView(gameViewModel: GameViewModel(game: game), selectedTab: "Home - \(game.homeTeam!.name)")
++    return BookPageView(gameViewModel: GameViewModel(game: game), navPath: $navPath, selectedTab: "Home - \(game.homeTeam!.name)")
+         .modelContainer(preview.modelContainer)
+ }
+ 
+@@ -112,94 +114,99 @@ struct InningsView: View {
+         }
+     }
+     var body: some View {
+-        HStack {
+-            ForEach(innings.sorted(by: {$0.number < $1.number}), id: \.self) { inning in
+-                HStack(alignment: .top) {
+-                    VStack(alignment: .leading) {
+-                        Text("\(inning.number)--\(inning.number/10)")
+-                        .frame(width: 75, height: 50, alignment: .center)
+-                        .border(Color.blue)
+-                        Text("\(gameViewModel.inningNumber)--\(gameViewModel.batterUp[gameViewModel.halfInning])")
+-                        ForEach(inning.offense.sorted(by: {$0.order < $1.order}), id: \.self) { player in
+-                            GeometryReader { geo in
+-                                
+-                                SmallPlateAppearanceView(gameViewModel: gameViewModel, player: player, scale: 0.15)
+-                                    .onTapGesture {
+-                                        if !gameViewModel.game.isComplete {
+-                                            
+-                                            if (teamBatting && gameViewModel.halfInning == 0 && gameViewModel.inningNumber == inning.number && gameViewModel.batterUp[gameViewModel.halfInning] == player.order) || (!teamBatting && gameViewModel.halfInning == 1 && gameViewModel.inningNumber == inning.number && gameViewModel.batterUp[gameViewModel.halfInning] == player.order) {
+-                                                if player.outcome.isEmpty {
+-                                                    player.active = true
+-                                                    gameViewModel.batter = player
+-                                                    //gameViewModel.inningNumber = inning.number
+-                                                    let brNode = BaseRunnerNode(player: player)
+-                                                    gameViewModel.baseRunners.insert(brNode, at: 0)
+-                                                    gameViewModel.balls = 0
+-                                                    gameViewModel.strikes = 0
+-                                                    gameViewModel.incrementBatterUp()
+-                                                    showLargeView.toggle()
++        NavigationStack {
++            HStack {
++                ForEach(innings.sorted(by: {$0.number < $1.number}), id: \.self) { inning in
++                    HStack(alignment: .top) {
++                        VStack(alignment: .leading) {
++                            Text("\(inning.number)")
++                                .frame(width: 75, height: 50, alignment: .center)
++                                .border(Color.blue)
++                            //                        Text("\(gameViewModel.inningNumber)--\(gameViewModel.batterUp[gameViewModel.halfInning])")
++                            ForEach(inning.offense.sorted(by: {$0.order < $1.order}), id: \.self) { player in
++                                GeometryReader { geo in
++                                    
++                                    SmallPlateAppearanceView(gameViewModel: gameViewModel, player: player, scale: 0.15)
++                                        .onTapGesture {
++                                            if !gameViewModel.game.isComplete {
++                                                
++                                                if (teamBatting && gameViewModel.halfInning == 0 && gameViewModel.inningNumber == inning.number && gameViewModel.batterUp[gameViewModel.halfInning] == player.order) || (!teamBatting && gameViewModel.halfInning == 1 && gameViewModel.inningNumber == inning.number && gameViewModel.batterUp[gameViewModel.halfInning] == player.order) {
++                                                    if player.outcome.isEmpty {
++                                                        player.active = true
++                                                        gameViewModel.batter = player
++                                                        //gameViewModel.inningNumber = inning.number
++                                                        let brNode = BaseRunnerNode(player: player)
++                                                        gameViewModel.baseRunners.insert(brNode, at: 0)
++                                                        gameViewModel.balls = 0
++                                                        gameViewModel.strikes = 0
++                                                        gameViewModel.incrementBatterUp()
++                                                        showLargeView.toggle()
++                                                    } else {
++                                                        print("\(player.hit), \(player.outcome)")
++                                                        showLargeView.toggle()
++                                                    }
+                                                 } else {
+-                                                    print("\(player.hit), \(player.outcome)")
+-                                                    showLargeView.toggle()
+-                                                }
+-                                            } else {
+-                                                if player.active {
+-                                                    gameViewModel.batter = player
+-                                                    showLargeView.toggle()
+-                                                    largeView = false
++                                                    if player.active {
++                                                        gameViewModel.batter = player
++                                                        showLargeView.toggle()
++                                                        largeView = false
++                                                    }
++                                                    
+                                                 }
+                                                 
+                                             }
+-                                            
+                                         }
++                                    Spacer()
+                                 }
+                             }
++                            .frame(width: 75, height: 75, alignment: .topLeading)
++                            //.border(Color.black)
+                         }
+-                        .frame(width: 75, height: 75, alignment: .topLeading)
+-                        //.border(Color.black)
+                     }
+                 }
+             }
+-        }
+-        .navigationDestination(isPresented: $gameViewModel.game.isComplete) {
+-            GameSummaryView()
+-        }
+-        .sheet(isPresented: $showLargeView, onDismiss: {
+-            //  update game viewmodel, check outs and switch sides
+-            gameViewModel.checkGameComplete()
+-            if gameViewModel.outs == 3 {
+-                gameViewModel.outs = 0
+-                gameViewModel.balls = 0
+-                gameViewModel.strikes = 0
+-                
+-                gameViewModel.baseRunners.removeAll()
+-                gameViewModel.pitches.removeAll()
+-                
+-                if gameViewModel.halfInning == 0 {
+-                    gameViewModel.halfInning = 1
+-                } else {
+-                    gameViewModel.halfInning = 0
+-                    gameViewModel.inningNumber += 10
++            
++            .sheet(isPresented: $showLargeView, onDismiss: {
++                //  update game viewmodel, check outs and switch sides
++                gameViewModel.checkGameComplete()
++                if gameViewModel.outs == 3 {
++                    
++                    gameViewModel.outs = 0
++                    gameViewModel.balls = 0
++                    gameViewModel.strikes = 0
++                    
++                    gameViewModel.baseRunners.removeAll()
++                    gameViewModel.pitches.removeAll()
++                    
++                    if gameViewModel.halfInning == 0 {
++                        gameViewModel.halfInning = 1
++                    } else {
++                        
++                        gameViewModel.halfInning = 0
++                        gameViewModel.inningNumber += 10
++                        
++                        
++                    }
++                    
++                } else { // if dismiss sheet before batter is finished
++                    if gameViewModel.batter?.outcome == [] {
++                        gameViewModel.baseRunners.remove(at: 0)
++                        gameViewModel.decrementBatterUp()
++                    }
++                    // check for walk-off win
+                 }
+-                                
+-            } else { // if dismiss sheet before batter is finished
+-                if gameViewModel.batter?.outcome == [] {
+-                    gameViewModel.baseRunners.remove(at: 0)
+-                    gameViewModel.decrementBatterUp()
++                
++                if !largeView {
++                    largeView.toggle()
+                 }
+-                // check for walk-off win
+-            }
+-            
+-            if !largeView {
+-                largeView.toggle()
++            })
++            {
++                LargePlateAppearanceView(gameViewModel: gameViewModel, player: gameViewModel.batter!, largeView: $largeView)
++                    .presentationBackground(alignment: .top) {
++                        LinearGradient(colors: [Color.gray, Color.green], startPoint: .bottomLeading, endPoint: .topTrailing)
++                    }
++                    .presentationCornerRadius(50)
+             }
+-        })
+-        {
+-            LargePlateAppearanceView(gameViewModel: gameViewModel, player: gameViewModel.batter!, largeView: $largeView)
+-                .presentationBackground(alignment: .top) {
+-                    LinearGradient(colors: [Color.gray, Color.green], startPoint: .bottomLeading, endPoint: .topTrailing)
+-                }
+-                .presentationCornerRadius(50)
+         }
+         
+     }
+diff --git a/ScoreKeep/Scorebook/BookView.swift b/ScoreKeep/Scorebook/BookView.swift
+index 4a6ba2e..54d679d 100644
+--- a/ScoreKeep/Scorebook/BookView.swift
++++ b/ScoreKeep/Scorebook/BookView.swift
+@@ -13,53 +13,59 @@ struct BookView: View {
+     @Environment(\.dismiss) var dismiss
+     @ObservedObject var gameViewModel: GameViewModel
+     @State private var selectedTab: String = "Visitor"
++    @Binding var navPath: NavigationPath
+     
+     var body: some View {
+-        GeometryReader { geo in
+-            ZStack {
+-
+-                TabView(selection: $selectedTab) {
+-                    BookPageView(gameViewModel: gameViewModel, selectedTab: selectedTab)
+-                        .tabItem {
+-                            Image(systemName: "person.fill")
+-                            Text("Visitor - \(gameViewModel.game.visitingTeam!.name)")
+-                        }.tag("Visitor")
+-                    BookPageView(gameViewModel: gameViewModel, selectedTab: selectedTab)
+-                        .tabItem {
+-                            Image(systemName: "person.fill")
+-                            Text("Home - \(gameViewModel.game.homeTeam!.name)")
+-                        }.tag("Home")
+-                }
+-            
+-                VStack {
+-                    HStack {
+-                        Spacer()
+-                        if !gameViewModel.game.isStarted {
+-                            Button {
+-                                gameViewModel.setUpGame()
+-                                
+-                                gameViewModel.game.isStarted = true
+-                            } label: {
+-                                Text("Start Game")
+-                                    .font(.headline)
+-                                    .padding(.horizontal)
+-                            }
+-                        } else {
+-                            Button {
+-                                gameViewModel.addInning(inning: Inning(number: gameViewModel.inningNumber+1, game: gameViewModel.game, half: gameViewModel.halfInning), lineup: gameViewModel.halfInning == 0 ? gameViewModel.game.visitingLineup : gameViewModel.game.homeLineup, halfInning: gameViewModel.halfInning)
+-                            } label: {
+-                                Image(systemName: "plus.rectangle")
++        NavigationStack {
++            GeometryReader { geo in
++                ZStack {
++                    
++                    TabView(selection: $selectedTab) {
++                        BookPageView(gameViewModel: gameViewModel, navPath: $navPath, selectedTab: selectedTab)
++                            .tabItem {
++                                Image(systemName: "person.fill")
++                                Text("Visitor - \(gameViewModel.game.visitingTeam!.name)")
++                            }.tag("Visitor")
++                        BookPageView(gameViewModel: gameViewModel, navPath: $navPath, selectedTab: selectedTab)
++                            .tabItem {
++                                Image(systemName: "person.fill")
++                                Text("Home - \(gameViewModel.game.homeTeam!.name)")
++                            }.tag("Home")
++                    }
++                    
++                    VStack {
++                        HStack {
++                            Spacer()
++                            if !gameViewModel.game.isStarted {
++                                Button {
++                                    gameViewModel.setUpGame()
++                                    
++                                    gameViewModel.game.isStarted = true
++                                } label: {
++                                    Text("Start Game")
++                                        .font(.headline)
++                                        .padding(.horizontal)
++                                }
++                            } else {
++                                Button {
++                                    gameViewModel.addInning(inning: Inning(number: gameViewModel.inningNumber+1, game: gameViewModel.game, half: gameViewModel.halfInning), lineup: gameViewModel.halfInning == 0 ? gameViewModel.game.visitingLineup : gameViewModel.game.homeLineup, halfInning: gameViewModel.halfInning)
++                                } label: {
++                                    Image(systemName: "plus.rectangle")
++                                }
+                             }
+                         }
++                        Spacer()
+                     }
+-                    Spacer()
+                 }
+             }
+-        }
+-        .onAppear {
+-            if !gameViewModel.game.isStarted {
+-                gameViewModel.setUpGame()
+-                gameViewModel.game.isStarted = true
++            .onAppear {
++                if !gameViewModel.game.isStarted {
++                    gameViewModel.setUpGame()
++                    gameViewModel.game.isStarted = true
++                }
++            }
++            .navigationDestination(isPresented: $gameViewModel.game.isComplete) {
++                //GameSummaryView()
+             }
+         }
+     }
+@@ -69,6 +75,8 @@ func advanceLineup() {
+ }
+ 
+ #Preview {
++    @Previewable @State var navPath = NavigationPath()
++
+     var game = Game.defaultGame
+     let preview = Preview()
+     preview.addSampleGames([game])
+@@ -76,7 +84,7 @@ func advanceLineup() {
+     //setUpGame(game: game)
+ 
+     return NavigationStack {
+-        BookView(gameViewModel: GameViewModel(game: game))
++        BookView(gameViewModel: GameViewModel(game: game), navPath: $navPath)
+             .modelContainer(preview.modelContainer)
+     }
+    
+diff --git a/ScoreKeep/Scorebook/FieldViewFunctions.swift b/ScoreKeep/Scorebook/FieldViewFunctions.swift
+index 80a4d9f..4169acd 100644
+--- a/ScoreKeep/Scorebook/FieldViewFunctions.swift
++++ b/ScoreKeep/Scorebook/FieldViewFunctions.swift
+@@ -120,7 +120,7 @@ func addOutcomes(plateAppearance: OffensivePlateAppearance, scene: SKScene) {
+         print(each)
+         
+         if each.starts(with: "F") {
+-            //addOutcomeNode(center: CGPoint(x: scene.frame.midX, y: scene.frame.maxY*0.5), size: 10, name: each, hidden: false, color: .red, scene: scene)
++            addOutcomeNode(center: CGPoint(x: scene.frame.midX, y: scene.frame.maxY*0.5), size: 10, name: each, hidden: false, color: .red, scene: scene)
+         }
+         if each.contains("G") {
+             let outcome = each.replacingOccurrences(of: "G", with: "")
+@@ -132,7 +132,7 @@ func addOutcomes(plateAppearance: OffensivePlateAppearance, scene: SKScene) {
+         if each.contains("SAC") {
+             addOutcomeNode(center: CGPoint(x: scene.frame.midX, y: scene.frame.maxY*0.5), size: 10, name: each.replacingOccurrences(of: "SAC", with: ""), hidden: false, color: .red, scene: scene)
+         }
+-        addOutcomeNode(center: CGPoint(x: scene.frame.midX, y: scene.frame.maxY*0.5), size: 10, name: each, hidden: false, color: .red, scene: scene)
++        //addOutcomeNode(center: CGPoint(x: scene.frame.midX, y: scene.frame.maxY*0.5), size: 10, name: each, hidden: false, color: .red, scene: scene)
+     }
+ }
+ func addHitLoc(plateAppearance: OffensivePlateAppearance, scene: SKScene) {
+diff --git a/ScoreKeep/Scorebook/FieldViewScene.swift b/ScoreKeep/Scorebook/FieldViewScene.swift
+index 1bffc80..06cecd8 100644
+--- a/ScoreKeep/Scorebook/FieldViewScene.swift
++++ b/ScoreKeep/Scorebook/FieldViewScene.swift
+@@ -228,8 +228,8 @@ class FieldScene: SKScene, SKPhysicsContactDelegate {
+         let sequenceAction = SKAction.sequence([moveAction, waitAction])
+         
+         if setPlay {
+-            //plateAppearance.hitLoc = tapToChange.location(in: view)
+             plateAppearance.hitLoc = CGPoint(x: tapToChange.location(in: view).x/self.frame.maxX, y: (homePlate.y - tapToChange.location(in: view).y)/homePlate.y)
++            // draw hit path
+             let path = CGMutablePath()
+             path.move(to: homePlate)
+             path.addLine(to: CGPoint(x: self.frame.minX+(tapToChange.location(in: view).x) , y: self.frame.maxY-(tapToChange.location(in: view).y)))
+@@ -238,6 +238,7 @@ class FieldScene: SKScene, SKPhysicsContactDelegate {
+             node.lineWidth = 3
+             addChild(node)
+             print("set hitloc \(plateAppearance.hitLoc)")
++            
+             run(SKAction.repeat(sequenceAction, count: plateAppearance.hit))
+             setPlay = false
+         }
+@@ -319,12 +320,7 @@ class FieldScene: SKScene, SKPhysicsContactDelegate {
+         //plateAppearance.baseOccupied += 1
+     }
+     func getHBP() {
+-        gameVM.pitches.append(.ball)
+-        plateAppearance.outcome.append("HBP")
+-        plateAppearance.hp = 1
+-        self.moveNode(node: self.gameVM.baseRunners[0], bases: 1)
+-        gameVM.balls = 0
+-        gameVM.strikes = 0
++        
+     }
+     
+     
+@@ -347,7 +343,7 @@ class FieldScene: SKScene, SKPhysicsContactDelegate {
+                 var outcomeString: String = ""
+                 if plateAppearance.sac != 1 {
+                     if posArray.count > 1 {
+-                        //outcomeString += "G"
++                        outcomeString += "G"
+                         for i in posArray {
+                             outcomeString += "\(i)-"
+                         }
+@@ -390,7 +386,7 @@ class FieldScene: SKScene, SKPhysicsContactDelegate {
+                 outcomeString.removeLast()
+                 plateAppearance.outcome.append("FC-\(posArray[0])")
+                 baseRunner.player.outcome.append(outcomeString)
+-                baseRunner.player.baseOccupied -= 1
++                //baseRunner.player.baseOccupied -= 1
+             }
+         } else if setThrownOut {
+             var outcomeString: String = ""
+@@ -526,7 +522,8 @@ class FieldScene: SKScene, SKPhysicsContactDelegate {
+                 getHitType(node: touchedNode)
+             }
+             if touchedNode.name == "HBP" {
+-                getHBP()
++                getHitType(node: touchedNode)
++
+             }
+             if touchedNode.name == "FO" {
+                 setFlyOut.toggle()
+@@ -1105,6 +1102,16 @@ class FieldScene: SKScene, SKPhysicsContactDelegate {
+             plateAppearance.outcome.append("HR")
+             
+             setPlay.toggle()
++        case "HBP":
++            plateAppearance.hp = 1
++            gameVM.pitches.append(.ball)
++            plateAppearance.outcome.append("HBP")
++            
++            
++            gameVM.balls = 0
++            gameVM.strikes = 0
++            
++            moveNode(node: self.gameVM.baseRunners[0], bases: 1)
+         default: break
+         }
+         //run(SKAction.repeat(sequenceAction, count: plateAppearance.hit))
+@@ -1117,6 +1124,9 @@ class FieldScene: SKScene, SKPhysicsContactDelegate {
+                 brNode.run(SKAction.sequence([SKAction.move(to: self.firstBase, duration: 0.5), SKAction.wait(forDuration: 0.5)]))
+                 if !setSac {
+                     node.player.baseOccupied += 1
++                }
++                if node.player.hp == 1 {
++                    
+                 }
+                 brNode.physicsBody?.categoryBitMask = (1 << 1)
+                 
+@@ -1149,106 +1159,12 @@ class FieldScene: SKScene, SKPhysicsContactDelegate {
+             }
+     }
+     
+-//    func resetCount() {
+-//        var node = enumerateChildNodes(withName: "pitched-strike") {
+-//        node, stop in
+-//            node.removeFromParent()
+-//        }
+-//        node = enumerateChildNodes(withName: "pitched-ball") {
+-//        node, stop in
+-//            node.removeFromParent()
+-//        }
+-//        if plateAppearance.pitches.count > 0 {
+-//            var balls = 1
+-//            var strikes = 1
+-//            var outs = 1
+-//            
+-//            for pitch in plateAppearance.pitches {
+-//                switch pitch {
+-//                case .ball: // blue
+-//                    let path = CGMutablePath()
+-//                    //path.move(to: CGPoint(x: self.frame.width*0.05, y: self.frame.height*0.15))
+-//                    path.addArc(center: CGPoint(x: self.frame.width*0.075 + (20.0*CGFloat(balls)), y: self.frame.height*0.165), radius: 10, startAngle: 0, endAngle: .pi*2, clockwise: false)
+-//                    path.closeSubpath()
+-//                    //let ballNode = SKSpriteNode(imageNamed: "blue-sphere")
+-//                    let node = SKShapeNode(path: path)
+-//                    node.fillColor = .blue
+-//                    node.strokeColor = .black
+-//                    node.lineWidth = 1
+-//                    node.isHidden = false
+-//                    addChild(node)
+-//                    balls += 1
+-//                case .strikeLooking: //red
+-//                    let path = CGMutablePath()
+-//                    path.addArc(center: CGPoint(x: self.frame.width*0.075 + (20.0*CGFloat(strikes)), y: self.frame.height*0.215), radius: 10, startAngle: 0, endAngle: .pi*2, clockwise: false)
+-//                    path.closeSubpath()
+-//                    let node = SKShapeNode(path: path)
+-//                    node.lineWidth = 1
+-//                
+-//                    node.isHidden = false
+-//                    node.strokeColor = .black
+-//                    node.fillColor = .red
+-//                    addChild(node)
+-//                    strikes += 1
+-//                case .strikeSwinging: //black
+-//                    let path = CGMutablePath()
+-//                    path.addArc(center: CGPoint(x: self.frame.width*0.075 + (20.0*CGFloat(strikes)), y: self.frame.height*0.215), radius: 10, startAngle: 0, endAngle: .pi*2, clockwise: false)
+-//                    path.closeSubpath()
+-//                    let node = SKShapeNode(path: path)
+-//                    node.lineWidth = 1
+-//                
+-//                    node.isHidden = false
+-//                    node.strokeColor = .black
+-//                    node.fillColor = .black
+-//                    addChild(node)
+-//                    strikes += 1
+-//                case .foul: // yellow
+-//                    let path = CGMutablePath()
+-//                    path.addArc(center: CGPoint(x: self.frame.width*0.075 + (20.0*CGFloat(strikes)), y: self.frame.height*0.215), radius: 10, startAngle: 0, endAngle: .pi*2, clockwise: false)
+-//                    path.closeSubpath()
+-//                    let node = SKShapeNode(path: path)
+-//                    node.lineWidth = 1
+-//                
+-//                    node.isHidden = false
+-//                    node.strokeColor = .black
+-//                    node.fillColor = .yellow
+-//                    addChild(node)
+-//                    strikes += 1
+-//                }
+-//            }
+-//            if plateAppearance.outcome.contains(where: { $0 == "KS" }) || plateAppearance.outcome.contains(where: { $0 == "KL" }) {
+-//                addKLabel()
+-//            }
+-//        }
+-//        let strikes = gameVM.pitches.filter { $0 == .strikeLooking || $0 == .strikeSwinging }
+-//        if strikes.last == .strikeLooking {
+-//         // enumerate nodes
+-//        } else {
+-//            // enumerate nodes
+-//        }
+-//        for i in 0..<gameVM.outs {
+-//            
+-//            let path = CGMutablePath()
+-//            path.addArc(center: CGPoint(x: self.frame.width*0.075 + (20.0*CGFloat(i+1)), y: self.frame.height*0.115), radius: 10, startAngle: 0, endAngle: .pi*2, clockwise: false)
+-//            path.closeSubpath()
+-//            let node = SKShapeNode(path: path)
+-//            node.lineWidth = 1
+-//            node.strokeColor = .black
+-//            node.fillColor = .green
+-//            node.isHidden = false
+-//            addChild(node)
+-//        }
+-//        if plateAppearance.outs != 0 {
+-//            addOutLabel()
+-//        }
+-//    }
+-//    
+     func setUpScene() {
+         
+         if largeView {
+ 
+             placeBaseRunners(gameVM: gameVM, scene: self)
+-//
++
+             addPositionNodes(positionNames: positionNames, gameVM: gameVM, scene: self, setPlay: setPlay)
+ 
+             
+diff --git a/ScoreKeep/Scorebook/GameViewModel.swift b/ScoreKeep/Scorebook/GameViewModel.swift
+index 3592263..b81f3b9 100644
+--- a/ScoreKeep/Scorebook/GameViewModel.swift
++++ b/ScoreKeep/Scorebook/GameViewModel.swift
+@@ -31,6 +31,7 @@ class GameViewModel: ObservableObject {
+     @Published var baseRunners: [BaseRunnerNode] = []
+     @Published var player: OffensivePlateAppearance?
+     @Published var playerToSub: PlayerPos?
++    @Published var totalInnings: Int = 0
+     
+     var defensiveLineup: [String: Player] {
+         if halfInning == 0 {
+@@ -358,7 +359,7 @@ class GameViewModel: ObservableObject {
+     }
+     
+     func checkGameComplete() {
+-        let gameLength: Int = 3
++        let gameLength: Int = 1
+         if self.inningNumber/10 == gameLength {
+             if self.halfInning == 0 &&
+                 self.getTotalScore(team: "home") >
+@@ -375,5 +376,18 @@ class GameViewModel: ObservableObject {
+                 self.game.isComplete = true
+             }
+         }
++        if self.game.isComplete {
++            self.game.visitingLineup = decomposeLineup(lineup: self.visitorLineup)
++            self.game.homeLineup = decomposeLineup(lineup: self.homeLineup)
++            
++            for inning in game.innings {
++                for app in inning.offense {
++                    inning.offense.removeAll(where: { !$0.active })
++                }
++                for app in inning.defense {
++                    inning.defense.removeAll(where: { !$0.active })
++                }
++            }
++        }
+     }
+ }
+diff --git a/ScoreKeep/Scorebook/LargePlateAppearanceView.swift b/ScoreKeep/Scorebook/LargePlateAppearanceView.swift
+index 8090dfa..779643c 100644
+--- a/ScoreKeep/Scorebook/LargePlateAppearanceView.swift
++++ b/ScoreKeep/Scorebook/LargePlateAppearanceView.swift
+@@ -34,7 +34,15 @@ struct LargePlateAppearanceView: View {
+                     VStack {
+                         ScoreView(gameViewModel: gameViewModel)
+                         HStack {
+-                            Text("#\(player.batter.number) - \(player.batter.lastName), \(player.batter.firstName)")
++                            var stats: PlayerStats = gameViewModel.getPlayerStats(plateAppearances: gameViewModel.getPlayerPA(innings: gameViewModel.game.innings, player: player.batter))
++                            Text("#\(player.batter.number) - \(player.batter.lastName), \(player.batter.firstName)").padding(.horizontal, 5)
++                            HStack {
++                                Text("\(stats.hits)/\(stats.atBats) \(stats.doubles > 0 ? "String(stats.doubles) 2B" : "") \(stats.triples > 0 ? "String(stats.triples) 3B" : "")\(stats.homeRuns > 0 ? "String(stats.homeRuns) HR" : "")\(stats.runs) \(stats.rbi)")
++                            }
++                            //Spacer()
++                        }
++                        HStack {
++                            
+                         }
+                         
+                         Spacer()
+diff --git a/ScoreKeep/Scorebook/SmallPlateAppearanceView.swift b/ScoreKeep/Scorebook/SmallPlateAppearanceView.swift
+index 0bbe7e9..90627cb 100644
+--- a/ScoreKeep/Scorebook/SmallPlateAppearanceView.swift
++++ b/ScoreKeep/Scorebook/SmallPlateAppearanceView.swift
+@@ -183,10 +183,10 @@ class BasePathScene: SKScene, SKPhysicsContactDelegate {
+         placeBaseRunners(basepathNode: self.basepathNode, baseOccupied: baseOccupied, plateAppearance: plateAppearance, scene: self)
+ //
+           
+-        addGenericNode(center: CGPoint(x: self.frame.maxX*0.11, y: self.frame.maxY*0.37), size: self.frame.maxX*0.1, name: "1B", hidden: plateAppearance.hit == 1 ? false : true, color: .black, scene: self)
+-        addGenericNode(center: CGPoint(x: self.frame.maxX*0.11, y: self.frame.maxY*0.37), size: self.frame.maxX*0.1, name: "2B", hidden: plateAppearance.hit == 2 ? false : true, color: .black, scene: self)
+-        addGenericNode(center: CGPoint(x: self.frame.maxX*0.11, y: self.frame.maxY*0.37), size: self.frame.maxX*0.1, name: "3B", hidden: plateAppearance.hit == 3 ? false : true, color: .black, scene: self)
+-        addGenericNode(center: CGPoint(x: self.frame.maxX*0.11, y: self.frame.maxY*0.37), size: self.frame.maxX*0.1, name: "HR", hidden: plateAppearance.hit == 4 ? false : true, color: .black, scene: self)
++        addGenericNode(center: CGPoint(x: self.frame.maxX*0.07, y: self.frame.maxY*0.37), size: self.frame.maxX*0.1, name: "1B", hidden: plateAppearance.hit == 1 ? false : true, color: .black, scene: self)
++        addGenericNode(center: CGPoint(x: self.frame.maxX*0.07, y: self.frame.maxY*0.37), size: self.frame.maxX*0.1, name: "2B", hidden: plateAppearance.hit == 2 ? false : true, color: .black, scene: self)
++        addGenericNode(center: CGPoint(x: self.frame.maxX*0.07, y: self.frame.maxY*0.37), size: self.frame.maxX*0.1, name: "3B", hidden: plateAppearance.hit == 3 ? false : true, color: .black, scene: self)
++        addGenericNode(center: CGPoint(x: self.frame.maxX*0.07, y: self.frame.maxY*0.37), size: self.frame.maxX*0.1, name: "HR", hidden: plateAppearance.hit == 4 ? false : true, color: .black, scene: self)
+         addGenericNode(center: CGPoint(x: self.frame.maxX*0.11, y: self.frame.maxY*0.37), size: self.frame.maxX*0.1, name: "E", hidden: true, color: .red, scene: self)
+         addGenericNode(center: CGPoint(x: self.frame.maxX*0.8, y: self.frame.maxY*0.37), size: self.frame.maxX*0.1, name: "HBP", hidden: !plateAppearance.outcome.contains(where: { $0 == "HBP"}), color: .blue, scene: self)
+         addGenericNode(center: CGPoint(x: self.frame.maxX*0.8, y: self.frame.maxY*0.37), size: self.frame.maxX*0.1, name: "BB", hidden: plateAppearance.bb != 1, color: .blue, scene: self)
+diff --git a/ScoreKeep/Teams/TeamsView.swift b/ScoreKeep/Teams/TeamsView.swift
+index a9fcddf..fb72a52 100644
+--- a/ScoreKeep/Teams/TeamsView.swift
++++ b/ScoreKeep/Teams/TeamsView.swift
+@@ -14,7 +14,7 @@ struct TeamsView: View {
+    // @Query(sort: \Coach.lastName) var coaches: [Coach]
+     //@State private var path = [Team]()
+     @State private var showAddTeamScreen = false
+-    //@Binding var path: NavigationPath
++    @Binding var navPath: NavigationPath
+ 
+     var body: some View {
+             List {
+@@ -37,6 +37,7 @@ struct TeamsView: View {
+                 team in
+                 TeamDetailView(team: team)
+                 //TeamDetailView(path: $path, team: team)
++                
+             }
+             .toolbar{
+                 
+@@ -63,12 +64,13 @@ struct TeamsView: View {
+ }
+ 
+ #Preview {
++    @Previewable @State var navPath = NavigationPath()
+     let preview = Preview()
+     let game = Game.defaultGame
+     preview.addSampleGames([game])
+ 
+     return NavigationStack {
+-        TeamsView()
++        TeamsView(navPath: $navPath)
+             .modelContainer(preview.modelContainer)
+     }
+ }
