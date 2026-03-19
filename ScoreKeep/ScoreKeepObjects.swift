@@ -376,37 +376,114 @@ enum StatLabels: String, Codable, CaseIterable {
 
 struct BattingLineupView: View {
     
+//    let geo: GeometryProxy
+//    let team: Team
+//    
+//    var battingOrder: [PlayerPos] {
+//        return team.lineup.sorted { $0.batting < $1.batting }
+//    }
+    @ObservedObject var gameVM: GameViewModel
+    @State var showSubPages: Bool = false
+    @State var showAlert: Bool = false
     let geo: GeometryProxy
     let team: Team
+    let tab: String
     
-    var battingOrder: [PlayerPos] {
-        return team.lineup.sorted { $0.batting < $1.batting }
+    
+    var battingOrder: [[PlayerPos]] {
+        var displayLineup: [[PlayerPos]] = []
+        
+        if tab == "Home" {
+            displayLineup.append(contentsOf: gameVM.homeLineup.sorted(by: { $0.last!.batting < $1.last!.batting} ))
+        } else {
+            displayLineup.append(contentsOf: gameVM.visitorLineup.sorted(by: { $0.last!.batting < $1.last!.batting} ))
+        }
+        return displayLineup
     }
     
     var body: some View {
+//        VStack(alignment: .leading) {
+//            Text("\(team.name)")
+//                .padding(.horizontal, 5)
+//                .padding(.top, 5)
+//                .frame(width: geo.size.width*0.4, height: 50, alignment: .leading)
+//                .border(Color.blue)
+//            ForEach(battingOrder, id: \.self) { player in
+//                HStack {
+//                    Text("\(player.batting)) \(player.player.number) - \(player.player.lastName), \(player.player.firstName.first!)")
+//                    Spacer(minLength: 10)
+//                    Text("\(player.position)")
+//                }.lineLimit(1)
+//                    .minimumScaleFactor(0.5)
+//                
+//                .padding(.horizontal, 5)
+//                .padding(.top, 5)
+//                .frame(width: geo.size.width*0.4, height: 75, alignment: .topLeading)
+//                .border(Color.blue)
+//            }
+//        }
         VStack(alignment: .leading) {
             Text("\(team.name)")
                 .padding(.horizontal, 5)
                 .padding(.top, 5)
                 .frame(width: geo.size.width*0.4, height: 50, alignment: .leading)
                 .border(Color.blue)
-            ForEach(battingOrder, id: \.self) { player in
-                HStack {
-                    Text("\(player.batting)) \(player.player.number) - \(player.player.lastName), \(player.player.firstName.first!)")
-                    Spacer(minLength: 10)
-                    Text("\(player.position)")
-                }.lineLimit(1)
-                    .minimumScaleFactor(0.5)
-                
-                .padding(.horizontal, 5)
-                .padding(.top, 5)
+            ForEach(battingOrder, id: \.self) { orderSlot in
+                VStack(spacing: 0) {
+                    HStack(alignment: .top, spacing: 0) {
+                        Text("\(orderSlot.first!.batting))")
+                            .padding(.leading, 2)
+                            .padding(.top, 2)
+                            .font(.caption)
+                            .frame(width: 20, height: 25, alignment: .topLeading)
+                            //.border(Color.red)
+                        VStack(spacing: 0) {
+                            ForEach(orderSlot, id: \.self) { player in
+                                HStack {
+                                    Text("\(player.player.number) - \(player.player.lastName), \(player.player.firstName.first!)")
+                                    Spacer(minLength: 10)
+                                    Text("\(player.position)")
+                                }
+                                .font(.system(size: 12))
+                                .padding(.horizontal, 5)
+                                .padding(.top, 2)
+                                .lineLimit(1)
+                                .minimumScaleFactor(0.5)
+                                .frame(width: geo.size.width*0.32, height: 25, alignment: .topLeading)
+                                //.border(.green)
+                                .onTapGesture {
+                                    showSubPages.toggle()
+                                }
+                                Rectangle()
+                                    .fill(.blue.opacity(70))
+                                    .frame(height: 1)
+                                //Divider().opacity(100)
+                            }
+                        }
+                    }
+                }
+                .padding(.horizontal, 0)
+                .padding(.top, 0)
                 .frame(width: geo.size.width*0.4, height: 75, alignment: .topLeading)
                 .border(Color.blue)
             }
+            .padding(.top, 0)
         }
-        
+        .sheet(isPresented: $showSubPages, onDismiss: {
+            //  update game viewmodel, check outs and switch sides
+            
+                                
+            
+        })
+        {
+            ShowSubsView(gameVM: gameVM, team: team, lineup: team.lineup)
+          
+        }
             
     }
+        
+            
+    
         
 }
 //#Preview {

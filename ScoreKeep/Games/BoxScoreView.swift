@@ -12,18 +12,20 @@ struct BoxScoreView: View {
     @Environment(\.dismiss) var dismiss
     @ObservedObject var gameViewModel: GameViewModel
     
-    private var visitingTeam: [PlayerPos] {
-        return gameViewModel.game.visitingLineup.sorted { $0.batting < $1.batting }
+//    private var visitingTeam: [PlayerPos] {
+//        return gameViewModel.game.visitingLineup.sorted { $0.batting < $1.batting }
+//    }
+//    
+//    private var homeTeam: [PlayerPos] {
+//        return gameViewModel.game.homeLineup.sorted { $0.batting < $1.batting }
+//    }
+//    
+//    private var plateAppearances: [OffensivePlateAppearance] {
+//        return []
+//    }
+    var teams:[Team] {
+        [gameViewModel.game.visitingTeam!, gameViewModel.game.homeTeam!]
     }
-    
-    private var homeTeam: [PlayerPos] {
-        return gameViewModel.game.homeLineup.sorted { $0.batting < $1.batting }
-    }
-    
-    private var plateAppearances: [OffensivePlateAppearance] {
-        return []
-    }
-    
     
     
     var body: some View {
@@ -34,115 +36,67 @@ struct BoxScoreView: View {
                         ScoreView(gameViewModel: gameViewModel)
                             .padding(.horizontal)
                     }
-                    ScrollView {
-                        Text("\(gameViewModel.game.visitingTeam!.name)")
-                        ScrollView(.horizontal) {
-                            var team: PlayerStats {
-                                return gameViewModel.getTeamStats(team: 0)
-                            }
-                            HStack {
-                                Text("Player")
-                                Spacer(minLength: 90)
+                    
+                    ForEach(teams, id: \.self) { team in
+                        ScrollView {
+                            Text("\(team.name)")
+                            ScrollView(.horizontal) {
+                                var index = teams.firstIndex(of: team)!
+                                var team: PlayerStats {
+                                    return gameViewModel.getTeamStats(team: index)
+                                }
                                 HStack {
-                                    ForEach(StatLabels.allCases, id: \.self) { stat in
-                                        Text("\(stat.rawValue)")
-                                            .frame(width: geo.size.width / 15)
+                                    Text("Player")
+                                    Spacer(minLength: 90)
+                                    HStack {
+                                        ForEach(StatLabels.allCases, id: \.self) { stat in
+                                            Text("\(stat.rawValue)")
+                                                .frame(width: geo.size.width / 15)
+                                        }
                                     }
+                                    .frame(width: geo.size.width * 0.9)
                                 }
-                                .frame(width: geo.size.width * 0.9)
+                                .font(.caption2)
+                                
+                                ForEach(selectTeam(index: index), id: \.self) { player in
+                                    var plateAppearances: [OffensivePlateAppearance] {
+                                        return gameViewModel.getPlayerPA(innings: gameViewModel.visitorInnings, player: player.player)
+                                    }
+                                    var playerStats: PlayerStats {
+                                        return gameViewModel.getPlayerStats(plateAppearances: plateAppearances)
+                                    }
+                                    
+                                    HStack {
+                                        Text("\(player.player.lastName), \(player.player.firstName.prefix(1))")
+                                            .frame(width: geo.size.width * 0.3, alignment: .init(horizontal: .leading, vertical: .center))
+                                            .font(.caption2)
+                                        HStack {
+                                            ForEach(playerStats.statSummary, id: \.self) { stat in
+                                                Text("\(stat)")
+                                                    .frame(width: geo.size.width / 15)
+                                            }
+                                        }
+                                        .frame(width: geo.size.width * 0.9)
+                                    }
+                                    
+                                }
+                                Divider()
+                                HStack {
+                                    Text("Totals")
+                                        .frame(width: geo.size.width * 0.3, alignment: .init(horizontal: .leading, vertical: .center))
+                                        .font(.caption2)
+                                    HStack {
+                                        ForEach(team.statSummary, id: \.self) { stat in
+                                            Text("\(stat)")
+                                                .frame(width: geo.size.width / 15)
+                                        }
+                                    }
+                                    .frame(width: geo.size.width * 0.9)
+                                }
                             }
-                            .font(.caption2)
-                        
-                            ForEach(visitingTeam, id: \.self) { player in
-                                var plateAppearances: [OffensivePlateAppearance] {
-                                    return gameViewModel.getPlayerPA(innings: gameViewModel.visitorInnings, player: player.player)
-                                }
-                                var playerStats: PlayerStats {
-                                    return gameViewModel.getPlayerStats(plateAppearances: plateAppearances)
-                                }
+                            Divider()
+                            Divider()
                             
-                                HStack {
-                                    Text("\(player.player.lastName), \(player.player.firstName.prefix(1))")
-                                        .frame(width: geo.size.width * 0.3, alignment: .init(horizontal: .leading, vertical: .center))
-                                        .font(.caption2)
-                                    HStack {
-                                        ForEach(playerStats.statSummary, id: \.self) { stat in
-                                            Text("\(stat)")
-                                                .frame(width: geo.size.width / 15)
-                                        }
-                                    }
-                                    .frame(width: geo.size.width * 0.9)
-                                }
-                                
-                            }
-                            HStack {
-                                Text("Totals")
-                                    .frame(width: geo.size.width * 0.3, alignment: .init(horizontal: .leading, vertical: .center))
-                                    .font(.caption2)
-                                HStack {
-                                    ForEach(team.statSummary, id: \.self) { stat in
-                                        Text("\(stat)")
-                                            .frame(width: geo.size.width / 15)
-                                    }
-                                }
-                                .frame(width: geo.size.width * 0.9)
-                            }
-                        }
-                        Text("\(gameViewModel.game.homeTeam!.name)")
-                        ScrollView(.horizontal) {
-                            var team: PlayerStats {
-                                return gameViewModel.getTeamStats(team: 1)
-                            }
-                            HStack {
-                                Text("Player")
-                                Spacer(minLength: 90)
-                                HStack {
-                                    ForEach(StatLabels.allCases, id: \.self) { stat in
-                                        Text("\(stat.rawValue)")
-                                            .frame(width: geo.size.width / 15)
-                                    }
-                                }
-                                .frame(width: geo.size.width * 0.9)
-                            }
-                            .font(.caption2)
-                        
-                            ForEach(homeTeam, id: \.self) { player in
-                                var plateAppearances: [OffensivePlateAppearance] {
-                                    return gameViewModel.getPlayerPA(innings: gameViewModel.visitorInnings, player: player.player)
-                                }
-                                var playerStats: PlayerStats {
-                                    return gameViewModel.getPlayerStats(plateAppearances: plateAppearances)
-                                }
-                                
-                                HStack {
-                                    Text("\(player.player.lastName), \(player.player.firstName.prefix(1))")
-                                        .font(.caption2)
-                                        .minimumScaleFactor(0.5)
-                                        .frame(width: geo.size.width * 0.3, alignment: .init(horizontal: .leading, vertical: .center))
-                                        
-                                    //Spacer(minLength: 90)
-                                    HStack {
-                                        ForEach(playerStats.statSummary, id: \.self) { stat in
-                                            Text("\(stat)")
-                                                .frame(width: geo.size.width / 15)
-                                        }
-                                    }
-                                    .frame(width: geo.size.width * 0.9)
-                                }
-                            }
-                            HStack {
-                                Text("Totals")
-                                    .frame(width: geo.size.width * 0.3, alignment: .init(horizontal: .leading, vertical: .center))
-                                    .font(.caption2)
-                                HStack {
-                                    ForEach(team.statSummary, id: \.self) { stat in
-                                        Text("\(stat)")
-                                            .frame(width: geo.size.width / 15)
-                                    }
-                                }
-                                .frame(width: geo.size.width * 0.9)
-                            }
-                        
                         }
                     }
                 }
@@ -150,6 +104,9 @@ struct BoxScoreView: View {
             
         }
         
+    }
+    func selectTeam(index: Int) -> [PlayerPos] {
+        return index == 0 ? decomposeLineup(lineup: gameViewModel.visitorLineup) : decomposeLineup(lineup: gameViewModel.homeLineup)
     }
 }
 
