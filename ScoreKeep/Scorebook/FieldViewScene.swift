@@ -347,7 +347,7 @@ class FieldScene: SKScene, SKPhysicsContactDelegate {
                 var outcomeString: String = ""
                 if plateAppearance.sac != 1 {
                     if posArray.count > 1 {
-                        //outcomeString += "G"
+                        outcomeString += "G"
                         for i in posArray {
                             outcomeString += "\(i)-"
                         }
@@ -526,7 +526,7 @@ class FieldScene: SKScene, SKPhysicsContactDelegate {
                 getHitType(node: touchedNode)
             }
             if touchedNode.name == "HBP" {
-                getHBP()
+                getHitType(node: touchedNode)
             }
             if touchedNode.name == "FO" {
                 setFlyOut.toggle()
@@ -1105,6 +1105,16 @@ class FieldScene: SKScene, SKPhysicsContactDelegate {
             plateAppearance.outcome.append("HR")
             
             setPlay.toggle()
+        case "HBP":
+            plateAppearance.hp = 1
+            gameVM.pitches.append(.ball)
+            plateAppearance.outcome.append("HBP")
+            
+            
+            gameVM.balls = 0
+            gameVM.strikes = 0
+            
+            moveNode(node: self.gameVM.baseRunners[0], bases: 1)
         default: break
         }
         //run(SKAction.repeat(sequenceAction, count: plateAppearance.hit))
