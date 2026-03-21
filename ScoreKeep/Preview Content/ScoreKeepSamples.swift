@@ -97,12 +97,13 @@ extension OffensivePlateAppearance {
     static var defaultPlateAppearance: OffensivePlateAppearance {
         var appearance: OffensivePlateAppearance = OffensivePlateAppearance(order: 1, batter: Player(firstName: Player.firstNames, lastName: Player.lastNames, number: Player.numbers), inning: 1)
         appearance.hit = 2
-        appearance.outcome = ["2B"]
+        appearance.outcome = ["home" : "E7", "first" : "", "second" : "Stole 3B", "third" : ""]
         appearance.run = true
         appearance.rbi = 2
-        appearance.baseOccupied = 2
+        appearance.baseOccupied = 3
         appearance.pitches = [.ball, .strikeLooking, .strikeSwinging, .ball, .foul]
-        
+        appearance.sb = [3]
+        appearance.outs = 2
         return appearance
     }
 }

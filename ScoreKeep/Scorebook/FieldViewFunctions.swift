@@ -94,7 +94,9 @@ func placeBaseRunners(basepathNode: SKShapeNode, baseOccupied: Int, plateAppeara
             basepathNode.lineWidth = 3
             pathNode = outLine(p1: firstBase, p2: outPoint(p1: firstBase, p2: secondBase, scaleFactor: 0.7), plateAppearance: plateAppearance, scene: scene)
             //add secondary position out label
+            
         }
+        addOutcomes(plateAppearance: plateAppearance, scene: scene)
         //addHitLoc()
     } else if baseOccupied == 2 {//|| (plateAppearance.hit == 2 && plateAppearance.outs != 0) {
         path.addLine(to: firstBase)
@@ -104,7 +106,7 @@ func placeBaseRunners(basepathNode: SKShapeNode, baseOccupied: Int, plateAppeara
             path.addLine(to: outPoint(p1: firstBase, p2: secondBase, scaleFactor: 0.8)) //(to: thirdBase2)
             
             pathNode = outLine(p1: secondBase, p2: outPoint(p1: firstBase, p2: secondBase, scaleFactor: 0.7), plateAppearance: plateAppearance, scene: scene)
-
+            addOutcomes(plateAppearance: plateAppearance, scene: scene)
             //addOutX(base: thirdBase2, scene: scene)
         } else {
             path.addLine(to: secondBase)
@@ -121,6 +123,7 @@ func placeBaseRunners(basepathNode: SKShapeNode, baseOccupied: Int, plateAppeara
             path.addLine(to: outPoint(p1: secondBase, p2: thirdBase, scaleFactor: 0.8)) //homePlate2)
             
             pathNode = outLine(p1: thirdBase, p2: outPoint(p1: secondBase, p2: thirdBase, scaleFactor: 0.7), plateAppearance: plateAppearance, scene: scene)
+            addOutcomes(plateAppearance: plateAppearance, scene: scene)
             //addOutX(base: homePlate2, scene: scene)
         } else {
             path.addLine(to: thirdBase)
@@ -138,6 +141,7 @@ func placeBaseRunners(basepathNode: SKShapeNode, baseOccupied: Int, plateAppeara
             path.addLine(to: outPoint(p1: thirdBase, p2: homePlate, scaleFactor: 0.8)) //homePlate2)
             
             pathNode = outLine(p1: thirdBase, p2: outPoint(p1: thirdBase, p2: homePlate, scaleFactor: 0.7), plateAppearance: plateAppearance, scene: scene)
+            addOutcomes(plateAppearance: plateAppearance, scene: scene)
             //addOutX(base: homePlate2, scene: scene)
         } else {
             path.addLine(to: homePlate)
@@ -162,36 +166,37 @@ func placeKLabel(plateAppearance: OffensivePlateAppearance, scene: SKScene) {
     labelNode.text = "K"
     labelNode.name = "K"
     labelNode.fontSize = 20
-    labelNode.fontColor = plateAppearance.outcome.contains(where: { $0 == "KS"}) ? .black : .red
+    labelNode.fontColor = plateAppearance.outcome["home"] == "KS" ? .black : .red
     labelNode.position = CGPoint(x: scene.frame.midX, y: scene.frame.maxY*0.5)
     labelNode.setScale(0.5)
-    labelNode.isHidden = plateAppearance.outcome.contains(where: { $0 == "KS"}) || plateAppearance.outcome.contains(where: { $0 == "KL"}) ? false : true
+    labelNode.isHidden = plateAppearance.outcome["home"] ==  "KS" || plateAppearance.outcome["home"] ==  "KL" ? false : true
     
-    labelNode.xScale = plateAppearance.outcome.contains(where: { $0 == "KS"}) ? 1 : -1
+    labelNode.xScale = plateAppearance.outcome["home"] == "KS" ? 1 : -1
     
     scene.addChild(labelNode)
 }
 
 func addOutcomes(plateAppearance: OffensivePlateAppearance, scene: SKScene) {
-    for each in plateAppearance.outcome {
-        print(each)
-        
-        if each.starts(with: "F") {
-            addOutcomeNode(center: CGPoint(x: scene.frame.midX, y: scene.frame.maxY*0.5), size: 10, name: each, hidden: false, color: .red, scene: scene)
-        }
-        if each.contains("G") {
-            let outcome = each.replacingOccurrences(of: "G", with: "")
-            addOutcomeNode(center: CGPoint(x: scene.frame.midX, y: scene.frame.maxY*0.5), size: 10, name: outcome, hidden: false, color: .red, scene: scene)
-        }
-        if each.contains("U") {
-            addOutcomeNode(center: CGPoint(x: scene.frame.midX, y: scene.frame.maxY*0.5), size: 10, name: each, hidden: false, color: .red, scene: scene)
-        }
-        if each.contains("SAC") {
-            addOutcomeNode(center: CGPoint(x: scene.frame.midX, y: scene.frame.maxY*0.5), size: 10, name: each.replacingOccurrences(of: "SAC", with: ""), hidden: false, color: .red, scene: scene)
-        }
-        //addOutcomeNode(center: CGPoint(x: scene.frame.midX, y: scene.frame.maxY*0.5), size: 10, name: each, hidden: false, color: .red, scene: scene)
+    
+    guard let outcome = plateAppearance.outcome["home"] else {
+        print("did not get outcome")
+        return }
+    if outcome.contains(/[F]\d/) || outcome.starts(with: "U") {
+        addOutcomeNode(center: CGPoint(x: scene.frame.midX, y: scene.frame.maxY*0.5), size: 12, name: outcome, hidden: false, color: .red, scene: scene)
+    } else if outcome.starts(with: "G") {
+        addOutcomeNode(center: CGPoint(x: scene.frame.midX, y: scene.frame.maxY*0.5), size: 12, name: outcome.replacingOccurrences(of: "G", with: ""), hidden: false, color: .red, scene: scene)
+    } else if outcome.contains(/[B]\d/) {
+        addOutcomeNode(center: CGPoint(x: scene.frame.midX, y: scene.frame.maxY*0.5), size: 12, name: outcome, hidden: false, color: .red, scene: scene)
+    } else if outcome.starts(with: "E") || outcome.starts(with: "FC") {
+        addOutcomeNode(center: CGPoint(x: scene.frame.maxX*0.75, y: scene.frame.maxY*0.8), size: 8, name: outcome, hidden: false, color: .red, scene: scene)
+    } else if outcome.contains(/\d-\d-\d/) {
+        addOutcomeNode(center: CGPoint(x: scene.frame.midX, y: scene.frame.maxY*0.5), size: 12, name: outcome, hidden: false, color: .red, scene: scene)
     }
+    //.replacingOccurrences(of: "G", with: "")   if outcome.contains(/\d-\d-\d/)
 }
+
+
+
 func addHitLoc(plateAppearance: OffensivePlateAppearance, scene: SKScene) {
     var  homePlate: CGPoint { CGPoint(x: scene.frame.midX, y: scene.frame.midY*0.92) }
     let path = CGMutablePath()
@@ -240,9 +245,10 @@ func addOutcomeNode(center: CGPoint, size: CGFloat, name: String, hidden: Bool, 
     let labelNode = SKLabelNode(fontNamed: "Trebuchet MS")
     labelNode.text = name
     labelNode.name = name
-    labelNode.fontSize = 12
+    labelNode.fontSize = size
     labelNode.fontColor = color
     labelNode.position = CGPoint(x: center.x, y: center.y)
+    labelNode.zPosition = 100
     labelNode.isHidden = hidden
     scene.addChild(labelNode)
 }
@@ -392,7 +398,7 @@ func resetCount(scene: SKScene, plateAppearance: OffensivePlateAppearance, gameV
                 strikes += 1
             }
         }
-        if plateAppearance.outcome.contains(where: { $0 == "KS" }) || plateAppearance.outcome.contains(where: { $0 == "KL" }) {
+        if plateAppearance.outcome["home"] == "KS" || plateAppearance.outcome["home"] == "KL" {
             addKLabel(scene: scene, plateAppearance: plateAppearance)
         }
     }
@@ -420,7 +426,7 @@ func resetCount(scene: SKScene, plateAppearance: OffensivePlateAppearance, gameV
 }
 
 func addKLabel(scene: SKScene, plateAppearance: OffensivePlateAppearance) {
-    if plateAppearance.outcome[0] == "KS" || plateAppearance.outcome[0] == "KL" {
+    if plateAppearance.outcome["home"] == "KS" || plateAppearance.outcome["home"] == "KL" {
         let path = CGMutablePath()
         
         path.addArc(center: CGPoint(x: scene.frame.width/2, y: scene.frame.maxY*0.65), radius: 80, startAngle: 0, endAngle: .pi*2, clockwise: false)
@@ -437,7 +443,7 @@ func addKLabel(scene: SKScene, plateAppearance: OffensivePlateAppearance) {
         labelNode.text = "K"
         labelNode.fontSize = 70
         labelNode.position = CGPoint(x: scene.frame.width/2, y: scene.frame.maxY*0.65 - 20)
-        if plateAppearance.outcome[0] == "KS" {
+        if plateAppearance.outcome["home"] == "KS" {
             labelNode.name = "KS"
             labelNode.fontColor = .black
         } else {

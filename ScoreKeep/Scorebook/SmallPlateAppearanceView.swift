@@ -28,11 +28,7 @@ struct SmallPlateAppearanceView: View {
             VStack(alignment: .leading) {
                 
                 ZStack {
-//                    FieldViewScene(gameVM: gameViewModel, plateAppearance: player, scale: 1.0, largeView: false)
-//                        .frame(width: geo.size.width*0.75, height: geo.size.height*1.25)
-                    //PlateAppearanceView(scale: scale, xoffset: -150, yoffset: -70)
-                        //
-//                    ZStack {
+//
                     switch player.baseOccupied {
                 
                     case 1:
@@ -72,24 +68,32 @@ struct SmallPlateAppearanceView: View {
                                 .background(.clear)
                                 .ignoresSafeArea(edges: .bottom)
                     }
-                        
-                    //}
+                                            
+                    VStack(alignment: .leading, spacing: 0) {
+                        VStack(alignment: .leading) {
                     
-                    VStack {
-                        HStack {
-                            ForEach(player.outcome, id: \.self) { each in
-                                Text("\(each)")
-                            }
-                            .font(.system(size: 8))
-                                
+                            Text("\(player.outcome["home"] ?? "")")
+                                .font(.system(size: 8))
+                                .frame(width: 50, height: 1)
+                            Text("\(player.outcome["first"] ?? "")")
+                                .font(.system(size: 8))
+                                .frame(width: 50, height: 1)
+                            Text("\(player.outcome["second"] ?? "")")
+                                .font(.system(size: 8))
+                                .frame(width: 50, height: 1)
+                            Text("\(player.outcome["third"] ?? "")")
+                                .font(.system(size: 8))
+                                .frame(width: 50, height: 1)
                         }
-                        .frame(width: geo.size.width, height: geo.size.height*0.1)
-
+                        .frame(width: 50, height: geo.size.height*0.25, alignment: .topLeading)
+                        .padding(0)
+                        //.border(Color.black, width: 0.5)
                         HStack {
                             
                         }
-                        .frame(width: geo.size.width, height: geo.size.height*0.25)
-                        
+                        .frame(width: geo.size.width, height: geo.size.height*0.3)
+                        .padding(0)
+                        //.border(Color.black, width: 0.5)
                         HStack {
                             RbiView(rbis: player.rbi)
                                 .scaleEffect(0.25)
@@ -98,7 +102,8 @@ struct SmallPlateAppearanceView: View {
                             
                         }
                         .frame(width: geo.size.width, height: geo.size.height*0.1)
-                        HStack {
+                        //.border(Color.black, width: 0.5)
+                        HStack(alignment: .bottom) {
                             
                             CountView(pitches: player.pitches)
                                 .frame(width: geo.size.width*0.4, height: geo.size.height*0.2)
@@ -112,14 +117,15 @@ struct SmallPlateAppearanceView: View {
 
                             
                         }
-                        .frame(width: geo.size.width, height: geo.size.height*0.2)
+                        .frame(width: geo.size.width, height: geo.size.height*0.1)
+                        //.border(Color.black, width: 0.5)
                         Spacer()
                     }
                     
                 }
                 .frame(width: 75, height: 75, alignment: .topLeading)
                 
-                .overlay(player.outcome.isEmpty ? Rectangle().fill(Color.gray).opacity(0.8) : nil)
+                .overlay(player.outcome["home"] == "" ? Rectangle().fill(Color.gray).opacity(0.8) : nil)
 
             }
         }
@@ -185,7 +191,7 @@ class BasePathScene: SKScene, SKPhysicsContactDelegate {
         addGenericNode(center: CGPoint(x: self.frame.maxX*0.11, y: self.frame.maxY*0.37), size: self.frame.maxX*0.1, name: "3B", hidden: plateAppearance.hit == 3 ? false : true, color: .black, scene: self)
         addGenericNode(center: CGPoint(x: self.frame.maxX*0.11, y: self.frame.maxY*0.37), size: self.frame.maxX*0.1, name: "HR", hidden: plateAppearance.hit == 4 ? false : true, color: .black, scene: self)
         addGenericNode(center: CGPoint(x: self.frame.maxX*0.11, y: self.frame.maxY*0.37), size: self.frame.maxX*0.1, name: "E", hidden: true, color: .red, scene: self)
-        addGenericNode(center: CGPoint(x: self.frame.maxX*0.8, y: self.frame.maxY*0.37), size: self.frame.maxX*0.1, name: "HBP", hidden: !plateAppearance.outcome.contains(where: { $0 == "HBP"}), color: .blue, scene: self)
+        addGenericNode(center: CGPoint(x: self.frame.maxX*0.8, y: self.frame.maxY*0.37), size: self.frame.maxX*0.1, name: "HBP", hidden: plateAppearance.outcome["home"] != "HBP", color: .blue, scene: self)
         addGenericNode(center: CGPoint(x: self.frame.maxX*0.8, y: self.frame.maxY*0.37), size: self.frame.maxX*0.1, name: "BB", hidden: plateAppearance.bb != 1, color: .blue, scene: self)
     
         addHitLoc(plateAppearance: plateAppearance, scene: self)

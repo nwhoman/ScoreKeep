@@ -171,7 +171,7 @@ class OffensivePlateAppearance {
     var pitches: [Pitch]
     var outs: Int
     var hit: Int
-    var outcome: [String]
+    var outcome: [String : String]
     var baseOccupied: Int
     var rbi: Int
     var run: Bool
@@ -201,7 +201,10 @@ class OffensivePlateAppearance {
         self.pitches = []
         self.outs = 0
         self.hit = 0
-        self.outcome = []
+        self.outcome = ["home" : "",
+                        "first" : "",
+                        "second" : "",
+                        "third" : ""]
         self.baseOccupied = 0
         self.rbi = 0
         self.run = false
@@ -604,9 +607,16 @@ struct SacOutView: View {
                 if player.outs != 0 {
                     Text("\(player.outs)")                //Out # if batter out
                         .font(.system(size: 14).bold())
-                        .frame(width: geo.size.width, height: geo.size.height)
+                        //.frame(width: geo.size.width, height: geo.size.height)
 
-                        .overlay(Circle().stroke(style: StrokeStyle(lineWidth: 1)))
+                        .overlay {
+                            Circle()
+                                .stroke(style: StrokeStyle(lineWidth: 1))
+                                .frame(width: 15)
+                        }
+                            
+                            
+                        .frame(width: geo.size.width, height: geo.size.height)
                         .foregroundColor(Color.red)
                         //.padding(.leading, -10)
                 }
@@ -621,14 +631,16 @@ struct SacOutView: View {
                 }
                 Spacer()
             }
-            .frame(width: geo.size.width*0.75, height: 17)
+            .frame(width: geo.size.width*0.75, height: 27)
             //.border(Color.black)
         }
     }
 }
-//#Preview {
-//    SacOutView()
-//}
+#Preview {
+    let player = OffensivePlateAppearance.defaultPlateAppearance
+    
+    SacOutView(player: player)
+}
 
 struct CountView: View {
     var pitches: [Pitch]
@@ -720,10 +732,10 @@ struct CountView: View {
     }
 
 }
-#Preview {
-
-    CountView(pitches: [.ball, .strikeSwinging, .ball, .ball, .strikeLooking, .foul, .ball, .foul, .foul, .foul])
-}
+//#Preview {
+//
+//    CountView(pitches: [.ball, .strikeSwinging, .ball, .ball, .strikeLooking, .foul, .ball, .foul, .foul, .foul])
+//}
 //#Preview {
 //    let game = Game.defaultGame
 //    let gameVM = GameViewModel(game: game)

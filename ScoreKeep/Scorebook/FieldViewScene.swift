@@ -176,24 +176,11 @@ class FieldScene: SKScene, SKPhysicsContactDelegate {
     
     }
     @objc func handleTapOnce() {
-        let waitAction = SKAction.wait(forDuration: 1)
-        let moveAction = SKAction.run {
-            self.moveNode(node: self.gameVM.baseRunners[0], bases: 1)
-        }
-        let sequenceAction = SKAction.sequence([moveAction, waitAction])
-//        if setError {
-//            var outcomeString: String = "E"
-//            for i in posArray {
-//                outcomeString += "\(i)-"
-//            }
-//            outcomeString.removeLast()
-//            plateAppearance.outcome = outcomeString
-//            print(outcomeString)
-//            
-//            run(SKAction.repeat(sequenceAction, count: 1))
-//            setError = false
+//        let waitAction = SKAction.wait(forDuration: 1)
+//        let moveAction = SKAction.run {
+//            self.moveNode(node: self.gameVM.baseRunners[0], bases: 1)
 //        }
-//        print(posArray)
+//        let sequenceAction = SKAction.sequence([moveAction, waitAction])
         
     }
     @objc func handleLongTap() {
@@ -205,7 +192,7 @@ class FieldScene: SKScene, SKPhysicsContactDelegate {
                 outcomeString += "\(i)-"
             }
             outcomeString.removeLast()
-            plateAppearance.outcome.append(outcomeString)
+            //plateAppearance.outcome.append(outcomeString)
             //getGroundOut()
         } else if setThrownOut {
             var outcomeString: String = "E"
@@ -213,7 +200,7 @@ class FieldScene: SKScene, SKPhysicsContactDelegate {
                 outcomeString += "\(i)-"
             }
             outcomeString.removeLast()
-            brToAdvance?.player.outcome.append(outcomeString)
+            //brToAdvance?.player.outcome.append(outcomeString)
             
         }
     
@@ -271,10 +258,11 @@ class FieldScene: SKScene, SKPhysicsContactDelegate {
     }
     
     func addOutcomeLabel() {
-        if plateAppearance.outcome.contains(where: { $0 == "G" }) || plateAppearance.outcome.contains(where: { $0 == "F" }) ||
-            plateAppearance.outcome.contains(where: { $0 == "SAC" }) {
+        guard let homeOutcome = plateAppearance.outcome["home"] else { return }
+        if homeOutcome.contains("G") || homeOutcome.contains("F") ||
+            homeOutcome.contains("SAC") {
             let labelNode = SKLabelNode(fontNamed: "Trebuchet MS")
-            labelNode.text = plateAppearance.outcome[0]
+            labelNode.text = homeOutcome
             labelNode.fontSize = 70
             labelNode.position = CGPoint(x: self.frame.width/2, y: self.frame.maxY*0.65 - 20)
             labelNode.name = "outcome"
@@ -282,7 +270,7 @@ class FieldScene: SKScene, SKPhysicsContactDelegate {
             labelNode.isHidden = false
             addChild(labelNode)
         }
-        //print(plateAppearance.outcome)
+        //  add other types of outcomes
     }
     
     
@@ -299,7 +287,7 @@ class FieldScene: SKScene, SKPhysicsContactDelegate {
             gameVM.balls = 0
             gameVM.strikes = 0
             plateAppearance.bb = 1
-            plateAppearance.outcome.append("BB")
+            plateAppearance.outcome["home"] = "BB"
         }
         let index = gameVM.batter!.pitches.filter({$0 == .ball}).count
         let path = CGMutablePath()
@@ -332,6 +320,7 @@ class FieldScene: SKScene, SKPhysicsContactDelegate {
         addChild(node)
         if setGroundOut {
             if baseRunner.player.baseOccupied == 1 {
+                guard let homeOutcome = plateAppearance.outcome["home"] else { return }
                 var outcomeString: String = ""
                 if plateAppearance.sac != 1 {
                     if posArray.count > 1 {
@@ -345,39 +334,35 @@ class FieldScene: SKScene, SKPhysicsContactDelegate {
                             outcomeString += "\(i)-"
                         }
                     }
-                    if plateAppearance.outcome.contains("FC") {
-                        plateAppearance.outcome.popLast()
+                    if homeOutcome.contains("FC") {
+                        //plateAppearance.outcome.popLast()
                         outcomeString = ""
                         for i in posArray {
                             outcomeString += "\(i)-"
                         }
                     }
                     outcomeString.removeLast()
-                } else {
-                    outcomeString += "SAC B"
-                    for i in posArray {
-                        outcomeString += "\(i)-"
-                    }
-                    outcomeString.removeLast()
                 }
                 baseRunner.player.baseOccupied = 0
-                plateAppearance.outcome.append(outcomeString)
-            } else {
+                plateAppearance.outcome["home"] = outcomeString
+            } else if baseRunner.player.baseOccupied > 1 {
                 var outcomeString: String = ""
-                if posArray.count > 1 {
-                    for i in posArray {
-                        outcomeString += "\(i)-"
-                    }
-                } else {
-                    outcomeString += "U"
-                    for i in posArray {
-                        outcomeString += "\(i)-"
+                if !posArray.isEmpty {
+                    if posArray.count > 1 {
+                        for i in posArray {
+                            outcomeString += "\(i)-"
+                        }
+                    } else {
+                        outcomeString += "U"
+                        for i in posArray {
+                            outcomeString += "\(i)-"
+                        }
                     }
                 }
            // print("\(baseRunner.player.batter.number), \(baseRunner.player.baseOccupied)")
                 outcomeString.removeLast()
-                plateAppearance.outcome.append("FC-\(posArray[0])")
-                baseRunner.player.outcome.append(outcomeString)
+                plateAppearance.outcome["home"] = "FC-\(posArray[0])"
+                baseRunner.player.outcome["first"] = outcomeString
                 //baseRunner.player.baseOccupied -= 1
                 if gameVM.baseRunners.contains(where: { $0.player.baseOccupied == 4 }) && baseRunner.player.baseOccupied != 4 {
                     var scoringRunner: BaseRunnerNode? = gameVM.baseRunners.first(where: { $0.player.baseOccupied == 4 })
@@ -393,6 +378,15 @@ class FieldScene: SKScene, SKPhysicsContactDelegate {
                         setRBI = true
                     }
                 }
+            } else if baseRunner.player.baseOccupied == 0 {
+                var outcomeString: String = "B"
+                //outcomeString += "SAC B"
+                    for i in posArray {
+                        print("\(i)-")
+                        outcomeString += "\(i)-"
+                    }
+                    outcomeString.removeLast()
+                plateAppearance.outcome["home"] = outcomeString
             }
         } else if setThrownOut {
             var outcomeString: String = ""
@@ -400,9 +394,20 @@ class FieldScene: SKScene, SKPhysicsContactDelegate {
                 outcomeString += "\(i)-"
             }
             outcomeString.removeLast()
-            baseRunner.player.outcome.append(outcomeString)
+            switch baseRunner.player.baseOccupied {
+            case 1:
+                baseRunner.player.outcome["first"] = outcomeString + "at 1B"
+            case 2:
+                baseRunner.player.outcome["first"] = outcomeString + "at 2B"
+            case 3:
+                baseRunner.player.outcome["second"] = outcomeString + "at 3B"
+            case 4:
+                baseRunner.player.outcome["third"] = outcomeString + "at Home"
+            default:
+                break
+                
+            }
         }
-    
         gameVM.baseRunners.removeAll { node in
             node.player.batter.number == baseRunner.player.batter.number
         }
@@ -479,7 +484,7 @@ class FieldScene: SKScene, SKPhysicsContactDelegate {
                     addOutNode(gameVM: gameVM, scene: self, plateAppearance: plateAppearance)  //green out dot, not out at base X
                     
                     self.enumerateChildNodes(withName: "K") {
-                            node, stop in
+                        node, stop in
                         node.isHidden = false
                         
                     }
@@ -488,7 +493,7 @@ class FieldScene: SKScene, SKPhysicsContactDelegate {
                         node, stop in
                         node.isHidden = false
                     }
-                    plateAppearance.outcome.append("KL")
+                    plateAppearance.outcome["home"] = "KL"
                     addKLabel(scene: self, plateAppearance: plateAppearance)
                 }
             }
@@ -501,15 +506,15 @@ class FieldScene: SKScene, SKPhysicsContactDelegate {
                     addOutNode(gameVM: gameVM, scene: self, plateAppearance: plateAppearance)  //green out dot, not out at base X
                     
                     self.enumerateChildNodes(withName: "K") {
-                            node, stop in
+                        node, stop in
                         node.isHidden = false
                         
                     }
                     self.enumerateChildNodes(withName: "KS") {
-                            node, stop in
+                        node, stop in
                         node.isHidden = false
                     }
-                    plateAppearance.outcome.append("KS")
+                    plateAppearance.outcome["home"] = "KS"
                     
                     addKLabel(scene: self, plateAppearance: plateAppearance)
                 }
@@ -547,13 +552,16 @@ class FieldScene: SKScene, SKPhysicsContactDelegate {
                 getSAC()
             }
             if touchedNode.name == "B" {
-                plateAppearance.outcome.append(" B")
                 setGroundOut.toggle()
+                guard let outcome = plateAppearance.outcome["home"] else { return }
+                plateAppearance.outcome["home"] = "B"
                 moveNode(node: gameVM.baseRunners[0], bases: 1)
+                
+                
             }
             if touchedNode.name == "RBI" {
                 plateAppearance.rbi += 1
-        
+                
             }
             if touchedNode.name == "pitched-strike" || touchedNode.name == "pitched-ball" {
                 gameVM.batter!.pitches.popLast()
@@ -597,7 +605,7 @@ class FieldScene: SKScene, SKPhysicsContactDelegate {
                 for i in positionNames {
                     if touchedNode.name == i.name {
                         
-                        plateAppearance.outcome.append("F\(i.number ?? 0)")
+                        plateAppearance.outcome["home"] = "F\(i.number)"
                         
                         addOutNode(gameVM: gameVM, scene: self, plateAppearance: plateAppearance)
                         node = enumerateChildNodes(withName: "SFO") { node, stop in
@@ -615,7 +623,7 @@ class FieldScene: SKScene, SKPhysicsContactDelegate {
                 node = enumerateChildNodes(withName: "FO") { node, stop in
                     node.isHidden = true
                 }
-
+                
                 node = enumerateChildNodes(withName: "HBP") { node, stop in
                     node.isHidden = true
                 }
@@ -637,8 +645,11 @@ class FieldScene: SKScene, SKPhysicsContactDelegate {
                 }
                 for i in gameVM.baseRunners {
                     if touchedNode.name == i.node.name {
-                        print("forced out: \(i.player.batter.number) at \(i.player.baseOccupied)")
-                        getGroundOut(baseRunner: i)
+                        if posArray.isEmpty {
+                            moveNode(node: i, bases: 1)
+                        } else {
+                            getGroundOut(baseRunner: i)
+                        }
                     }
                 }
                 if touchedNode.name == "SGO" {
@@ -683,7 +694,7 @@ class FieldScene: SKScene, SKPhysicsContactDelegate {
                 for i in positionNames {
                     if touchedNode.name == i.name {
                         plateAppearance.re += 1
-                        plateAppearance.outcome.append("E\(i.number)")
+                        plateAppearance.outcome["home"] = "E\(i.number)"
                         gameVM.balls = 0
                         gameVM.strikes = 0
                         setError.toggle()
@@ -692,52 +703,133 @@ class FieldScene: SKScene, SKPhysicsContactDelegate {
                 
             }
             if advanceBaseRunner {
+                guard let baseRunner = brToAdvance else { return }
+                moveNode(node: brToAdvance ?? gameVM.baseRunners[0], bases: 1)
                 if touchedNode.name == "SB" {
+                    switch baseRunner.player.baseOccupied {
+                    case 1:
+                        baseRunner.player.outcome["first"]! += ""
+                    case 2:
+                        baseRunner.player.outcome["first"] = "Stole  2B"
+                        baseRunner.player.sb.append(2)
+                    case 3:
+                        baseRunner.player.outcome["second"] = "Stole 3B"
+                        baseRunner.player.sb.append(3)
+                    case 4:
+                        baseRunner.player.outcome["third"] = "Stole Home"
+                        baseRunner.player.sb.append(4)
+                    default:
+                        break
+                        
+                    }
                     advanceBRMenu()
-                    brToAdvance?.player.outcome.append("Stole  \((brToAdvance?.player.baseOccupied ?? 1)+1)")
-                    brToAdvance?.player.sb.append((brToAdvance?.player.baseOccupied ?? 1)+1)
-                    moveNode(node: brToAdvance ?? gameVM.baseRunners[0], bases: 1)
+                    
                     var node = enumerateChildNodes(withName: "Pitch") { node, stop in
                         node.isHidden = false
                     }
                 }
                 if touchedNode.name == "XB" {
+                    switch baseRunner.player.baseOccupied {
+                    case 1:
+                        baseRunner.player.outcome["first"]! += ""
+                    case 2:
+                        baseRunner.player.outcome["first"] = "Advanced to  2B"
+                        baseRunner.player.sb.append(2)
+                    case 3:
+                        baseRunner.player.outcome["second"] = "Advanced to 3B"
+                        baseRunner.player.sb.append(3)
+                    case 4:
+                        baseRunner.player.outcome["third"] = "Advanced to Home"
+                        baseRunner.player.sb.append(4)
+                    default:
+                        break
+                    }
                     advanceBRMenu()
-                    brToAdvance?.player.outcome.append("Advanced to \((brToAdvance?.player.baseOccupied ?? 1)+1)")
-                    moveNode(node: brToAdvance ?? gameVM.baseRunners[0], bases: 1)
+                    //                    moveNode(node: brToAdvance ?? gameVM.baseRunners[0], bases: 1)
+                    var node = enumerateChildNodes(withName: "Pitch") { node, stop in
+                        node.isHidden = false
+                    }
                 }
                 if touchedNode.name == "WP" {
+                    switch baseRunner.player.baseOccupied {
+                    case 1:
+                        baseRunner.player.outcome["first"]! += ""
+                    case 2:
+                        baseRunner.player.outcome["first"] = "WP to  2B"
+                        baseRunner.player.sb.append(2)
+                    case 3:
+                        baseRunner.player.outcome["second"] = "WP to 3B"
+                        baseRunner.player.sb.append(3)
+                    case 4:
+                        baseRunner.player.outcome["third"] = "WP to Home"
+                        baseRunner.player.sb.append(4)
+                    default:
+                        break
+                    }
                     advanceBRMenu()
-                    brToAdvance?.player.outcome.append("Wild pitch to  \((brToAdvance?.player.baseOccupied ?? 1)+1)")
-                    brToAdvance?.player.sb.append((brToAdvance?.player.baseOccupied ?? 1)+1)
-                    moveNode(node: brToAdvance ?? gameVM.baseRunners[0], bases: 1)
+                    //                    moveNode(node: brToAdvance ?? gameVM.baseRunners[0], bases: 1)
                     var node = enumerateChildNodes(withName: "Pitch") { node, stop in
                         node.isHidden = false
                     }
                 }
                 if touchedNode.name == "PB" {
+                    switch baseRunner.player.baseOccupied {
+                    case 1:
+                        baseRunner.player.outcome["first"]! += ""
+                    case 2:
+                        baseRunner.player.outcome["first"] = "PB to  2B"
+                        baseRunner.player.sb.append(2)
+                    case 3:
+                        baseRunner.player.outcome["second"] = "PB to 3B"
+                        baseRunner.player.sb.append(3)
+                    case 4:
+                        baseRunner.player.outcome["third"] = "PB to Home"
+                        baseRunner.player.sb.append(4)
+                    default:
+                        break
+                        
+                    }
                     advanceBRMenu()
-                    brToAdvance?.player.outcome.append("Passed ball to  \((brToAdvance?.player.baseOccupied ?? 1)+1)")
-                    brToAdvance?.player.sb.append((brToAdvance?.player.baseOccupied ?? 1)+1)
-                    moveNode(node: brToAdvance ?? gameVM.baseRunners[0], bases: 1)
-                    var node = enumerateChildNodes(withName: "Pitch") { node, stop in
+                    //                    moveNode(node: brToAdvance ?? gameVM.baseRunners[0], bases: 1)
+                    var node: Void = enumerateChildNodes(withName: "Pitch") { node, stop in
                         node.isHidden = false
                     }
                 }
                 if touchedNode.name == "TO" {
+                    switch baseRunner.player.baseOccupied {
+                    case 1:
+                        baseRunner.player.outcome["first"] = "Thrown out at 1B"
+                    case 2:
+                        baseRunner.player.outcome["first"] = "Thrown out at 2B"
+                        baseRunner.player.sb.append(2)
+                    case 3:
+                        baseRunner.player.outcome["second"] = "Thrown out at 3B"
+                        baseRunner.player.sb.append(3)
+                    case 4:
+                        baseRunner.player.outcome["third"] = "Thrown out at Home"
+                        baseRunner.player.sb.append(4)
+                    default:
+                        break
+                        
+                    }
                     advanceBRMenu()
-                    brToAdvance?.player.outcome.append("Thrown out at   \((brToAdvance?.player.baseOccupied ?? 1)+1)")
+                    //moveNode(node: brToAdvance ?? gameVM.baseRunners[0], bases: 1)
+                    var node: Void = enumerateChildNodes(withName: "Pitch") { node, stop in
+                        node.isHidden = false
+                    }
                     setThrownOut.toggle()
                 }
             }
-            for i in gameVM.baseRunners {
-                if touchedNode.name == i.node.name {
-                    if i.player.baseOccupied != 0 {
-                        //print("\(i.player.batter.number)-\(i.player.baseOccupied)")
-                        brToAdvance = i
-                        advanceBRMenu()
+            if !setGroundOut {
+                for i in gameVM.baseRunners {
+                    if touchedNode.name == i.node.name {
+                        if i.player.baseOccupied != 0 {
+                            //print("\(i.player.batter.number)-\(i.player.baseOccupied)")
+                            brToAdvance = i
+                            advanceBRMenu()
+                        }
+                        
                     }
-                    
                 }
             }
         }
@@ -949,7 +1041,7 @@ class FieldScene: SKScene, SKPhysicsContactDelegate {
         
     }
     func getBunt() {
-        plateAppearance.outcome.append("B")
+        plateAppearance.outcome["home"] = "B"
         
         var node = enumerateChildNodes(withName: "Hit") { node, stop in
             node.isHidden.toggle()
@@ -968,7 +1060,7 @@ class FieldScene: SKScene, SKPhysicsContactDelegate {
         }
     }
     func getSAC() {
-        plateAppearance.outcome.append("SAC")
+        plateAppearance.outcome["home"] = "SAC"
         plateAppearance.sac = 1
         
         var node = enumerateChildNodes(withName: "Hit") { node, stop in
@@ -1041,7 +1133,7 @@ class FieldScene: SKScene, SKPhysicsContactDelegate {
                 unusedNode.isHidden.toggle()
             }
             bases = 1
-            plateAppearance.outcome.append("1B")
+            plateAppearance.outcome["home"] = "1B"
             plateAppearance.hit = 1
             setPlay.toggle()
             
@@ -1056,7 +1148,7 @@ class FieldScene: SKScene, SKPhysicsContactDelegate {
                 unusedNode.isHidden.toggle()
             }
             bases = 2
-            plateAppearance.outcome.append("2B")
+            plateAppearance.outcome["home"] = "2B"
             plateAppearance.hit = 2
             setPlay.toggle()
         case "3B":
@@ -1070,7 +1162,7 @@ class FieldScene: SKScene, SKPhysicsContactDelegate {
                 unusedNode.isHidden.toggle()
             }
             bases = 3
-            plateAppearance.outcome.append("3B")
+            plateAppearance.outcome["home"] = "3B"
             plateAppearance.hit = 3
             setPlay.toggle()
         case "HR":
@@ -1085,13 +1177,13 @@ class FieldScene: SKScene, SKPhysicsContactDelegate {
             }
         
             plateAppearance.hit = 4
-            plateAppearance.outcome.append("HR")
+            plateAppearance.outcome["home"] = "HR"
             
             setPlay.toggle()
         case "HBP":
             plateAppearance.hp = 1
             gameVM.pitches.append(.ball)
-            plateAppearance.outcome.append("HBP")
+            plateAppearance.outcome["home"] = "HBP"
             
             
             gameVM.balls = 0
@@ -1180,7 +1272,7 @@ class FieldScene: SKScene, SKPhysicsContactDelegate {
             outsNode.position = CGPoint(x: self.frame.width*0.05, y: largeView ? self.frame.height*0.1 : self.frame.height*0.3)
             outsNode.name = "out"
             addChild(outsNode)
-            addGenericNode(center: CGPoint(x: self.frame.maxX*0.80, y: self.frame.maxY*0.25), size: 50, name: "Pitch", hidden: plateAppearance.outcome == [] ? false : true)
+            addGenericNode(center: CGPoint(x: self.frame.maxX*0.80, y: self.frame.maxY*0.25), size: 50, name: "Pitch", hidden: plateAppearance.outcome["home"] == "" ? false : true)
             addGenericNode(center: CGPoint(x: self.frame.maxX*0.80, y: self.frame.maxY*0.27), size: 50, name: "Strike", hidden: true)
             addGenericNode(center: CGPoint(x: self.frame.maxX*0.80, y: self.frame.maxY*0.2), size: 50, name: "Ball", hidden: true)
             addGenericNode(center: CGPoint(x: self.frame.maxX*0.80, y: self.frame.maxY*0.13), size: 50, name: "In-Play", hidden: true)
@@ -1198,7 +1290,7 @@ class FieldScene: SKScene, SKPhysicsContactDelegate {
             addGenericNode(center: CGPoint(x: self.frame.maxX*0.40, y: self.frame.maxY*0.35), size: 20, name: "2B", hidden: plateAppearance.hit == 2 ? false : true)
             addGenericNode(center: CGPoint(x: self.frame.maxX*0.60, y: self.frame.maxY*0.35), size: 20, name: "3B", hidden: plateAppearance.hit == 3 ? false : true)
             addGenericNode(center: CGPoint(x: self.frame.maxX*0.80, y: self.frame.maxY*0.35), size: 20, name: "HR", hidden: plateAppearance.hit == 4 ? false : true)
-            addGenericNode(center: CGPoint(x: self.frame.maxX*0.20, y: self.frame.maxY*0.35), size: 20, name: "BB", hidden: plateAppearance.outcome.contains(where: { $0 == "BB" }) ? false : true)
+            addGenericNode(center: CGPoint(x: self.frame.maxX*0.20, y: self.frame.maxY*0.35), size: 20, name: "BB", hidden: plateAppearance.outcome["home"] == "BB" ? false : true)
             addGenericNode(center: CGPoint(x: self.frame.maxX*0.22, y: self.frame.maxY*0.35), size: 120, name: "Hit By Pitch", hidden: plateAppearance.hp == 1 ? false : true)
             addGenericNode(center: CGPoint(x: self.frame.maxX*0.60, y: self.frame.maxY*0.07), size: 30, name: "SGO", hidden: setGroundOut ? false : true)
             addGenericNode(center: CGPoint(x: self.frame.maxX*0.40, y: self.frame.maxY*0.07), size: 30, name: "SFO", hidden: setFlyOut ? false : true)

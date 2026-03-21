@@ -116,10 +116,10 @@ struct InningsView: View {
             ForEach(innings.sorted(by: {$0.number < $1.number}), id: \.self) { inning in
                 HStack(alignment: .top) {
                     VStack(alignment: .leading) {
-                        Text("\(inning.number)--\(inning.number/10)")
+                        Text("\(inning.number/10)")//--\(inning.number/10)")
                         .frame(width: 75, height: 50, alignment: .center)
                         .border(Color.blue)
-                        Text("\(gameViewModel.inningNumber)--\(gameViewModel.batterUp[gameViewModel.halfInning])")
+                        //Text("\(gameViewModel.inningNumber)--\(gameViewModel.batterUp[gameViewModel.halfInning])")
                         ForEach(inning.offense.sorted(by: {$0.order < $1.order}), id: \.self) { player in
                             GeometryReader { geo in
                                 
@@ -128,7 +128,7 @@ struct InningsView: View {
                                         if !gameViewModel.game.isComplete {
                                             
                                             if (teamBatting && gameViewModel.halfInning == 0 && gameViewModel.inningNumber == inning.number && gameViewModel.batterUp[gameViewModel.halfInning] == player.order) || (!teamBatting && gameViewModel.halfInning == 1 && gameViewModel.inningNumber == inning.number && gameViewModel.batterUp[gameViewModel.halfInning] == player.order) {
-                                                if player.outcome.isEmpty {
+                                                if player.outcome["home"] == "" {
                                                     player.active = true
                                                     gameViewModel.batter = player
                                                     //gameViewModel.inningNumber = inning.number
@@ -152,7 +152,7 @@ struct InningsView: View {
                                             }
                                             
                                         }
-                                }
+                                    }
                             }
                         }
                         .frame(width: 75, height: 75, alignment: .topLeading)
@@ -184,7 +184,7 @@ struct InningsView: View {
                                 
             } else { // if dismiss sheet before batter is finished
                 if !gameViewModel.game.isComplete {
-                    if gameViewModel.batter?.outcome == [] {
+                    if gameViewModel.batter?.outcome["home"] == "" {
                         gameViewModel.baseRunners.remove(at: 0)
                         gameViewModel.decrementBatterUp()
                     }

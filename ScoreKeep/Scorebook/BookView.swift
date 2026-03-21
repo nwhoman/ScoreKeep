@@ -13,7 +13,7 @@ struct BookView: View {
     @Environment(\.dismiss) var dismiss
     @ObservedObject var gameViewModel: GameViewModel
     @State private var selectedTab: String = "Visitor"
-    
+
     var body: some View {
         GeometryReader { geo in
             ZStack {
@@ -64,7 +64,7 @@ struct BookView: View {
                 gameViewModel.game.isStarted = true
             }
         }
-    }
+    }   
 }
 func advanceLineup() {
     //game.innings[inningNumber-1].visitorOffense[orderNumber].active = true
