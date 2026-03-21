@@ -139,7 +139,7 @@ struct InningsView: View {
                                                     gameViewModel.incrementBatterUp()
                                                     showLargeView.toggle()
                                                 } else {
-                                                    print("\(player.hit), \(player.outcome)")
+                                                    //print("\(player.hit), \(player.outcome)")
                                                     showLargeView.toggle()
                                                 }
                                             } else {
@@ -183,10 +183,13 @@ struct InningsView: View {
                 }
                                 
             } else { // if dismiss sheet before batter is finished
-                if gameViewModel.batter?.outcome == [] {
-                    gameViewModel.baseRunners.remove(at: 0)
-                    gameViewModel.decrementBatterUp()
+                if !gameViewModel.game.isComplete {
+                    if gameViewModel.batter?.outcome == [] {
+                        gameViewModel.baseRunners.remove(at: 0)
+                        gameViewModel.decrementBatterUp()
+                    }
                 }
+                
                 // check for walk-off win
             }
             

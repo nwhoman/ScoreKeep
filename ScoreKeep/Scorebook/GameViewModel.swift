@@ -66,7 +66,7 @@ class GameViewModel: ObservableObject {
             addInning(inning: hInning, lineup: game.homeLineup, halfInning: 1)
         }
         getPitcher()
-        print(self.batterCount)
+        //print(self.batterCount)
     }
     func addInning(inning: Inning, lineup: [PlayerPos], halfInning: Int) {
         let visitorPitcher = game.visitingLineup.filter({$0.position == "P"}).first!
@@ -137,7 +137,6 @@ class GameViewModel: ObservableObject {
             for app in each.offense {
                 
                 if !app.active && app.batter == selectedPlayer.player {
-                    print("\(app.batter.number)")
                     app.batter = newPlayerPos.player
                 }
             }
@@ -212,7 +211,6 @@ class GameViewModel: ObservableObject {
     
     func incrementScore(team: Int) {
         if team == 0 {
-            print(inningNumber)
             score["visitor"]![inningNumber/10 - 1] += 1
         } else {
             score["home"]![inningNumber/10 - 1] += 1

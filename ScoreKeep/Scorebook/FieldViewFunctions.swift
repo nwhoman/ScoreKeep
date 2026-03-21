@@ -23,6 +23,46 @@ func placeField(scene: SKScene) {
     scene.addChild(field)
 }
 
+func outPoint(p1: CGPoint, p2: CGPoint, scaleFactor: Double) -> CGPoint {
+    let x = p1.x
+    let y = p1.y
+    let x1 = p2.x
+    let y1 = p2.y
+    let lineSlope = (y1-y) / (x1-x)
+    let a = (x1-x) * scaleFactor + x
+    let b = (y1-y) * scaleFactor + y
+    
+    return CGPoint(x: CGFloat(a), y: CGFloat(b))
+}
+
+func outLine(p1: CGPoint, p2: CGPoint, plateAppearance: OffensivePlateAppearance, scene: SKScene) -> SKShapeNode {
+    let x = p1.x  //firstbase
+    let y = p1.y
+    let x1 = p2.x  //secondbase
+    let y1 = p2.y
+    let lineSlope = (y1-y) / (x1-x)
+    let a1 = x1 + 1
+    let b1 = -1/lineSlope * 1 + y1
+    let a2 = x1 - 1
+    let b2 = -1/lineSlope * -1 + y1
+    
+    let c = CGPoint(x: CGFloat(a1), y: CGFloat(b1))
+    let d = CGPoint(x: CGFloat(a2), y: CGFloat(b2))
+//    print("\(x), \(y), \(x1), \(y1), , ")
+//    print("\(a1), \(b1), \(a2), \(b2), ")
+    let pathNode = SKShapeNode()
+    let path = CGMutablePath()
+    path.move(to: c)
+    path.addLine(to: d)
+    pathNode.path = path
+    pathNode.strokeColor = .red
+    pathNode.lineWidth = 3
+    //scene.addChild(pathNode)
+    
+    
+    return pathNode
+}
+
 func placeBaseRunners(basepathNode: SKShapeNode, baseOccupied: Int, plateAppearance: OffensivePlateAppearance, scene: SKScene) {
     var homePlate: CGPoint { CGPoint(x: scene.frame.midX, y: scene.frame.midY*0.92) }
     var firstBase: CGPoint { CGPoint(x: scene.frame.maxX*0.83, y: scene.frame.maxY*0.635) }
@@ -34,61 +74,77 @@ func placeBaseRunners(basepathNode: SKShapeNode, baseOccupied: Int, plateAppeara
 //    var secondBase: CGPoint { CGPoint(x: scene.frame.midX, y: scene.frame.maxY*0.65+100) }
 //    var thirdBase: CGPoint { CGPoint(x: scene.frame.minX+75, y: scene.frame.maxY*0.65-20) }
     
-    var secondBase2: CGPoint { CGPoint(x: scene.frame.midX + 3, y: scene.frame.maxY*0.7) }
+    var secondBase2: CGPoint { CGPoint(x: (scene.frame.midX + 3), y: (scene.frame.maxY*0.7)) }
     var thirdBase2: CGPoint { CGPoint(x: scene.frame.maxX*0.17 + 3, y: scene.frame.maxY*0.635 - 3) }
     var homePlate2: CGPoint { CGPoint(x: scene.frame.midX - 3, y: scene.frame.midY*0.75) }
     
     let path = CGMutablePath()
+    var pathNode = SKShapeNode()
+    
     path.move(to: homePlate)
-    if baseOccupied == 1 || (plateAppearance.hit == 1 && plateAppearance.outs != 0) {
+    if baseOccupied == 1 {//|| (plateAppearance.hit == 1 && plateAppearance.outs != 0) {
         path.addLine(to: firstBase)
         basepathNode.path = path
         basepathNode.strokeColor = plateAppearance.re != 1 ? .blue : .red
         basepathNode.lineWidth = 3
         if plateAppearance.outs != 0 {
-            path.addLine(to: secondBase2)
+            path.addLine(to: outPoint(p1: firstBase, p2: secondBase, scaleFactor: 0.8))
             basepathNode.path = path
             basepathNode.strokeColor = plateAppearance.re != 1 ? .blue : .red
             basepathNode.lineWidth = 3
-            addOutX(base: secondBase2, scene: scene)
+            pathNode = outLine(p1: firstBase, p2: outPoint(p1: firstBase, p2: secondBase, scaleFactor: 0.7), plateAppearance: plateAppearance, scene: scene)
+            //add secondary position out label
         }
         //addHitLoc()
-    } else if baseOccupied == 2 || (plateAppearance.hit == 2 && plateAppearance.outs != 0) {
+    } else if baseOccupied == 2 {//|| (plateAppearance.hit == 2 && plateAppearance.outs != 0) {
         path.addLine(to: firstBase)
-        path.addLine(to: secondBase)
+            
+        if plateAppearance.outs != 0 {
+            
+            path.addLine(to: outPoint(p1: firstBase, p2: secondBase, scaleFactor: 0.8)) //(to: thirdBase2)
+            
+            pathNode = outLine(p1: secondBase, p2: outPoint(p1: firstBase, p2: secondBase, scaleFactor: 0.7), plateAppearance: plateAppearance, scene: scene)
+
+            //addOutX(base: thirdBase2, scene: scene)
+        } else {
+            path.addLine(to: secondBase)
+        }
         basepathNode.path = path
         basepathNode.strokeColor = plateAppearance.re != 1 ? .blue : .red
         basepathNode.lineWidth = 3
-        if plateAppearance.outs != 0 {
-            path.addLine(to: thirdBase2)
-            basepathNode.path = path
-            basepathNode.strokeColor = plateAppearance.re != 1 ? .blue : .red
-            basepathNode.lineWidth = 3
-            addOutX(base: thirdBase2, scene: scene)
-        }
         //addHitLoc()
-    } else if baseOccupied == 3 || (plateAppearance.hit == 3 && plateAppearance.outs != 0) {
+    } else if baseOccupied == 3 {//|| (plateAppearance.hit == 3 && plateAppearance.outs != 0) {
         path.addLine(to: firstBase)
         path.addLine(to: secondBase)
-        path.addLine(to: thirdBase)
+        
+        if plateAppearance.outs != 0 {
+            path.addLine(to: outPoint(p1: secondBase, p2: thirdBase, scaleFactor: 0.8)) //homePlate2)
+            
+            pathNode = outLine(p1: thirdBase, p2: outPoint(p1: secondBase, p2: thirdBase, scaleFactor: 0.7), plateAppearance: plateAppearance, scene: scene)
+            //addOutX(base: homePlate2, scene: scene)
+        } else {
+            path.addLine(to: thirdBase)
+        }
         basepathNode.path = path
         basepathNode.strokeColor = plateAppearance.re != 1 ? .blue : .red
         basepathNode.lineWidth = 3
-        if plateAppearance.outs != 0 {
-            path.addLine(to: homePlate2)
-            basepathNode.path = path
-            basepathNode.strokeColor = plateAppearance.re != 1 ? .blue : .red
-            basepathNode.lineWidth = 3
-             addOutX(base: homePlate2, scene: scene)
-        }
         //addHitLoc()
     } else if baseOccupied == 4 {
         path.addLine(to: firstBase)
         path.addLine(to: secondBase)
         path.addLine(to: thirdBase)
-        path.addLine(to: homePlate)
-        path.closeSubpath()
-        basepathNode.fillColor = plateAppearance.re != 1 ? .blue : .red
+        
+        if plateAppearance.outs != 0 {
+            path.addLine(to: outPoint(p1: thirdBase, p2: homePlate, scaleFactor: 0.8)) //homePlate2)
+            
+            pathNode = outLine(p1: thirdBase, p2: outPoint(p1: thirdBase, p2: homePlate, scaleFactor: 0.7), plateAppearance: plateAppearance, scene: scene)
+            //addOutX(base: homePlate2, scene: scene)
+        } else {
+            path.addLine(to: homePlate)
+            path.closeSubpath()
+            basepathNode.fillColor = plateAppearance.re != 1 ? .blue : .red
+            
+        }
         basepathNode.path = path
         basepathNode.strokeColor = plateAppearance.re != 1 ? .blue : .red
         basepathNode.lineWidth = 3
@@ -98,6 +154,7 @@ func placeBaseRunners(basepathNode: SKShapeNode, baseOccupied: Int, plateAppeara
         addOutcomes(plateAppearance: plateAppearance, scene: scene)
     }
     scene.addChild(basepathNode)
+    scene.addChild(pathNode)
 }
 
 func placeKLabel(plateAppearance: OffensivePlateAppearance, scene: SKScene) {
@@ -120,7 +177,7 @@ func addOutcomes(plateAppearance: OffensivePlateAppearance, scene: SKScene) {
         print(each)
         
         if each.starts(with: "F") {
-            //addOutcomeNode(center: CGPoint(x: scene.frame.midX, y: scene.frame.maxY*0.5), size: 10, name: each, hidden: false, color: .red, scene: scene)
+            addOutcomeNode(center: CGPoint(x: scene.frame.midX, y: scene.frame.maxY*0.5), size: 10, name: each, hidden: false, color: .red, scene: scene)
         }
         if each.contains("G") {
             let outcome = each.replacingOccurrences(of: "G", with: "")
@@ -132,7 +189,7 @@ func addOutcomes(plateAppearance: OffensivePlateAppearance, scene: SKScene) {
         if each.contains("SAC") {
             addOutcomeNode(center: CGPoint(x: scene.frame.midX, y: scene.frame.maxY*0.5), size: 10, name: each.replacingOccurrences(of: "SAC", with: ""), hidden: false, color: .red, scene: scene)
         }
-        addOutcomeNode(center: CGPoint(x: scene.frame.midX, y: scene.frame.maxY*0.5), size: 10, name: each, hidden: false, color: .red, scene: scene)
+        //addOutcomeNode(center: CGPoint(x: scene.frame.midX, y: scene.frame.maxY*0.5), size: 10, name: each, hidden: false, color: .red, scene: scene)
     }
 }
 func addHitLoc(plateAppearance: OffensivePlateAppearance, scene: SKScene) {
@@ -228,7 +285,7 @@ func addPositionNodes(positionNames: [PositionDescription], gameVM: GameViewMode
     }
 }
 
-func placeBaseRunners(gameVM: GameViewModel, scene: SKScene) {
+func placeBaseRunnerNodes(gameVM: GameViewModel, scene: SKScene) {
 //    var homePlate: CGPoint { CGPoint(x: scene.frame.midX, y: scene.frame.midY*0.92) }
 //    var firstBase: CGPoint { CGPoint(x: scene.frame.maxX*0.83, y: scene.frame.maxY*0.635) }
 //    var secondBase: CGPoint { CGPoint(x: scene.frame.midX, y: scene.frame.maxY*0.8) }
@@ -239,7 +296,7 @@ func placeBaseRunners(gameVM: GameViewModel, scene: SKScene) {
     var thirdBase: CGPoint { CGPoint(x: scene.frame.minX+75, y: scene.frame.maxY*0.65-20) }
     
     for i in gameVM.baseRunners {
-    
+        //print("\(i.player.batter.number) - \(i.player.baseOccupied)")
         
         if i.player.baseOccupied == 0 {
             i.node.physicsBody?.categoryBitMask = (1 << 0)
@@ -262,6 +319,7 @@ func placeBaseRunners(gameVM: GameViewModel, scene: SKScene) {
             i.node.physicsBody?.collisionBitMask = (1 << 3)
             i.node.position = thirdBase
         }
+        i.node.zPosition = 10
         
         scene.addChild(i.node)
     }
