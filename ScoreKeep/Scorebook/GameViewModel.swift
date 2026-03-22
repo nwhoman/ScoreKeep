@@ -30,6 +30,8 @@ class GameViewModel: ObservableObject {
     @Published var pitcher: DefensivePlateAppearance?
     @Published var baseRunners: [BaseRunnerNode] = []
     @Published var player: OffensivePlateAppearance?
+    @Published var undoPlay: [GameViewModel] = []
+    @Published var pitcherStats: [PitcherStats] = []
     
     var defensiveLineup: [String: Player] {
         if halfInning == 0 {

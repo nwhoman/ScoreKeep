@@ -126,7 +126,6 @@
 				6A8A3DAD2BBF1C2F00BC7E32 /* Coaches */,
 				6A8A3D7F2BB2372300BC7E32 /* ScoreKeepApp.swift */,
 				6A8A3D812BB2372300BC7E32 /* ContentView.swift */,
-				6A8A3D8D2BB2378A00BC7E32 /* PlateAppearanceView.swift */,
 				6A8A3D832BB2372500BC7E32 /* Assets.xcassets */,
 				6A8A3D852BB2372500BC7E32 /* Preview Content */,
 				6A8A3D8F2BB237BB00BC7E32 /* PlayEnums.swift */,
@@ -205,6 +204,7 @@
 				6A07B06B2D987424005B7AEE /* GameViewModel.swift */,
 				6A07B06F2D9C84F5005B7AEE /* FieldViewScene.swift */,
 				6A64E4CC2DAEF20000E0018F /* SmallPlateAppearanceView.swift */,
+				6A8A3D8D2BB2378A00BC7E32 /* PlateAppearanceView.swift */,
 			);
 			path = Scorebook;
 			sourceTree = "<group>";

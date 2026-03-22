@@ -287,6 +287,23 @@ struct PlayerStats: Identifiable, Hashable {
     }
 }
 
+struct PitcherStats: Identifiable, Hashable {
+    var id: UUID = UUID()
+    var inningsPitched: Int = 0
+    var battersFaced: Int = 0
+    var hits: Int = 0
+    var strikeouts: Int = 0
+    var walks: Int = 0
+    var hitBatsmen: Int = 0
+    var wildPitches: Int = 0
+    var doubles: Int = 0
+    var triples: Int = 0
+    var homeRuns: Int = 0
+    var runs: Int = 0
+    var earnedRuns: Int = 0
+    
+}
+
 struct TeamStats: Identifiable, Hashable {
     var id: UUID
     var plateAppearances: Int = 0

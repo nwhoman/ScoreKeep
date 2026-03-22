@@ -15,6 +15,7 @@ struct BookPageView: View {
     //@Binding var orderNumber: Int
     //@Binding var inningNumber: Int
     @State var showLargeView: Bool = false
+    @State var showPlayerPA: Bool = false
     @State var largeView: Bool = true
     
     var selectedTab: String
@@ -53,6 +54,11 @@ struct BookPageView: View {
                         
                     }
                     HStack {
+                        Button {
+                            print(gameViewModel.undoPlay.count)
+                        } label: {
+                            Text("Undo Last Play")
+                        }
                         NavigationLink {
                             BoxScoreView(gameViewModel: gameViewModel)
                         } label: {
@@ -66,7 +72,7 @@ struct BookPageView: View {
                             //.padding(.leading)
                                 .border(Color.blue)
                             ScrollView(Axis.Set.horizontal) {
-                                InningsView(gameViewModel: gameViewModel, showLargeView: $showLargeView, largeView: $largeView, team: team, innings: innings, selectedTab: selectedTab)
+                                InningsView(gameViewModel: gameViewModel, showLargeView: $showLargeView, showPlayerPA: $showPlayerPA, largeView: $largeView, team: team, innings: innings, selectedTab: selectedTab)
                                 
                             }
                             
@@ -94,6 +100,7 @@ struct BookPageView: View {
 struct InningsView: View {
     @ObservedObject var gameViewModel: GameViewModel
     @Binding var showLargeView: Bool
+    @Binding var showPlayerPA: Bool
     @Binding var largeView: Bool
 
     //@Binding var orderNumber: Int
@@ -145,8 +152,8 @@ struct InningsView: View {
                                             } else {
                                                 if player.active {
                                                     gameViewModel.batter = player
-                                                    showLargeView.toggle()
-                                                    largeView = false
+                                                    showPlayerPA.toggle()
+                                                    
                                                 }
                                                 
                                             }
@@ -188,6 +195,7 @@ struct InningsView: View {
                         gameViewModel.baseRunners.remove(at: 0)
                         gameViewModel.decrementBatterUp()
                     }
+                    gameViewModel.undoPlay.append(gameViewModel)
                 }
                 
                 // check for walk-off win
@@ -204,6 +212,12 @@ struct InningsView: View {
                 }
                 .presentationCornerRadius(50)
         }
+        .sheet(isPresented: $showPlayerPA, onDismiss: {
+            return 
+        }) {
+            PlateAppearanceView(gameViewModel: gameViewModel, player: gameViewModel.batter!)
+        }
+
         
     }
 }

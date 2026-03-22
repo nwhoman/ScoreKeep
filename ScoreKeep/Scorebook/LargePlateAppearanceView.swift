@@ -23,6 +23,8 @@ struct LargePlateAppearanceView: View {
 //        return [player, firstBase, secondBase, thirdBase]
 //    }
     var body: some View {
+        var stats = getStats(player: player)
+        var pitcher: DefensivePlateAppearance = gameViewModel.pitcher!
         GeometryReader { geo in
             
             VStack(alignment: .leading) {
@@ -33,9 +35,22 @@ struct LargePlateAppearanceView: View {
                     
                     VStack {
                         ScoreView(gameViewModel: gameViewModel)
-                        HStack {
-                            Text("#\(player.batter.number) - \(player.batter.lastName), \(player.batter.firstName)")
+                        HStack(alignment: .top) {
+                            VStack(alignment: .leading) {
+                                Text("#\(player.batter.number) - \(player.batter.lastName), \(player.batter.firstName)")
+                                Text("\(stats.hits)/\(stats.atBats) \(stats.doubles > 0 ? String(stats.doubles) + " 2B" : "")")
+                                Text("\(stats.triples > 0 ? String(stats.triples) + " 3B" : "")")
+                                Text("\(stats.homeRuns > 0 ? String(stats.homeRuns) + " HR" : "")")
+                                Text("\(stats.runs > 0 ? String(stats.runs) + " runs" : "")")
+                                Text("\(stats.rbi > 0 ? String(stats.rbi) + " rbi" : "")")
+                                Text("\(stats.k > 0 ? String(stats.k) + " k" : "")")
+                            }
+                            Spacer()
+                            VStack(alignment: .trailing) {
+                                Text("#\(player.batter.number) - \(player.batter.lastName), \(player.batter.firstName)")
+                            }
                         }
+                        .font(.caption)
                         
                         Spacer()
         
@@ -72,6 +87,19 @@ struct LargePlateAppearanceView: View {
         
         .background(Color.white)
         .scaleEffect(scale)
+    }
+    func getStats(player: OffensivePlateAppearance) -> PlayerStats {
+        var stats = PlayerStats()
+        var plateAppearances = gameViewModel.getPlayerPA(innings: gameViewModel.game.innings, player: player.batter)
+        stats = gameViewModel.getPlayerStats(plateAppearances: plateAppearances)
+        
+        return stats
+    }
+    
+    func getPitcherStats(player: DefensivePlateAppearance) -> PitcherStats {
+        var stats = PitcherStats()
+        
+        return stats
     }
 }
 
