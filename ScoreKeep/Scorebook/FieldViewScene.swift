@@ -15,6 +15,7 @@ struct FieldViewScene: View {
     @Environment(\.modelContext) var modelContext
     @ObservedObject var gameVM: GameViewModel
     var plateAppearance: OffensivePlateAppearance
+    var batterFaced: DefensivePlateAppearance
     let scale: CGFloat
     let largeView: Bool
 //    var scene: FieldScene {
@@ -30,7 +31,7 @@ struct FieldViewScene: View {
             VStack {
                 ZStack {
                     
-                    SpriteView(scene: FieldScene(size: CGSize(width: geo.size.width, height: geo.size.height), gameVM: gameVM, plateAppearance: plateAppearance, largeView: largeView))
+                    SpriteView(scene: FieldScene(size: CGSize(width: geo.size.width, height: geo.size.height), gameVM: gameVM, plateAppearance: plateAppearance, batterFaced: batterFaced, largeView: largeView))
                         .frame(width: geo.size.width, height: geo.size.height)
                         .scaledToFill()
                         .background(.white)
@@ -73,8 +74,9 @@ func drawFieldShape(from path: CGPath) -> SKShapeNode {
     gameVM.getBatter()
     gameVM.getPitcher()
     let player = OffensivePlateAppearance.defaultPlateAppearance
+    let pitcher = DefensivePlateAppearance.defaultPlateAppearance
     
-    return FieldViewScene(gameVM: gameVM, plateAppearance: player, scale: 1.0, largeView: false)
+    return FieldViewScene(gameVM: gameVM, plateAppearance: player, batterFaced: pitcher, scale: 1.0, largeView: false)
         .modelContainer(preview.modelContainer)
 }
 
@@ -82,6 +84,7 @@ class FieldScene: SKScene, SKPhysicsContactDelegate {
     @Environment(\.modelContext) var modelContext
     @ObservedObject var gameVM: GameViewModel
     var plateAppearance: OffensivePlateAppearance
+    var batterFaced: DefensivePlateAppearance
     var playerNode = SKSpriteNode()
     var shapeNode = SKShapeNode()
     
@@ -103,10 +106,11 @@ class FieldScene: SKScene, SKPhysicsContactDelegate {
     var setErrorField: Bool = false
     var setSac: Bool = false
     
-    init(size: CGSize, gameVM: GameViewModel, plateAppearance: OffensivePlateAppearance, largeView: Bool) {
+    init(size: CGSize, gameVM: GameViewModel, plateAppearance: OffensivePlateAppearance, batterFaced: DefensivePlateAppearance, largeView: Bool) {
         // Gets the values from the view
         self.gameVM = gameVM
         self.plateAppearance = plateAppearance
+        self.batterFaced = batterFaced
         self.largeView = largeView
         super.init(size: size)
         self.backgroundColor = .white
@@ -315,6 +319,7 @@ class FieldScene: SKScene, SKPhysicsContactDelegate {
         gameVM.pitches.append(.ball)
         
         gameVM.batter!.pitches.append(.ball)
+        batterFaced.pitches.append(.ball)
         gameVM.balls += 1
         if gameVM.balls == 4 {
             var node = enumerateChildNodes(withName: gameVM.batter!.batter.number) {
@@ -324,6 +329,7 @@ class FieldScene: SKScene, SKPhysicsContactDelegate {
             gameVM.balls = 0
             gameVM.strikes = 0
             plateAppearance.bb = 1
+            batterFaced.bb = 1
             plateAppearance.outcome["home"] = "BB"
         }
         let index = gameVM.batter!.pitches.filter({$0 == .ball}).count
@@ -365,6 +371,7 @@ class FieldScene: SKScene, SKPhysicsContactDelegate {
                         for i in posArray {
                             outcomeString += "\(i)-"
                         }
+                        
                     } else {
                         outcomeString += "U"
                         for i in posArray {

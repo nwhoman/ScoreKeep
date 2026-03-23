@@ -312,6 +312,67 @@ class GameViewModel: ObservableObject {
         
         return playerStats
     }
+    
+    func getPitcherPA(innings: [Inning], pitcher: Player) -> [DefensivePlateAppearance] {
+        var plateAppearances: [DefensivePlateAppearance] = []
+        
+        for inning in innings {
+            plateAppearances.append(contentsOf: inning.defense.filter { $0.pitcher.id == pitcher.id } )
+        }
+        return plateAppearances
+    }
+    
+    func getPitcherStats(plateAppearances: [DefensivePlateAppearance]) -> PitcherStats {
+        var pitcherStats = PitcherStats()
+        var minInning = 200
+        var maxInning = 0
+        
+        for appearance in plateAppearances {
+            if appearance.active {
+                if appearance.inning < minInning {
+                    minInning = appearance.inning
+                } else if appearance.inning > maxInning {
+                    maxInning = appearance.inning
+                }
+                for pitch in appearance.pitches {
+                    if pitch == .ball {
+                        pitcherStats.balls += 1
+                    } else if pitch == .strikeLooking || pitch == .strikeSwinging || pitch == .foul{
+                        pitcherStats.strikes += 1
+                    }
+                }
+                pitcherStats.battersFaced += 1
+                if appearance.hit != 0 {
+                    pitcherStats.hits += 1
+                    if appearance.hit == 2 {
+                        pitcherStats.doubles += 1
+                    } else if appearance.hit == 3 {
+                        pitcherStats.triples += 1
+                    } else if appearance.hit == 4 {
+                        pitcherStats.homeRuns += 1
+                    }
+                }
+                
+                if appearance.run {
+                    pitcherStats.runs += 1
+                }
+                if appearance.earnedRun {
+                    pitcherStats.er += 1
+                }
+                pitcherStats.bb += appearance.bb
+                pitcherStats.k += appearance.k
+                
+                pitcherStats.hp += appearance.hp
+                pitcherStats.sac += appearance.sac
+                pitcherStats.wp += appearance.wp
+            }
+
+        }
+        pitcherStats.inningsPitched = Double(maxInning/10 - minInning/10) + Double(self.outs/3)
+        
+        return pitcherStats
+    }
+    
     func getTeamStats(team: Int) -> PlayerStats {
         var innings: [Inning] = []
         if team == 0 {

@@ -96,12 +96,12 @@ struct GameSummaryView: View {
                 Button {
                     //navPath = NavigationPath()
                 } label: {
-                    Image(systemName: "arrow.left")
+                    //Image(systemName: "arrow.left")
                 }
 //                    NavigationLink {
 //                        ContentView()
 //                    } label: {
-//
+//                        Image(systemName: "arrow.left")
 //                    }
                 
             }

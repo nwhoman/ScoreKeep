@@ -11,6 +11,7 @@ struct LargePlateAppearanceView: View {
     @Environment(\.modelContext) var modelContext
     @ObservedObject var gameViewModel: GameViewModel
     var player: OffensivePlateAppearance
+    var pitcher: DefensivePlateAppearance
     @Binding var largeView: Bool
     var scale: CGFloat = 1
     //@State var firstBase: OffensivePlateAppearance?
@@ -24,12 +25,12 @@ struct LargePlateAppearanceView: View {
 //    }
     var body: some View {
         var stats = getStats(player: player)
-        var pitcher: DefensivePlateAppearance = gameViewModel.pitcher!
+        var dstats = getPitcherStats(player: pitcher)
         GeometryReader { geo in
             
             VStack(alignment: .leading) {
                 ZStack {
-                    FieldViewScene(gameVM: gameViewModel, plateAppearance: player, scale: scale, largeView: largeView)
+                    FieldViewScene(gameVM: gameViewModel, plateAppearance: player, batterFaced: pitcher, scale: scale, largeView: largeView)
                         .frame(width: geo.size.width, height: geo.size.height)
                         .padding(.top, 25)
                     
@@ -47,7 +48,9 @@ struct LargePlateAppearanceView: View {
                             }
                             Spacer()
                             VStack(alignment: .trailing) {
-                                Text("#\(player.batter.number) - \(player.batter.lastName), \(player.batter.firstName)")
+                                Text("#\(gameViewModel.pitcher!.pitcher.number) - \(gameViewModel.pitcher!.pitcher.lastName), \(gameViewModel.pitcher!.pitcher.firstName)")
+                                Text("\(dstats.inningsPitched) \(dstats.balls + dstats.strikes)")
+                                Text("\(dstats.hits) \(dstats.runs) \(dstats.bb) \(dstats.k)")
                             }
                         }
                         .font(.caption)
@@ -90,7 +93,7 @@ struct LargePlateAppearanceView: View {
     }
     func getStats(player: OffensivePlateAppearance) -> PlayerStats {
         var stats = PlayerStats()
-        var plateAppearances = gameViewModel.getPlayerPA(innings: gameViewModel.game.innings, player: player.batter)
+        let plateAppearances = gameViewModel.getPlayerPA(innings: gameViewModel.game.innings, player: player.batter)
         stats = gameViewModel.getPlayerStats(plateAppearances: plateAppearances)
         
         return stats
@@ -98,7 +101,8 @@ struct LargePlateAppearanceView: View {
     
     func getPitcherStats(player: DefensivePlateAppearance) -> PitcherStats {
         var stats = PitcherStats()
-        
+        let plateAppearances = gameViewModel.getPitcherPA(innings: gameViewModel.game.innings, pitcher: player.pitcher)
+        stats = gameViewModel.getPitcherStats(plateAppearances: plateAppearances)
         return stats
     }
 }
@@ -113,8 +117,9 @@ struct LargePlateAppearanceView: View {
     gameVM.getBatter()
     gameVM.getPitcher()
     let player = OffensivePlateAppearance.defaultPlateAppearance
+    let pitcher = DefensivePlateAppearance.defaultPlateAppearance
     //var player = game.innings[0].visitorOffense[0]
     
-    return LargePlateAppearanceView(gameViewModel: gameVM, player: player, largeView: .constant(false))
+    return LargePlateAppearanceView(gameViewModel: gameVM, player: player, pitcher: pitcher, largeView: .constant(false))
         .modelContainer(preview.modelContainer)
 }

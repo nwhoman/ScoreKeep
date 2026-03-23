@@ -9,7 +9,7 @@ import SwiftUI
 
 struct MainMenuView: View {
     @Environment(\.modelContext) var modelContext
-    //@State var path: NavigationPath = .init()
+    @State var path: NavigationPath = .init()
     @State private var showAddTeamScreen: Bool = false
     
     var body: some View {
@@ -38,7 +38,12 @@ struct MainMenuView: View {
                 Text("Add Default Data")
             }
         }
+//        .navigationBarBackButtonHidden()
+//        .onAppear {
+//            path = NavigationPath()
+//        }
     }
+        
     func addSampleData(_ examples: [Game]) {
         
         Task {

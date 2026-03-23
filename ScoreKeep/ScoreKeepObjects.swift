@@ -224,8 +224,15 @@ class DefensivePlateAppearance {
     var order: Int
     var pitcher: Player
     var inning: Int
-    var run: Bool
+    var pitches: [Pitch] = []
+    var hit: Int = 0
+    var run: Bool = false
     var earnedRun: Bool
+    var k: Int = 0
+    var bb: Int = 0
+    var hp: Int = 0
+    var sac: Int = 0
+    var wp: Int = 0
     var po: [String]
     var assist: [String]
     var error: [String]
@@ -289,19 +296,31 @@ struct PlayerStats: Identifiable, Hashable {
 
 struct PitcherStats: Identifiable, Hashable {
     var id: UUID = UUID()
-    var inningsPitched: Int = 0
+    var inningsPitched: Double = 0.0
+    var balls: Int = 0
+    var strikes: Int = 0
     var battersFaced: Int = 0
     var hits: Int = 0
-    var strikeouts: Int = 0
-    var walks: Int = 0
-    var hitBatsmen: Int = 0
-    var wildPitches: Int = 0
+    var k: Int = 0
+    var bb: Int = 0
+    var hp: Int = 0
+    var wp: Int = 0
     var doubles: Int = 0
     var triples: Int = 0
     var homeRuns: Int = 0
     var runs: Int = 0
-    var earnedRuns: Int = 0
+    var er: Int = 0
+    var sac: Int = 0
     
+    var atBats: Int {
+        return self.battersFaced - self.bb - self.hp - self.sac
+    }
+    var era: Double {
+        Double(self.er) * 7.0 / Double(self.inningsPitched)
+    }
+    var statSummary: [Any] {
+        return [self.inningsPitched, self.strikes, self.balls, self.battersFaced, self.atBats, self.hits, self.doubles, self.triples, self.homeRuns, self.runs, self.bb, self.k, self.hp, self.sac, self.era]
+    }
 }
 
 struct TeamStats: Identifiable, Hashable {
@@ -368,6 +387,7 @@ func getPlayerStats(plateAppearances: [OffensivePlateAppearance]) -> PlayerStats
     
     return playerStats
 }
+
 
 func decomposeLineup(lineup: [[PlayerPos]]) -> [PlayerPos] {
     var tempArray:[PlayerPos] = []

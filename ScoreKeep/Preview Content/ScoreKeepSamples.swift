@@ -104,6 +104,20 @@ extension OffensivePlateAppearance {
         appearance.pitches = [.ball, .strikeLooking, .strikeSwinging, .ball, .foul]
         appearance.sb = [3]
         appearance.outs = 2
+        appearance.active = true
+        return appearance
+    }
+}
+
+extension DefensivePlateAppearance {
+    static var defaultPlateAppearance: DefensivePlateAppearance {
+        var appearance: DefensivePlateAppearance = DefensivePlateAppearance(order: 1, pitcher: Player(firstName: Player.firstNames, lastName: Player.lastNames, number: Player.numbers), inning: 1)
+        appearance.hit = 2
+        appearance.run = true
+        appearance.earnedRun = true
+        appearance.pitches = [.ball, .strikeLooking, .strikeSwinging, .ball, .foul]
+        appearance.wp = 1
+        appearance.active = true
         return appearance
     }
 }

@@ -499,14 +499,16 @@ func addStrike(pos: Int, gameVM: GameViewModel, scene: SKScene, plateAppearance:
         gameVM.strikes += 1
         gameVM.pitches.append(.strikeLooking)
         gameVM.batter!.pitches.append(.strikeLooking)
+        gameVM.pitcher!.pitches.append(.strikeLooking)
         swing = false
-    
+        
     case 2: //swinging
         node.strokeColor = .black
         node.fillColor = .black
         gameVM.strikes += 1
         gameVM.pitches.append(.strikeSwinging)
         gameVM.batter!.pitches.append(.strikeSwinging)
+        gameVM.pitcher!.pitches.append(.strikeSwinging)
         swing = true
     default: //foul
         node.strokeColor = .black
@@ -516,6 +518,7 @@ func addStrike(pos: Int, gameVM: GameViewModel, scene: SKScene, plateAppearance:
         }
         gameVM.pitches.append(.foul)
         gameVM.batter!.pitches.append(.foul)
+        gameVM.pitcher!.pitches.append(.foul)
     }
     scene.addChild(node)
     

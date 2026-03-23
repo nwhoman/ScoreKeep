@@ -206,7 +206,7 @@ struct InningsView: View {
             }
         })
         {
-            LargePlateAppearanceView(gameViewModel: gameViewModel, player: gameViewModel.batter!, largeView: $largeView)
+            LargePlateAppearanceView(gameViewModel: gameViewModel, player: gameViewModel.batter!, pitcher: gameViewModel.pitcher!, largeView: $largeView)
                 .presentationBackground(alignment: .top) {
                     LinearGradient(colors: [Color.gray, Color.green], startPoint: .bottomLeading, endPoint: .topTrailing)
                 }
