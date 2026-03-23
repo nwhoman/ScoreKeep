@@ -10,6 +10,7 @@ import SwiftUI
 
 struct GamesView: View {
     @Environment(\.modelContext) var modelContext
+    @EnvironmentObject var nav: NavigationStateManager
     @Query(sort: \Game.name) private var games: [Game]
     @Query(sort: \Coach.lastName) var coaches: [Coach]
     //@State private var path = [Team]()
@@ -18,42 +19,44 @@ struct GamesView: View {
     //@Binding var path: NavigationPath
     
     var body: some View {
-        List {
-            ForEach(games) { startGame in
-                NavigationLink(value: startGame) {
-                    HStack {
-                        VStack(alignment: .leading) {
-                            Text(startGame.name)
-                                .font(.headline)
-                            Text("\(startGame.date.formatted(date: .complete, time: .omitted))")
-                                .foregroundStyle(.secondary)
+        //NavigationStack {
+            List {
+                ForEach(games) { startGame in
+                    NavigationLink(value: startGame) {
+                        HStack {
+                            VStack(alignment: .leading) {
+                                Text(startGame.name)
+                                    .font(.headline)
+                                Text("\(startGame.date.formatted(date: .complete, time: .omitted))")
+                                    .foregroundStyle(.secondary)
+                            }
                         }
                     }
                 }
+                .onDelete(perform: deleteGame)
             }
-            .onDelete(perform: deleteGame)
-        }
-        .navigationTitle("ScoreKeep Games")
-        .navigationDestination(for: Game.self) {
-             game in
-            GameLineupsView(game: game)
-            //GameLineupsView(path: $path, game: game)
-        }
-        .toolbar{
-            
-            ToolbarItem(placement: .topBarLeading){
-                EditButton()
+            .navigationTitle("ScoreKeep Games")
+            .navigationDestination(for: Game.self) {
+                game in
+                GameLineupsView(game: game)
+                //GameLineupsView(path: $path, game: game)
             }
-            ToolbarItem(placement: .topBarTrailing){
-                Button("Add Game", systemImage: "plus"){
-                    showAddGameScreen.toggle()
+            .toolbar{
+                
+                ToolbarItem(placement: .topBarLeading){
+                    EditButton()
+                }
+                ToolbarItem(placement: .topBarTrailing){
+                    Button("Add Game", systemImage: "plus"){
+                        showAddGameScreen.toggle()
+                    }
                 }
             }
-        }
-        .navigationDestination(isPresented: $showAddGameScreen){
-            StartGameView()
-            //StartGameView(path: $path)
-        }
+            .navigationDestination(isPresented: $showAddGameScreen){
+                StartGameView()
+                //StartGameView(path: $path)
+            }
+        //}
         //.sheet(isPresented: $showAddGameScreen) {
             //StartGameView(path: $path)
         //}
@@ -69,8 +72,10 @@ struct GamesView: View {
 
 #Preview {
     let preview = Preview()
-    preview.addSampleGames([Game.defaultGame])
-    
+    let game = Game.defaultGame
+    preview.addSampleGames([game])
+    preview.addSampleLineups(game: game)
+        
     return NavigationStack {
         GamesView().modelContainer(preview.modelContainer)
     }

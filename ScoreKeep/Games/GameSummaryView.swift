@@ -9,7 +9,9 @@ import SwiftUI
 
 struct GameSummaryView: View {
     @Environment(\.modelContext) var modelContext
-    @Environment(\.dismiss) var dismiss
+    //@Environment(\.dismiss) var dismiss
+    @EnvironmentObject var nav: NavigationStateManager
+
     @ObservedObject var gameViewModel: GameViewModel
     //@Binding var navPath: NavigationPath
 
@@ -24,7 +26,7 @@ struct GameSummaryView: View {
     }
     
     var body: some View {
-        NavigationStack {
+        //NavigationStack {
             GeometryReader { geo in
                 VStack(alignment: .leading) {
                     HStack {
@@ -94,9 +96,9 @@ struct GameSummaryView: View {
                 }
             }.toolbar {
                 Button {
-                    //navPath = NavigationPath()
+                    nav.popToRoot()
                 } label: {
-                    //Image(systemName: "arrow.left")
+                    Image(systemName: "arrow.left")
                 }
 //                    NavigationLink {
 //                        ContentView()
@@ -105,10 +107,10 @@ struct GameSummaryView: View {
 //                    }
                 
             }
-            .navigationBarBackButtonHidden(true)
+            .navigationBarBackButtonHidden()
             
             
-        }
+        //}
         
     }
     func selectTeam(index: Int) -> [PlayerPos] {

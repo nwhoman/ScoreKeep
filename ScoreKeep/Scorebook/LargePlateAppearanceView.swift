@@ -24,8 +24,8 @@ struct LargePlateAppearanceView: View {
 //        return [player, firstBase, secondBase, thirdBase]
 //    }
     var body: some View {
-        var stats = getStats(player: player)
-        var dstats = getPitcherStats(player: pitcher)
+        var stats = getStats(player: gameViewModel.batter!)
+        var dstats = getPitcherStats(player: gameViewModel.pitcher!)
         GeometryReader { geo in
             
             VStack(alignment: .leading) {
@@ -38,7 +38,7 @@ struct LargePlateAppearanceView: View {
                         ScoreView(gameViewModel: gameViewModel)
                         HStack(alignment: .top) {
                             VStack(alignment: .leading) {
-                                Text("#\(player.batter.number) - \(player.batter.lastName), \(player.batter.firstName)")
+                                Text("#\(gameViewModel.batter!.batter.number) - \(gameViewModel.batter!.batter.lastName), \(gameViewModel.batter!.batter.firstName)")
                                 Text("\(stats.hits)/\(stats.atBats) \(stats.doubles > 0 ? String(stats.doubles) + " 2B" : "")")
                                 Text("\(stats.triples > 0 ? String(stats.triples) + " 3B" : "")")
                                 Text("\(stats.homeRuns > 0 ? String(stats.homeRuns) + " HR" : "")")
@@ -63,7 +63,7 @@ struct LargePlateAppearanceView: View {
                             if gameViewModel.batter!.rbi > 0 {
                                 VStack(alignment: .center) {
                                     Text("RBI")
-                                    Text("\(player.rbi)")
+                                    //Text("\(player.rbi)")
                                         .padding(.leading,-0)
                                         .font(.system(size: 30).bold())
                                         
@@ -107,19 +107,20 @@ struct LargePlateAppearanceView: View {
     }
 }
 
-#Preview {
-    var game = Game.defaultGame
-    let preview = Preview()
-    preview.addSampleGames([game])
-    preview.addSampleLineups(game: game)
-    let gameVM = GameViewModel(game: game) 
-    gameVM.setUpGame()
-    gameVM.getBatter()
-    gameVM.getPitcher()
-    let player = OffensivePlateAppearance.defaultPlateAppearance
-    let pitcher = DefensivePlateAppearance.defaultPlateAppearance
-    //var player = game.innings[0].visitorOffense[0]
-    
-    return LargePlateAppearanceView(gameViewModel: gameVM, player: player, pitcher: pitcher, largeView: .constant(false))
-        .modelContainer(preview.modelContainer)
-}
+//#Preview {
+//    @Previewable @State var player: OffensivePlateAppearance
+//    var game = Game.defaultGame
+//    let preview = Preview()
+//    preview.addSampleGames([game])
+//    preview.addSampleLineups(game: game)
+//    let gameVM = GameViewModel(game: game) 
+//    gameVM.setUpGame()
+//    gameVM.getBatter()
+//    gameVM.getPitcher()
+//    let player = OffensivePlateAppearance.defaultPlateAppearance
+//    let pitcher = DefensivePlateAppearance.defaultPlateAppearance
+//    //var player = game.innings[0].visitorOffense[0]
+//    
+//     LargePlateAppearanceView(gameViewModel: gameVM, player: $player, largeView: .constant(false))
+//        .modelContainer(preview.modelContainer)
+//}

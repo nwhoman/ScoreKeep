@@ -11,7 +11,8 @@ import SwiftData
 struct EditTeamView: View {
     @Environment(\.modelContext) var modelContext
     @Environment(\.dismiss) var dismiss
-    
+    @EnvironmentObject var nav: NavigationStateManager
+
     @Bindable var team: Team
     
     @State private var name: String = ""

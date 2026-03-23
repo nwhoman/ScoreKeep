@@ -11,6 +11,7 @@ import SwiftUI
 struct CoachDetailView: View {
     @Environment(\.modelContext) var modelContext
     @Environment(\.dismiss) var dismiss
+    @EnvironmentObject var nav: NavigationStateManager
 
     @Bindable var coach: Coach
     

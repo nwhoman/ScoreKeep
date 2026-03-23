@@ -11,7 +11,9 @@ import SwiftUI
 struct BookView: View {
     @Environment(\.modelContext) var modelContext
     @Environment(\.dismiss) var dismiss
-    @ObservedObject var gameViewModel: GameViewModel
+    @EnvironmentObject var nav: NavigationStateManager
+
+    @StateObject var gameViewModel: GameViewModel
     @State private var selectedTab: String = "Visitor"
 
     var body: some View {
@@ -56,6 +58,9 @@ struct BookView: View {
                     }
                     Spacer()
                 }
+                .navigationDestination(isPresented: $gameViewModel.game.isComplete) {
+                    GameSummaryView(gameViewModel: gameViewModel, game: gameViewModel.game)
+                }
             }
         }
         .onAppear {
@@ -64,7 +69,8 @@ struct BookView: View {
                 gameViewModel.game.isStarted = true
             }
         }
-    }   
+        .navigationBarBackButtonHidden()
+    }
 }
 func advanceLineup() {
     //game.innings[inningNumber-1].visitorOffense[orderNumber].active = true

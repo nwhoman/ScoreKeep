@@ -11,6 +11,8 @@ struct BookPageView: View {
     @Environment(\.modelContext) var modelContext
     @Environment(\.dismiss) var dismiss
     @ObservedObject var gameViewModel: GameViewModel
+    @EnvironmentObject var nav: NavigationStateManager
+
     //@Binding var game: Game
     //@Binding var orderNumber: Int
     //@Binding var inningNumber: Int
@@ -38,7 +40,7 @@ struct BookPageView: View {
     }
     
     var body: some View {
-        NavigationStack {
+        //NavigationStack {
             GeometryReader { geo in
                 VStack {
                     HStack {
@@ -81,7 +83,7 @@ struct BookPageView: View {
                     }
                 }
             }
-        }
+        //}
         
     }
 }
@@ -98,6 +100,9 @@ struct BookPageView: View {
 }
 
 struct InningsView: View {
+    @Environment(\.modelContext) var modelContext
+    @EnvironmentObject var nav: NavigationStateManager
+
     @ObservedObject var gameViewModel: GameViewModel
     @Binding var showLargeView: Bool
     @Binding var showPlayerPA: Bool
@@ -105,7 +110,7 @@ struct InningsView: View {
 
     //@Binding var orderNumber: Int
     //@Binding var inningNumber: Int
-    //@State var currentPlayer: OffensivePlateAppearance?
+    @State var currentPlayer: OffensivePlateAppearance?
     //@State var outs: Int = 0
     var team: Team
     var innings: [Inning]
@@ -126,7 +131,7 @@ struct InningsView: View {
                         Text("\(inning.number/10)")//--\(inning.number/10)")
                         .frame(width: 75, height: 50, alignment: .center)
                         .border(Color.blue)
-                        //Text("\(gameViewModel.inningNumber)--\(gameViewModel.batterUp[gameViewModel.halfInning])")
+                        Text("\(gameViewModel.inningNumber)--\(gameViewModel.batterUp[gameViewModel.halfInning])")
                         ForEach(inning.offense.sorted(by: {$0.order < $1.order}), id: \.self) { player in
                             GeometryReader { geo in
                                 
@@ -138,6 +143,7 @@ struct InningsView: View {
                                                 if player.outcome["home"] == "" {
                                                     player.active = true
                                                     gameViewModel.batter = player
+                                                    currentPlayer = player
                                                     //gameViewModel.inningNumber = inning.number
                                                     let brNode = BaseRunnerNode(player: player)
                                                     gameViewModel.baseRunners.insert(brNode, at: 0)
@@ -168,9 +174,6 @@ struct InningsView: View {
                 }
             }
         }
-        .navigationDestination(isPresented: $gameViewModel.game.isComplete) {
-            GameSummaryView(gameViewModel: gameViewModel, game: gameViewModel.game)
-        }
         .sheet(isPresented: $showLargeView, onDismiss: {
             //  update game viewmodel, check outs and switch sides
             gameViewModel.checkGameComplete()
@@ -188,14 +191,15 @@ struct InningsView: View {
                     gameViewModel.halfInning = 0
                     gameViewModel.inningNumber += 10
                 }
-                                
+                gameViewModel.getPitcher()
+                try? modelContext.save()
             } else { // if dismiss sheet before batter is finished
                 if !gameViewModel.game.isComplete {
                     if gameViewModel.batter?.outcome["home"] == "" {
                         gameViewModel.baseRunners.remove(at: 0)
                         gameViewModel.decrementBatterUp()
                     }
-                    gameViewModel.undoPlay.append(gameViewModel)
+                    try? modelContext.save()
                 }
                 
                 // check for walk-off win

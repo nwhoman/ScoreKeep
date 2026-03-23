@@ -8,15 +8,24 @@ import SwiftData
 import SwiftUI
 
 struct ContentView: View {
+    
+    @StateObject var nav = NavigationStateManager()
+    
     var body: some View {
-        //PlateAppearanceView()
-        MainMenuView()
+        NavigationStack(path: $nav.path) {
+            //PlateAppearanceView()
+            MainMenuView()
+        }
+        .environmentObject(nav)
     }
 }
 
+
 #Preview {
     let preview = Preview()
-    preview.addSampleGames([Game.defaultGame])
+    let game = Game.defaultGame
+    preview.addSampleGames([game])
+    preview.addSampleLineups(game: game)
     return ContentView()
         .modelContainer(preview.modelContainer)
 }

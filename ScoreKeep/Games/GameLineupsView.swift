@@ -11,7 +11,8 @@ import SwiftUI
 struct GameLineupsView: View {
     @Environment(\.modelContext) var modelContext
     @Environment(\.dismiss) var dismiss
-    
+    @EnvironmentObject var nav: NavigationStateManager
+
     var game: Game
     
     @State private var selectedTab: String = "Home"
@@ -22,8 +23,6 @@ struct GameLineupsView: View {
 
     var body: some View {
         ZStack {
-            
-            
             VStack {
                 Spacer(minLength: 70)
                 TabView(selection: $selectedTab) {
@@ -93,14 +92,15 @@ struct GameLineupsView: View {
                     .padding(.top, 10)
                     Spacer()
                 }
+                .navigationDestination(for: Team.self) {
+                    team in
+                    TeamDetailView(team: team)
+                }
                 Spacer()
             }
         
         }
-        .navigationDestination(for: Team.self) {
-            team in
-            TeamDetailView(team: team)
-        }
+        
         .navigationDestination(isPresented: $startGame) {
             var newGameViewModel = GameViewModel(game: game)
             BookView(gameViewModel: newGameViewModel)
@@ -159,6 +159,7 @@ func checkFlex(lineup: [PlayerPos]) -> Bool {
     preview.addSampleLineups(game: game)
     
     return NavigationStack {
-        GameLineupsView(game: game).modelContainer(preview.modelContainer)
+        GameLineupsView(game: game)
+            .modelContainer(preview.modelContainer)
     }
 }

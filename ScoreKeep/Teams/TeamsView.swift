@@ -10,6 +10,7 @@ import SwiftData
 
 struct TeamsView: View {
     @Environment(\.modelContext) var modelContext
+    @EnvironmentObject var nav: NavigationStateManager
     @Query(sort: \Team.name) var teams: [Team]
    // @Query(sort: \Coach.lastName) var coaches: [Coach]
     //@State private var path = [Team]()
@@ -52,7 +53,9 @@ struct TeamsView: View {
             .sheet(isPresented: $showAddTeamScreen) {
                 AddTeamView()
             }
-            
+            .onAppear {
+                print(nav.path)
+            }
         }
     func deleteTeam(at offsets: IndexSet){
         for offset in offsets {
@@ -70,5 +73,6 @@ struct TeamsView: View {
     return NavigationStack {
         TeamsView()
             .modelContainer(preview.modelContainer)
+            .environmentObject(NavigationStateManager())
     }
 }

@@ -77,7 +77,7 @@ class GameViewModel: ObservableObject {
         
             if halfInning == 0 {
                 inning.half = halfInning
-                for batter in lineup {
+                for batter in lineup.sorted(by: { $0.batting < $1.batting }) {
                     inning.offense.append(OffensivePlateAppearance(order: order, batter: batter.player, inning: inning.number))
                     inning.defense.append(DefensivePlateAppearance(order: order, pitcher: homePitcher.player, inning: inning.number))
                     order += 1
@@ -86,7 +86,7 @@ class GameViewModel: ObservableObject {
                 
             } else {
                 inning.half = halfInning
-                for batter in lineup {
+                for batter in lineup.sorted(by: { $0.batting < $1.batting }) {
                     inning.offense.append(OffensivePlateAppearance(order: order, batter: batter.player, inning: inning.number))
                     inning.defense.append(DefensivePlateAppearance(order: order, pitcher: visitorPitcher.player, inning: inning.number))
                     order += 1
@@ -175,11 +175,12 @@ class GameViewModel: ObservableObject {
         if halfInning == 0 {
             let inning = visitorInnings[inningNumber/10-1]
             self.pitcher = inning.defense[batterUp[halfInning]]
-            
+            self.pitcher!.active = true
+
         } else {
             let inning = homeInnings[inningNumber/10-1]
             self.pitcher = inning.defense[batterUp[halfInning]]
-            
+            self.pitcher!.active = true
         }
     }
     func getDefense(defense: [PlayerPos]) -> [String: Player]{
@@ -196,18 +197,18 @@ class GameViewModel: ObservableObject {
     }
     
     func incrementBatterUp() {
-        if batterUp[halfInning] != self.batterCount[halfInning] - 1 {
+        if batterUp[halfInning] != self.batterCount[halfInning] {
             batterUp[halfInning] += 1
         } else {
-            batterUp[halfInning] = 0
+            batterUp[halfInning] = 1
         }
     }
     
     func decrementBatterUp() {
-        if batterUp[halfInning] != 0 {
+        if batterUp[halfInning] != 1 {
             batterUp[halfInning] -= 1
         } else {
-            batterUp[halfInning] = self.batterCount[halfInning] - 1
+            batterUp[halfInning] = self.batterCount[halfInning]
         }
     }
     
@@ -319,6 +320,7 @@ class GameViewModel: ObservableObject {
         for inning in innings {
             plateAppearances.append(contentsOf: inning.defense.filter { $0.pitcher.id == pitcher.id } )
         }
+        print(plateAppearances.count)
         return plateAppearances
     }
     

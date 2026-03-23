@@ -11,6 +11,7 @@ import SwiftData
 struct PlayerDetailView: View {
     @Environment(\.modelContext) var modelContext
     @Environment(\.dismiss) var dismiss
+    @EnvironmentObject var nav: NavigationStateManager
 
     @Bindable var player: Player
     

@@ -32,7 +32,7 @@ extension Coach {
     }
 }
 
-extension Game {
+extension Team {
     static var states: String {
         return ["Alabama", "Alaska", "Oregon", "Washington", "California", "Idaho", "Montana", "Utah", "Colorado"].randomElement()!
     }
@@ -49,7 +49,7 @@ extension Game {
         var teams: [Team] = []
         
         let team = Team(name: getName)
-        for _ in 0..<11 {
+        for _ in 0..<13 {
             team.players?.append(Player.newPlayer)
         }
         var ageGroup: String {
@@ -66,22 +66,40 @@ extension Game {
         
         return team
     }
+    
+    
+    
+}
+extension Game {
     static var defaultGame: Game {
-        let home: Team = self.defaultTeam
-        let visitor: Team = self.defaultTeam
+        
+        let home: Team = Team.defaultTeam
+        let visitor: Team = Team.defaultTeam
         let location: String = home.name.components(separatedBy: " ").first ?? ("\(home.name)")
-        return Game(name: "\(visitor.name) v \(home.name)", location: "\(location) Stadium", homeTeam: home, visitingTeam: visitor)
+        let game = Game(name: "\(visitor.name) v \(home.name)", location: "\(location) Stadium", homeTeam: home, visitingTeam: visitor)
+        game.homeTeam!.lineup = game.createLineup(players: home.players!)
+        game.visitingTeam!.lineup = game.createLineup(players: visitor.players!)
+        return game
     }
     
     func createLineup(players: [Player]) -> [PlayerPos] {
         var positions: [String] = ["P", "C", "1B", "2B", "3B", "SS", "LF", "CF", "RF"]
         var lineup: [PlayerPos] = []
+        let count = positions.count
         
-        for i in 0..<positions.count {
-            lineup.append(PlayerPos(player: players[i], position: positions[i], batting: i+1 ))
+        
+        
+        for i in 0..<count {
+            let position = positions.randomElement()!
+            positions.removeAll(where: { $0 == position })
+            let player = PlayerPos(player: players[i], position: position, batting: i+1 )
+            print("\(player.batting) - \(player.player.firstName) \(player.player.lastName)")
+            lineup.append(player)
+            
         }
         return lineup
     }
+    
 }
 
 extension PlayerPos {

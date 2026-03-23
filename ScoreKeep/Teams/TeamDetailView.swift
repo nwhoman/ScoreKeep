@@ -11,6 +11,7 @@ import SwiftData
 struct TeamDetailView: View {
     @Environment(\.modelContext) var modelContext
     @Environment(\.dismiss) var dismiss
+    @EnvironmentObject var nav: NavigationStateManager
     
     @State private var showDeleteAlert = false
     //@Binding var path: NavigationPath

@@ -29,7 +29,7 @@ struct BoxScoreView: View {
     
     
     var body: some View {
-        NavigationStack {
+        //NavigationStack {
             GeometryReader { geo in
                 VStack(alignment: .leading) {
                     HStack {
@@ -100,7 +100,7 @@ struct BoxScoreView: View {
                         }
                     }
                 }
-            }
+            //}
             
         }
         

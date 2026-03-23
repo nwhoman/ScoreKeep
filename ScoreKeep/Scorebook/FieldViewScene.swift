@@ -319,8 +319,8 @@ class FieldScene: SKScene, SKPhysicsContactDelegate {
         gameVM.pitches.append(.ball)
         
         gameVM.batter!.pitches.append(.ball)
-        batterFaced.pitches.append(.ball)
         gameVM.balls += 1
+        gameVM.pitcher!.pitches.append(.ball)
         if gameVM.balls == 4 {
             var node = enumerateChildNodes(withName: gameVM.batter!.batter.number) {
             node, stop in
@@ -329,8 +329,8 @@ class FieldScene: SKScene, SKPhysicsContactDelegate {
             gameVM.balls = 0
             gameVM.strikes = 0
             plateAppearance.bb = 1
-            batterFaced.bb = 1
             plateAppearance.outcome["home"] = "BB"
+            batterFaced.bb = 1
         }
         let index = gameVM.batter!.pitches.filter({$0 == .ball}).count
         let path = CGMutablePath()
@@ -526,7 +526,7 @@ class FieldScene: SKScene, SKPhysicsContactDelegate {
                     
                     
                     addOutNode(gameVM: gameVM, scene: self, plateAppearance: plateAppearance)  //green out dot, not out at base X
-                    
+                    gameVM.pitcher!.k = 1
                     self.enumerateChildNodes(withName: "K") {
                         node, stop in
                         node.isHidden = false
@@ -580,7 +580,7 @@ class FieldScene: SKScene, SKPhysicsContactDelegate {
                 getHitType(node: touchedNode)
             }
             if touchedNode.name == "FO" {
-                setFlyOut.toggle()
+                setFlyOut = true
             }
             if touchedNode.name == "GO" {
                 setGroundOut.toggle()
@@ -655,7 +655,7 @@ class FieldScene: SKScene, SKPhysicsContactDelegate {
                         node = enumerateChildNodes(withName: "SFO") { node, stop in
                             node.isHidden = true
                         }
-                        setFlyOut.toggle()
+                        setFlyOut = false
                     }
                 }
                 //print(plateAppearance.outcome)
@@ -1232,7 +1232,7 @@ class FieldScene: SKScene, SKPhysicsContactDelegate {
             plateAppearance.outcome["home"] = "1B"
             plateAppearance.hit = 1
             setPlay.toggle()
-            
+            gameVM.pitcher!.hit = 1
         case "2B":
             var unusedNode = enumerateChildNodes(withName: "1B") { unusedNode, stop in
                 unusedNode.isHidden.toggle()
@@ -1247,6 +1247,8 @@ class FieldScene: SKScene, SKPhysicsContactDelegate {
             plateAppearance.outcome["home"] = "2B"
             plateAppearance.hit = 2
             setPlay.toggle()
+            gameVM.pitcher!.hit = 2
+
         case "3B":
             var unusedNode = enumerateChildNodes(withName: "1B") { unusedNode, stop in
                 unusedNode.isHidden.toggle()
@@ -1261,6 +1263,8 @@ class FieldScene: SKScene, SKPhysicsContactDelegate {
             plateAppearance.outcome["home"] = "3B"
             plateAppearance.hit = 3
             setPlay.toggle()
+            gameVM.pitcher!.hit = 3
+
         case "HR":
             var unusedNode = enumerateChildNodes(withName: "1B") { unusedNode, stop in
                 unusedNode.isHidden.toggle()
@@ -1274,8 +1278,9 @@ class FieldScene: SKScene, SKPhysicsContactDelegate {
         
             plateAppearance.hit = 4
             plateAppearance.outcome["home"] = "HR"
-            
             setPlay.toggle()
+            gameVM.pitcher!.hit = 4
+
         case "HBP":
             plateAppearance.hp = 1
             gameVM.pitches.append(.ball)
@@ -1284,7 +1289,8 @@ class FieldScene: SKScene, SKPhysicsContactDelegate {
             
             gameVM.balls = 0
             gameVM.strikes = 0
-            
+            gameVM.pitcher!.hp = 1
+
             moveNode(node: self.gameVM.baseRunners[0], bases: 1)
         default: break
         }

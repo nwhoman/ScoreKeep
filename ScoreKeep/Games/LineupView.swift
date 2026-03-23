@@ -42,15 +42,19 @@ struct LineupView: View {
                     Button("Save Lineup"){
                         if validateLineup(lineup: lineup) {
                             team.lineup.removeAll()
-                            team.lineup = lineup
-                            for i in 0..<lineup.count {
-                                lineup[i].batting = i+1
+                            for batter in lineup.sorted { $0.batting < $1.batting } {
+                                print("\(batter.batting) \(batter.player.lastName)")
+                                
                             }
-                            team.lineup = lineup
+//                             team.lineup = lineup
+//                            for i in 0..<lineup.count {
+//                                lineup[i].batting = i+1
+//                            }
+                            //team.lineup = lineup
                             if selectedTab == "Home" {
-                                game.homeTeam!.lineup = lineup
+                                game.homeTeam!.lineup = lineup.sorted { $0.batting < $1.batting }
                             } else {
-                                game.visitingTeam!.lineup = lineup
+                                game.visitingTeam!.lineup = lineup.sorted { $0.batting < $1.batting }
                             }
                             do {
                                 try modelContext.save()

@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 56;
+	objectVersion = 70;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -89,6 +89,10 @@
 		6ACEF64A2F64BFD900B1C803 /* GameSummaryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameSummaryView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
+/* Begin PBXFileSystemSynchronizedRootGroup section */
+		6AB41A202F71B7CE00DE2630 /* Navigation */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = Navigation; sourceTree = "<group>"; };
+/* End PBXFileSystemSynchronizedRootGroup section */
+
 /* Begin PBXFrameworksBuildPhase section */
 		6A8A3D792BB2372300BC7E32 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
@@ -119,6 +123,7 @@
 		6A8A3D7E2BB2372300BC7E32 /* ScoreKeep */ = {
 			isa = PBXGroup;
 			children = (
+				6AB41A202F71B7CE00DE2630 /* Navigation */,
 				6A8A3DB92BD84C1400BC7E32 /* Scorebook */,
 				6A8A3DB62BC714BD00BC7E32 /* Games */,
 				6A8A3DAF2BBF1C8700BC7E32 /* Teams */,
@@ -223,6 +228,9 @@
 			buildRules = (
 			);
 			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				6AB41A202F71B7CE00DE2630 /* Navigation */,
 			);
 			name = ScoreKeep;
 			productName = ScoreKeep;

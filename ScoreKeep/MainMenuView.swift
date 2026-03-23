@@ -9,8 +9,12 @@ import SwiftUI
 
 struct MainMenuView: View {
     @Environment(\.modelContext) var modelContext
-    @State var path: NavigationPath = .init()
+    @EnvironmentObject var nav: NavigationStateManager
+    
+    
     @State private var showAddTeamScreen: Bool = false
+    let preview = Preview()
+    let game = Game.defaultGame
     
     var body: some View {
         NavigationStack { //path: $path.animation(.bouncy)) {
@@ -32,6 +36,7 @@ struct MainMenuView: View {
                 }
             }
             Button {
+                preview.addSampleLineups(game: game)
                 addSampleData([Game.defaultGame])
                 try? modelContext.save()
             } label: {
@@ -39,9 +44,9 @@ struct MainMenuView: View {
             }
         }
 //        .navigationBarBackButtonHidden()
-//        .onAppear {
-//            path = NavigationPath()
-//        }
+        .onAppear {
+            print(nav.path)
+        }
     }
         
     func addSampleData(_ examples: [Game]) {
@@ -59,4 +64,5 @@ struct MainMenuView: View {
 #Preview {
     
     MainMenuView()
+        .environmentObject(NavigationStateManager())
 }
