@@ -57,7 +57,8 @@ struct StartGameView: View {
             startGame.toggle()
         }
         .navigationDestination(isPresented: $startGame) {
-            GameLineupsView(game: newGame)
+            let newGameViewModel = GameViewModel(game: newGame)
+            GameLineupsView(gameViewModel: newGameViewModel)
             //GameLineupsView(path: $path, game: newGame)
         }
         .navigationTitle("Create Game")

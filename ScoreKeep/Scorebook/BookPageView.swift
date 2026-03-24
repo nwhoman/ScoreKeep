@@ -193,11 +193,16 @@ struct InningsView: View {
                 }
                 gameViewModel.getPitcher()
                 try? modelContext.save()
-            } else { // if dismiss sheet before batter is finished
+            } else {
                 if !gameViewModel.game.isComplete {
+                    // if dismiss sheet before batter is finished
                     if gameViewModel.batter?.outcome["home"] == "" {
                         gameViewModel.baseRunners.remove(at: 0)
                         gameViewModel.decrementBatterUp()
+                    } else {
+                        gameViewModel.balls = 0
+                        gameViewModel.strikes = 0
+                        gameViewModel.pitches.removeAll()
                     }
                     try? modelContext.save()
                 }

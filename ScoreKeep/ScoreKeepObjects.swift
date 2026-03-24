@@ -11,7 +11,7 @@ import SwiftData
 import SwiftUI
 
 @Model
-class Team {
+class Team: Hashable {
     var id: UUID
     var name: String
     var ageGroup: String

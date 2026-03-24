@@ -36,9 +36,9 @@ struct GamesView: View {
                 .onDelete(perform: deleteGame)
             }
             .navigationTitle("ScoreKeep Games")
-            .navigationDestination(for: Game.self) {
-                game in
-                GameLineupsView(game: game)
+            .navigationDestination(for: Game.self) { game in
+                let newGameViewModel = GameViewModel(game: game)
+                GameLineupsView(gameViewModel: newGameViewModel)
                 //GameLineupsView(path: $path, game: game)
             }
             .toolbar{

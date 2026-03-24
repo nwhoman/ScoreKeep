@@ -580,18 +580,22 @@ class FieldScene: SKScene, SKPhysicsContactDelegate {
                 getHitType(node: touchedNode)
             }
             if touchedNode.name == "FO" {
+                gameVM.pitcher?.pitches.append(.strikeSwinging)
                 setFlyOut = true
             }
             if touchedNode.name == "GO" {
+                gameVM.pitcher?.pitches.append(.strikeSwinging)
                 setGroundOut.toggle()
                 moveNode(node: gameVM.baseRunners[0], bases: 1)
             }
             if touchedNode.name == "EHit" {
+                gameVM.pitcher?.pitches.append(.strikeSwinging)
                 setError.toggle()
                 moveNode(node: gameVM.baseRunners[0], bases: 1)
                 getError()
             }
             if touchedNode.name == "SAC" {
+                gameVM.pitcher?.pitches.append(.strikeSwinging)
                 setSac = true
                 getSAC()
             }
@@ -609,6 +613,8 @@ class FieldScene: SKScene, SKPhysicsContactDelegate {
             }
             if touchedNode.name == "pitched-strike" || touchedNode.name == "pitched-ball" {
                 gameVM.batter!.pitches.popLast()
+                gameVM.pitcher?.pitches.popLast()
+
                 let pitch = gameVM.pitches.popLast()
                 if pitch == .ball {
                     gameVM.balls -= 1
@@ -636,6 +642,7 @@ class FieldScene: SKScene, SKPhysicsContactDelegate {
                     if self.plateAppearance.sac != 1 {
                         node.isHidden = true
                     }
+                    self.gameVM.pitcher?.sac += 1
                 }
                 node = enumerateChildNodes(withName: "EHit") { node, stop in
                     node.isHidden = true
@@ -743,6 +750,7 @@ class FieldScene: SKScene, SKPhysicsContactDelegate {
                         gameVM.strikes = 0
                         addOutcomeLabel()
                         setError.toggle()
+                        gameVM.pitcher?.error.append("\(i.number)")
                     }
                 }
                 
@@ -769,6 +777,7 @@ class FieldScene: SKScene, SKPhysicsContactDelegate {
                             break
                             
                         }
+                        gameVM.pitcher?.error.append("\(errorPos)")
                         setErrorField.toggle()
                     }
                 }
@@ -833,6 +842,7 @@ class FieldScene: SKScene, SKPhysicsContactDelegate {
                     default:
                         break
                     }
+                    gameVM.pitcher?.wp += 1
                     advanceBRMenu()
                     //                    moveNode(node: brToAdvance ?? gameVM.baseRunners[0], bases: 1)
                     var node = enumerateChildNodes(withName: "Pitch") { node, stop in
@@ -871,15 +881,13 @@ class FieldScene: SKScene, SKPhysicsContactDelegate {
                     switch baseRunner.player.baseOccupied {
                     case 1:
                         baseRunner.player.outcome["first"] = "Thrown out at 1B"
+                        
                     case 2:
                         baseRunner.player.outcome["first"] = "Thrown out at 2B"
-                        baseRunner.player.sb.append(2)
                     case 3:
                         baseRunner.player.outcome["second"] = "Thrown out at 3B"
-                        baseRunner.player.sb.append(3)
                     case 4:
                         baseRunner.player.outcome["third"] = "Thrown out at Home"
-                        baseRunner.player.sb.append(4)
                     default:
                         break
                         

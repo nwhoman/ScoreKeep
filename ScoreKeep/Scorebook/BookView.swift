@@ -13,7 +13,7 @@ struct BookView: View {
     @Environment(\.dismiss) var dismiss
     @EnvironmentObject var nav: NavigationStateManager
 
-    @StateObject var gameViewModel: GameViewModel
+    @ObservedObject var gameViewModel: GameViewModel
     @State private var selectedTab: String = "Visitor"
 
     var body: some View {

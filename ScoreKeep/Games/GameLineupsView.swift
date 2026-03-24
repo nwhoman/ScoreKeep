@@ -12,8 +12,8 @@ struct GameLineupsView: View {
     @Environment(\.modelContext) var modelContext
     @Environment(\.dismiss) var dismiss
     @EnvironmentObject var nav: NavigationStateManager
-
-    var game: Game
+    @StateObject var gameViewModel: GameViewModel
+    //var game: Game
     
     @State private var selectedTab: String = "Home"
     @State var showAlert = false
@@ -26,11 +26,11 @@ struct GameLineupsView: View {
             VStack {
                 Spacer(minLength: 70)
                 TabView(selection: $selectedTab) {
-                    LineupView(game: game, lineup: game.homeTeam!.lineup, showAlert: $showAlert, showTeamAlert: $showHomeAlert, selectedTab: selectedTab)
-                        .tabItem { Text("\(game.homeTeam!.name)") }.tag("Home")
+                    LineupView(game: gameViewModel.game, lineup: gameViewModel.game.homeTeam!.lineup, showAlert: $showAlert, showTeamAlert: $showHomeAlert, selectedTab: selectedTab)
+                        .tabItem { Text("\(gameViewModel.game.homeTeam!.name)") }.tag("Home")
                     
-                    LineupView(game: game, lineup: game.visitingTeam!.lineup, showAlert: $showAlert, showTeamAlert: $showVisitorAlert,selectedTab: selectedTab)
-                        .tabItem { Text("\(game.visitingTeam!.name)") }.tag("Visitor")
+                    LineupView(game: gameViewModel.game, lineup: gameViewModel.game.visitingTeam!.lineup, showAlert: $showAlert, showTeamAlert: $showVisitorAlert,selectedTab: selectedTab)
+                        .tabItem { Text("\(gameViewModel.game.visitingTeam!.name)") }.tag("Visitor")
                     
                 }
                 .alert(isPresented: $showAlert) {
@@ -40,18 +40,18 @@ struct GameLineupsView: View {
             VStack{
                 HStack {
                     VStack(alignment: .leading) {
-                        Text(game.name)
-                        Text("\(game.date.formatted(date: .complete, time: .omitted))")
-                        Text("\(game.date.formatted(date: .omitted, time: .complete))")
-                        Text("At: \(game.location)")
+                        Text(gameViewModel.game.name)
+                        Text("\(gameViewModel.game.date.formatted(date: .complete, time: .omitted))")
+                        Text("\(gameViewModel.game.date.formatted(date: .omitted, time: .complete))")
+                        Text("At: \(gameViewModel.game.location)")
                     }
                     .font(.system(size: 14))
                     .padding(.leading)
                     Spacer()
                     Button {
                         // Verify both teams' lineups
-                        if validateLineup(lineup: game.homeTeam!.lineup) {
-                            if validateLineup(lineup: game.visitingTeam!.lineup) {
+                        if validateLineup(lineup: gameViewModel.game.homeTeam!.lineup) {
+                            if validateLineup(lineup: gameViewModel.game.visitingTeam!.lineup) {
                                // destination Start Game
                                 startGame.toggle()
                             } else {
@@ -85,8 +85,8 @@ struct GameLineupsView: View {
                 }
                 
                 HStack {
-                    NavigationLink(value: selectedTab == "Home" ? game.homeTeam! : game.visitingTeam!) {
-                        Text(selectedTab == "Home" ? game.homeTeam!.name : game.visitingTeam!.name)
+                    NavigationLink(value: selectedTab == "Home" ? gameViewModel.game.homeTeam! : gameViewModel.game.visitingTeam!) {
+                        Text(selectedTab == "Home" ? gameViewModel.game.homeTeam!.name : gameViewModel.game.visitingTeam!.name)
                     }
                     .padding(.horizontal)
                     .padding(.top, 10)
@@ -102,8 +102,8 @@ struct GameLineupsView: View {
         }
         
         .navigationDestination(isPresented: $startGame) {
-            var newGameViewModel = GameViewModel(game: game)
-            BookView(gameViewModel: newGameViewModel)
+            
+            BookView(gameViewModel: gameViewModel)
         }
     }
 }
@@ -159,7 +159,7 @@ func checkFlex(lineup: [PlayerPos]) -> Bool {
     preview.addSampleLineups(game: game)
     
     return NavigationStack {
-        GameLineupsView(game: game)
+        GameLineupsView(gameViewModel: GameViewModel(game: game))
             .modelContainer(preview.modelContainer)
     }
 }

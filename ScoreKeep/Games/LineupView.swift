@@ -41,7 +41,7 @@ struct LineupView: View {
                     
                     Button("Save Lineup"){
                         if validateLineup(lineup: lineup) {
-                            team.lineup.removeAll()
+                            
                             for batter in lineup.sorted { $0.batting < $1.batting } {
                                 print("\(batter.batting) \(batter.player.lastName)")
                                 
@@ -52,8 +52,10 @@ struct LineupView: View {
 //                            }
                             //team.lineup = lineup
                             if selectedTab == "Home" {
+                                game.homeTeam!.lineup.removeAll()
                                 game.homeTeam!.lineup = lineup.sorted { $0.batting < $1.batting }
                             } else {
+                                game.visitingTeam!.lineup.removeAll()
                                 game.visitingTeam!.lineup = lineup.sorted { $0.batting < $1.batting }
                             }
                             do {
