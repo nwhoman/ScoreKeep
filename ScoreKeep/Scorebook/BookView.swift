@@ -20,13 +20,13 @@ struct BookView: View {
         GeometryReader { geo in
             ZStack {
 
-                TabView(selection: $selectedTab) {
-                    BookPageView(gameViewModel: gameViewModel, selectedTab: selectedTab)
+                TabView(selection: $gameViewModel.selectedTab) {
+                    BookPageView(gameViewModel: gameViewModel, lineup: gameViewModel.visitorLineup, selectedTab: gameViewModel.selectedTab)
                         .tabItem {
                             Image(systemName: "person.fill")
                             Text("Visitor - \(gameViewModel.game.visitingTeam!.name)")
                         }.tag("Visitor")
-                    BookPageView(gameViewModel: gameViewModel, selectedTab: selectedTab)
+                    BookPageView(gameViewModel: gameViewModel, lineup: gameViewModel.homeLineup, selectedTab: gameViewModel.selectedTab)
                         .tabItem {
                             Image(systemName: "person.fill")
                             Text("Home - \(gameViewModel.game.homeTeam!.name)")
@@ -36,27 +36,10 @@ struct BookView: View {
     
                 VStack {
                     HStack {
-                        Spacer()
-                        if !gameViewModel.game.isStarted {
-                            Button {
-                                gameViewModel.setUpGame()
-                                //gameViewModel.game.innings[gameViewModel.inningNumber-1].visitorOffense[gameViewModel.batterUp[gameViewModel.halfInning]].active = true
-                                gameViewModel.game.isStarted = true
-                            } label: {
-                                Text("Start Game")
-                                    .font(.headline)
-                                    .padding(.horizontal)
-                            }
-                        } else {
-                            Button {
-                                //gameViewModel.addInning(inning: Inning(number: gameViewModel.inningNumber+1, game: gameViewModel.game, half: gameViewModel.halfInning), lineup: gameViewModel.halfInning == 0 ? gameViewModel.visitorLineup : gameViewModel.homeLineup, halfInning: gameViewModel.halfInning)
-                                gameViewModel.addInning(inning: Inning(number: gameViewModel.inningNumber+1, game: gameViewModel.game, half: gameViewModel.halfInning), lineup: gameViewModel.halfInning == 0 ? gameViewModel.game.visitingLineup : gameViewModel.game.homeLineup, halfInning: gameViewModel.halfInning)
-                            } label: {
-                                Image(systemName: "plus.rectangle")
-                            }
-                        }
+                        //Spacer()
+                       
                     }
-                    Spacer()
+                    //Spacer()
                 }
                 .navigationDestination(isPresented: $gameViewModel.game.isComplete) {
                     GameSummaryView(gameViewModel: gameViewModel, game: gameViewModel.game)
@@ -70,6 +53,31 @@ struct BookView: View {
             }
         }
         .navigationBarBackButtonHidden()
+        .toolbar {
+            if !gameViewModel.game.isStarted {
+                Button {
+                    gameViewModel.setUpGame()
+                    //gameViewModel.game.innings[gameViewModel.inningNumber-1].visitorOffense[gameViewModel.batterUp[gameViewModel.halfInning]].active = true
+                    gameViewModel.game.isStarted = true
+                } label: {
+                    Text("Start Game")
+                        .font(.headline)
+                        .padding(.horizontal)
+                }
+            } else {
+                Button {
+                    //gameViewModel.addInning(inning: Inning(number: gameViewModel.inningNumber+1, game: gameViewModel.game, half: gameViewModel.halfInning), lineup: gameViewModel.halfInning == 0 ? gameViewModel.visitorLineup : gameViewModel.homeLineup, halfInning: gameViewModel.halfInning)
+                    gameViewModel.addInning(inning: Inning(number: gameViewModel.inningNumber+1, game: gameViewModel.game, half: gameViewModel.halfInning), lineup: gameViewModel.halfInning == 0 ? gameViewModel.game.visitingLineup : gameViewModel.game.homeLineup, halfInning: gameViewModel.halfInning)
+                } label: {
+                    Image(systemName: "plus.rectangle")
+                }
+            }
+            Button {
+                nav.popToRoot()
+            } label: {
+                Image(systemName: "trash")
+            }
+        }
     }
 }
 func advanceLineup() {
@@ -79,12 +87,13 @@ func advanceLineup() {
 #Preview {
     var game = Game.defaultGame
     let preview = Preview()
+    let gameViewModel: GameViewModel = .init(game: game, totalInnings: 3)
     preview.addSampleGames([game])
     preview.addSampleLineups(game: game)
     //setUpGame(game: game)
-
+    
     return NavigationStack {
-        BookView(gameViewModel: GameViewModel(game: game))
+        BookView(gameViewModel: gameViewModel)
             .modelContainer(preview.modelContainer)
     }
    

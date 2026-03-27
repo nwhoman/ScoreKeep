@@ -23,180 +23,183 @@ struct TeamDetailView: View {
     
     
     var body: some View {
-        VStack {
-            HStack(alignment: .center) {
-                Spacer()
-                Text("\(team.name.uppercased()) - \(team.ageGroup)")
-                    .fontWeight(.black)
-                    .padding(15)
-                    .foregroundStyle(.white)
-                    .background(.black.opacity(0.75))
-                    .clipShape(.capsule)
-                Spacer()
-            }
-            Spacer(minLength: 30)
-            Section {
-                if team.coaches!.isEmpty {
-                    Text("no coaches").font(.system(size: 20))
-                } else {
-                    List {
-                        ForEach(team.coaches!, id: \.firstName) { coach in
-                            NavigationLink(value: coach){
-                                HStack {
-                                    Text("\(coach.firstName)")
-                                        .font(.system(size: 14))
-                                    Text("\(coach.lastName)")
-                                        .font(.system(size: 14))
+        GeometryReader { geo in
+            VStack {
+                HStack(alignment: .center) {
+                    Spacer()
+                    Text("\(team.name.uppercased()) - \(team.ageGroup)")
+                        .fontWeight(.black)
+                        .padding(15)
+                        .foregroundStyle(.white)
+                        .background(.black.opacity(0.75))
+                        .clipShape(.capsule)
+                    Spacer()
+                }
+                Spacer(minLength: 30)
+                Section {
+                    if team.coaches!.isEmpty {
+                        Text("no coaches").font(.system(size: 20))
+                    } else {
+                        List {
+                            ForEach(team.coaches!, id: \.firstName) { coach in
+                                NavigationLink(value: coach){
+                                    HStack {
+                                        Text("\(coach.firstName)")
+                                            .font(.system(size: 14))
+                                        Text("\(coach.lastName)")
+                                            .font(.system(size: 14))
+                                    }
                                 }
                             }
                         }
+                        .navigationDestination(for: Coach.self) {
+                            coach in
+                            CoachDetailView(coach: coach)
+                        }
                     }
-                    .navigationDestination(for: Coach.self) {
-                        coach in
-                        CoachDetailView(coach: coach)
+                } header: {
+                    HStack {
+                        Spacer()
+                        Text("Coaches")
+                            .fontWeight(.bold)
+                            .font(.system(size: 20))
+                        Spacer()
+                        Button("Edit Coaches"){
+                            showCoachesScreen.toggle()
+                        }
+                        Spacer()
                     }
                 }
-            } header: {
-                HStack {
-                    Spacer()
-                    Text("Coaches")
-                        .fontWeight(.bold)
-                        .font(.system(size: 20))
-                    Spacer()
-                    Button("Edit Coaches"){
-                        showCoachesScreen.toggle()
-                    }
-                    Spacer()
-                }
-            }
-            .padding(5)
-            Spacer()
-            Section {
-                if team.players!.isEmpty {
-                    Text("no players").font(.system(size: 20))
-                } else {
-                    List {
-                        ForEach(team.players!.sorted(by: { $0.number < $1.number } ), id: \.id) { player in
-                            NavigationLink(value: player) {
-                                HStack {
-                                    Text("# \(player.number)-\(player.firstName) \(player.lastName)")
-                                        .font(.system(size: 14))
-                                    
-                                    Text("\(player.age + 7)")
-                                        .font(.system(size: 14))
+                .padding(5)
+                Spacer()
+                Section {
+                    if team.players!.isEmpty {
+                        Text("no players").font(.system(size: 20))
+                    } else {
+                        List {
+                            ForEach(team.players!.sorted(by: { $0.number < $1.number } ), id: \.id) { player in
+                                NavigationLink(value: player) {
+                                    HStack {
+                                        Text("# \(player.number) - \(player.firstName) \(player.lastName)")
+                                            .font(.system(size: 14))
+                                        
+//                                        Text("\(player.age + 7)")
+//                                            .font(.system(size: 14))
+                                    }
                                 }
                             }
                         }
-                    }
-                    .navigationDestination(for: Player.self) {
-                        player in
-                        PlayerDetailView(player: player)
-                    }
-                }
-            } header: {
-                HStack {
-                    Spacer()
-                    Text("Players")
-                        .fontWeight(.bold)
-                        .font(.system(size: 20))
-                    Spacer()
-                    Button("Edit Players"){
-                        showPlayersScreen.toggle()
-                    }
-                    Spacer()
-                }
-            }
-            Section {
-                HStack {
-                    VStack {
-                        HStack {
-                            Spacer()
-                            Text("Home Games")
-                                .fontWeight(.bold)
-                                .font(.system(size: 20))
-                            Spacer()
+                        .frame(width: geo.size.width)
+                        .navigationDestination(for: Player.self) {
+                            player in
+                            PlayerDetailView(player: player)
                         }
-                        if ((team.homeGames?.isEmpty) == nil) {
-                            Text("no home games").font(.system(size: 20))
-                        } else {
-                            List {
-                                ForEach(team.homeGames!, id: \.self) { game in
-                                    NavigationLink(value: game) {
-                                        VStack(alignment: .leading) {
-                                            Text("\(game.name) - \(game.location)")
-                                            Text("\(game.date.formatted(date: .complete, time: .omitted))")
-                                            Text("\(game.date.formatted(date: .omitted, time: .shortened))")
+                    }
+                } header: {
+                    HStack {
+                        Spacer()
+                        Text("Players")
+                            .fontWeight(.bold)
+                            .font(.system(size: 20))
+                        Spacer()
+                        Button("Edit Players"){
+                            showPlayersScreen.toggle()
+                        }
+                        Spacer()
+                    }
+                }
+                Section {
+                    HStack {
+                        VStack {
+                            HStack {
+                                Spacer()
+                                Text("Home Games")
+                                    .fontWeight(.bold)
+                                    .font(.system(size: 20))
+                                Spacer()
+                            }
+                            if ((team.homeGames?.isEmpty) == nil) {
+                                Text("no home games").font(.system(size: 20))
+                            } else {
+                                List {
+                                    ForEach(team.homeGames!, id: \.self) { game in
+                                        NavigationLink(value: game) {
+                                            VStack(alignment: .leading) {
+                                                Text("\(game.name) - \(game.location)")
+                                                Text("\(game.date.formatted(date: .complete, time: .omitted))")
+                                                Text("\(game.date.formatted(date: .omitted, time: .shortened))")
+                                            }
+                                            .font(.system(size: 8))
                                         }
-                                        .font(.system(size: 8))
+                                    }
+                                }
+                            }
+                        }
+                        VStack {
+                            HStack {
+                                Spacer()
+                                Text("Away Games")
+                                    .fontWeight(.bold)
+                                    .font(.system(size: 20))
+                                Spacer()
+                            }
+                            if ((team.visitingGames?.isEmpty) == nil) {
+                                Text("no away games").font(.system(size: 20))
+                            } else {
+                                List {
+                                    ForEach(team.visitingGames!, id: \.self) { game in
+                                        NavigationLink(value: game) {
+                                            VStack(alignment: .leading) {
+                                                Text("\(game.name) - \(game.location)")
+                                                Text("\(game.date.formatted(date: .complete, time: .omitted))")
+                                                Text("\(game.date.formatted(date: .omitted, time: .shortened))")
+                                            }
+                                            .font(.system(size: 8))
+                                        }
                                     }
                                 }
                             }
                         }
                     }
-                    VStack {
-                        HStack {
-                            Spacer()
-                            Text("Away Games")
-                                .fontWeight(.bold)
-                                .font(.system(size: 20))
-                            Spacer()
-                        }
-                        if ((team.visitingGames?.isEmpty) == nil) {
-                            Text("no away games").font(.system(size: 20))
-                        } else {
-                            List {
-                                ForEach(team.visitingGames!, id: \.self) { game in
-                                    NavigationLink(value: game) {
-                                        VStack(alignment: .leading) {
-                                            Text("\(game.name) - \(game.location)")
-                                            Text("\(game.date.formatted(date: .complete, time: .omitted))")
-                                            Text("\(game.date.formatted(date: .omitted, time: .shortened))")
-                                        }
-                                        .font(.system(size: 8))
-                                    }
-                                }
-                            }
+                    .navigationDestination(for: Game.self) { game in
+                        //GameLineupsView(game: game)
+                    }
+                }
+                Spacer(minLength: 30)
+                Button("Edit"){
+                    showEditScreen.toggle()
+                }
+                .padding(10)
+                .foregroundStyle(.blue)
+                .clipShape(.capsule)
+                .shadow(radius: 5)
+                .navigationTitle(team.name)
+                .navigationBarTitleDisplayMode(.inline)
+                .scrollBounceBehavior(.basedOnSize)
+                .alert("Delete Team", isPresented: $showDeleteAlert) {
+                    Button("Delete", role: .destructive, action: {})
+                    Button("Cancel", role: .cancel){}
+                } message: {
+                    Text("Are you sure?")
+                }
+                .toolbar {
+                    ToolbarItem(placement: .topBarTrailing){
+                        Button("Delete this team", systemImage: "trash") {
+                            showDeleteAlert = true
                         }
                     }
                 }
-//                .navigationDestination(for: Game.self) { game in
-//                    GameLineupsView(game: game)
-//                }
             }
-            Spacer(minLength: 30)
-            Button("Edit"){
-                showEditScreen.toggle()
+            
+            .sheet(isPresented: $showEditScreen){
+                EditTeamView(team: team)
             }
-            .padding(10)
-            .foregroundStyle(.blue)
-            .clipShape(.capsule)
-            .shadow(radius: 5)
-            .navigationTitle(team.name)
-            .navigationBarTitleDisplayMode(.inline)
-            .scrollBounceBehavior(.basedOnSize)
-            .alert("Delete Team", isPresented: $showDeleteAlert) {
-                Button("Delete", role: .destructive, action: {})
-                Button("Cancel", role: .cancel){}
-            } message: {
-                Text("Are you sure?")
+            .sheet(isPresented: $showCoachesScreen){
+                CoachesView(for: team)
             }
-            .toolbar {
-                ToolbarItem(placement: .topBarTrailing){
-                    Button("Delete this team", systemImage: "trash") {
-                        showDeleteAlert = true
-                    }
-                }
+            .sheet(isPresented: $showPlayersScreen){
+                PlayersView(for: team)
             }
-        }
-
-        .sheet(isPresented: $showEditScreen){
-            EditTeamView(team: team)
-        }
-        .sheet(isPresented: $showCoachesScreen){
-            CoachesView(for: team)
-        }
-        .sheet(isPresented: $showPlayersScreen){
-            PlayersView(for: team)
         }
     }
 }

@@ -15,4 +15,6 @@ class NavigationStateManager: ObservableObject {
     func popToRoot() {
         path = NavigationPath()
     }
+    
+    
 }

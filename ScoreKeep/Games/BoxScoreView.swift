@@ -117,6 +117,6 @@ struct BoxScoreView: View {
     preview.addSampleLineups(game: game)
     //setUpGame(game: game)
     
-    return BoxScoreView(gameViewModel: GameViewModel(game: game))
+    return BoxScoreView(gameViewModel: GameViewModel(game: game, totalInnings: 3))
         .modelContainer(preview.modelContainer)
     }

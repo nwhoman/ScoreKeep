@@ -80,7 +80,7 @@ struct ShowSubsView: View {
     
     preview.addSampleGames([game])
 
-    return ShowSubsView(gameVM: GameViewModel(game: game), team: game.homeTeam!, lineup: game.createLineup(players: game.homeTeam!.players!), showAlert: false, showSubs: false)
+    return ShowSubsView(gameVM: GameViewModel(game: game, totalInnings: 3), team: game.homeTeam!, lineup: game.createLineup(players: game.homeTeam!.players!), showAlert: false, showSubs: false)
             .modelContainer(preview.modelContainer)
     
 }
@@ -244,7 +244,7 @@ struct RosterSubsView: View {
                                 .padding(.top, 15)
                                 .padding(.horizontal, 15)
                                 .onTapGesture {
-                                    print("home: \(gameVM.homeLineup)")
+                                    print("home: \(lineup)")
                                     // create PlayerPos for inserted player
                                     var newPlayerPos = PlayerPos(player: player, position: selectedPlayer.position, batting: selectedPlayer.batting)
                                     // insert PlayerPos into lineup
@@ -255,7 +255,7 @@ struct RosterSubsView: View {
                                     selectedPlayer = newPlayerPos
                                     lineup = lineup.sorted(by: { $0.batting < $1.batting })
                                     
-                                    print("newhome: \(gameVM.homeLineup)")
+                                    print("newhome: \(lineup)")
                                 }
                             }
                             
@@ -317,15 +317,15 @@ struct RosterSubsItemView: View {
     }
 }
 
-#Preview {
-    var game = Game.defaultGame
-    let preview = Preview()
-    preview.addSampleGames([game])
-
-    return NavigationStack {
-        LineupView(game: game, lineup: game.homeTeam!.lineup, showAlert: .constant(false), showTeamAlert: .constant(false), selectedTab: "Home")
-            .modelContainer(preview.modelContainer)
-    }
-    
-    
-}
+//#Preview {
+//    var game = Game.defaultGame
+//    let preview = Preview()
+//    preview.addSampleGames([game])
+//
+//     NavigationStack {
+//         LineupView(game: game, lineup: game.homeTeam!.lineup, gameVM: <#GameViewModel#>, showAlert: .constant(false), showTeamAlert: .constant(false), selectedTab: "Home")
+//            .modelContainer(preview.modelContainer)
+//    }
+//    
+//    
+//}

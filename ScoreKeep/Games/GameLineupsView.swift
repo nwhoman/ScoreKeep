@@ -26,10 +26,10 @@ struct GameLineupsView: View {
             VStack {
                 Spacer(minLength: 70)
                 TabView(selection: $selectedTab) {
-                    LineupView(game: gameViewModel.game, lineup: gameViewModel.game.homeTeam!.lineup, showAlert: $showAlert, showTeamAlert: $showHomeAlert, selectedTab: selectedTab)
+                    LineupView(gameVM: gameViewModel, game: gameViewModel.game, lineup: gameViewModel.homeCurrentLineup, showAlert: $showAlert, showTeamAlert: $showHomeAlert, selectedTab: selectedTab)
                         .tabItem { Text("\(gameViewModel.game.homeTeam!.name)") }.tag("Home")
                     
-                    LineupView(game: gameViewModel.game, lineup: gameViewModel.game.visitingTeam!.lineup, showAlert: $showAlert, showTeamAlert: $showVisitorAlert,selectedTab: selectedTab)
+                    LineupView(gameVM: gameViewModel, game: gameViewModel.game, lineup: gameViewModel.visitorCurrentLineup, showAlert: $showAlert, showTeamAlert: $showVisitorAlert,selectedTab: selectedTab)
                         .tabItem { Text("\(gameViewModel.game.visitingTeam!.name)") }.tag("Visitor")
                     
                 }
@@ -50,8 +50,8 @@ struct GameLineupsView: View {
                     Spacer()
                     Button {
                         // Verify both teams' lineups
-                        if validateLineup(lineup: gameViewModel.game.homeTeam!.lineup) {
-                            if validateLineup(lineup: gameViewModel.game.visitingTeam!.lineup) {
+                        if validateLineup(lineup: gameViewModel.homeCurrentLineup) {
+                            if validateLineup(lineup: gameViewModel.visitorCurrentLineup) {
                                // destination Start Game
                                 startGame.toggle()
                             } else {
@@ -159,7 +159,7 @@ func checkFlex(lineup: [PlayerPos]) -> Bool {
     preview.addSampleLineups(game: game)
     
     return NavigationStack {
-        GameLineupsView(gameViewModel: GameViewModel(game: game))
+        GameLineupsView(gameViewModel: GameViewModel(game: game, totalInnings: 3))
             .modelContainer(preview.modelContainer)
     }
 }

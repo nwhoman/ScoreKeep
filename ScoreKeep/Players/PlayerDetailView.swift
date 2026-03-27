@@ -33,11 +33,11 @@ struct PlayerDetailView: View {
                 })
                 
 }
-            Picker("Player's Age:", selection: $player.age){
-                ForEach(7..<20){
-                    Text("\($0)")
-                }
-            }
+//            Picker("Player's Age:", selection: $player.age){
+//                ForEach(7..<20){
+//                    Text("\($0)")
+//                }
+//            }
             Section {
                 Button("Save Player"){
                     //add coach

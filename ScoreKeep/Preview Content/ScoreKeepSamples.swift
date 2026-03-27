@@ -93,7 +93,6 @@ extension Game {
             let position = positions.randomElement()!
             positions.removeAll(where: { $0 == position })
             let player = PlayerPos(player: players[i], position: position, batting: i+1 )
-            print("\(player.batting) - \(player.player.firstName) \(player.player.lastName)")
             lineup.append(player)
             
         }

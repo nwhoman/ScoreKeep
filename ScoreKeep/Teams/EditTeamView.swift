@@ -33,15 +33,17 @@ struct EditTeamView: View {
                 Section {
                     Text("Coaches:")
                         .fontWeight(.bold)
-                        .font(.largeTitle)
+                        .font(.title)
                     List{
                         ForEach(team.coaches!) { coach in
+                            NavigationLink(destination: CoachDetailView(coach: coach)) {
                                 HStack {
                                     Text("\(coach.firstName)")
-                                        .font(.largeTitle)
+                                        .font(.system(size: 14))
                                     Text("\(coach.lastName)")
-                                        .font(.largeTitle)
+                                        .font(.system(size: 14))
                                 }
+                            }
                         }
                     }
                     
@@ -54,18 +56,20 @@ struct EditTeamView: View {
                 }
                 Section {
                     Text("Players:")
-                        .fontWeight(/*@START_MENU_TOKEN@*/.bold/*@END_MENU_TOKEN@*/)
-                        .font(.largeTitle)
+                        .fontWeight(.bold)
+                        .font(.title)
                     List{
                         ForEach(team.players!) { player in
+                            NavigationLink(destination: PlayerDetailView(player: player)) {
                                 HStack {
+                                    Text("\(player.number) - ")
                                     Text("\(player.firstName)")
-                                        .font(.largeTitle)
                                     Text("\(player.lastName)")
-                                        .font(.largeTitle)
-                                    Text("\(player.age)")
-                                        .font(.largeTitle)
+                                    //Text("\(player.age)")
+                                        
                                 }
+                                .font(.system(size: 14))
+                            }
                         }
                     }
                     if !showAddPlayerScreen {

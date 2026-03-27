@@ -10,6 +10,7 @@ import SwiftData
 
 struct PlayersView: View {
     @Environment(\.modelContext) var modelContext
+    @EnvironmentObject var nav: NavigationStateManager
     @Environment(\.dismiss) var dismiss
 
     let team: Team

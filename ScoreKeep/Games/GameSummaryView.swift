@@ -30,8 +30,8 @@ struct GameSummaryView: View {
             GeometryReader { geo in
                 VStack(alignment: .leading) {
                     HStack {
-                        //ScoreView(gameViewModel: gameViewModel)
-                          //  .padding(.horizontal)
+                        ScoreView(gameViewModel: gameViewModel)
+                            .padding(.horizontal)
                     }
                     ForEach(teams, id: \.id) { team in
                         ScrollView {
@@ -97,6 +97,7 @@ struct GameSummaryView: View {
             }.toolbar {
                 Button {
                     nav.popToRoot()
+                    
                 } label: {
                     Image(systemName: "arrow.left")
                 }
@@ -127,6 +128,6 @@ struct GameSummaryView: View {
     preview.addSampleLineups(game: game)
     //setUpGame(game: game)
     
-    return GameSummaryView(gameViewModel: GameViewModel(game: game), game: game)
+    return GameSummaryView(gameViewModel: GameViewModel(game: game, totalInnings: 3), game: game)
         .modelContainer(preview.modelContainer)
     }

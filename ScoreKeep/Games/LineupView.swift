@@ -11,7 +11,7 @@ import SwiftUI
 struct LineupView: View {
     @Environment(\.modelContext) var modelContext
     @Environment(\.dismiss) var dismiss
-    
+    @ObservedObject var gameVM: GameViewModel
     @State var game: Game
 
     @State var selected: Player?
@@ -20,7 +20,7 @@ struct LineupView: View {
     @Binding var showAlert: Bool
     @Binding var showTeamAlert: Bool
     
-    var selectedTab: String
+    @State var selectedTab: String
 
     var team: Team {
         if selectedTab == "Home" {
@@ -30,6 +30,13 @@ struct LineupView: View {
         }
     }
     
+//    var lineup: [PlayerPos] {
+//        if selectedTab == "Home" {
+//            return gameVM.homeCurrentLineup
+//        } else {
+//            return gameVM.visitorCurrentLineup
+//        }
+//    }
      
     
     var body: some View {
@@ -42,27 +49,32 @@ struct LineupView: View {
                     Button("Save Lineup"){
                         if validateLineup(lineup: lineup) {
                             
-                            for batter in lineup.sorted { $0.batting < $1.batting } {
+                            for batter in lineup.sorted(by: { $0.batting < $1.batting }) {
                                 print("\(batter.batting) \(batter.player.lastName)")
-                                
                             }
+                            if selectedTab == "Visitor" {
+                                gameVM.visitorCurrentLineup = lineup.sorted(by: { $0.batting < $1.batting })
+                            } else {
+                                gameVM.homeCurrentLineup = lineup.sorted(by: { $0.batting < $1.batting })
+                            }
+                            
 //                             team.lineup = lineup
 //                            for i in 0..<lineup.count {
 //                                lineup[i].batting = i+1
 //                            }
                             //team.lineup = lineup
-                            if selectedTab == "Home" {
-                                game.homeTeam!.lineup.removeAll()
-                                game.homeTeam!.lineup = lineup.sorted { $0.batting < $1.batting }
-                            } else {
-                                game.visitingTeam!.lineup.removeAll()
-                                game.visitingTeam!.lineup = lineup.sorted { $0.batting < $1.batting }
-                            }
-                            do {
-                                try modelContext.save()
-                            } catch {
-                                print("\(error)")
-                            }
+//                            if selectedTab == "Home" {
+//                                //game.homeTeam!.lineup.removeAll()
+//                                gameVM.homeCurrentLineup = lineup.sorted(by: { $0.batting < $1.batting })
+//                            } else {
+//                                //game.visitingTeam!.lineup.removeAll()
+//                                gameVM.visitorCurrentLineup = lineup.sorted(by: { $0.batting < $1.batting })
+//                            }
+//                            do {
+//                                try modelContext.save()
+//                            } catch {
+//                                print("\(error)")
+//                            }
                         } else {
                             showAlert = true
                             showTeamAlert = true
@@ -71,7 +83,7 @@ struct LineupView: View {
                 }
                 
                 .padding(10)
-                RosterView(team: team, lineup: $lineup)
+                RosterView(gameVM: gameVM, team: team, selectedTab: $selectedTab, lineup: $lineup)
                 
             }
             .background(Color.clear)
@@ -106,9 +118,12 @@ func playerUsed(player: Player, lineup: [PlayerPos]) -> Bool {
 struct RosterView: View {
     @Environment(\.modelContext) var modelContext
     @Environment(\.dismiss) var dismiss
+    @ObservedObject var gameVM: GameViewModel
     @State private var positions: [String] = ["P", "C", "1B", "2B", "3B", "SS", "LF", "CF", "RF", "DP", "F", "EP"]
     @State var team: Team
+    @Binding var selectedTab: String
     @Binding var lineup: [PlayerPos]
+    
     
     private var unusedPositions: [String] {
         var possiblePositions = positions
@@ -120,6 +135,21 @@ struct RosterView: View {
         players = team.players!.filter({ pos in !playerUsed(player: pos, lineup: lineup)  })
         return players
     }
+//    var lineup: [PlayerPos] {
+//        if selectedTab == "Home" {
+//            var temp: [PlayerPos] = []
+//            for each in gameVM.homeLineup {
+//                temp.append(each.last!)
+//            }
+//            return temp
+//        } else {
+//            var temp: [PlayerPos] = []
+//            for each in gameVM.visitorLineup {
+//                temp.append(each.last!)
+//            }
+//            return temp
+//        }
+//    }
     
     var body: some View {
         GeometryReader { geo in
@@ -160,11 +190,12 @@ struct RosterView: View {
                                         .font(.caption)
                                         .onTapGesture {
                                             
-                                            lineup.remove(at: lineup.firstIndex(of: player)!)
+                                            lineup = gameVM.popPlayerFromLineup(lineup: lineup, player: player)
+                                            
                                             for i in 0..<lineup.count {
                                                 lineup[i].batting = i+1
                                             }
-                                            try? modelContext.save()
+                                            //try? modelContext.save()
                                         }
                                     }
                                 }
@@ -192,7 +223,8 @@ struct RosterItemView: View {
     @Binding var lineup: [PlayerPos]
     var unusedPositions: [String]
     @State var position: String
-
+    //var lineup: [PlayerPos]
+    
     var body: some View {
         GeometryReader { geo in
             HStack(alignment: .bottom) {
@@ -228,11 +260,12 @@ struct RosterItemView: View {
 
 #Preview {
     var game = Game.defaultGame
+    let gameVM = GameViewModel(game: game, totalInnings: 3)
     let preview = Preview()
     preview.addSampleGames([game])
 
     return NavigationStack {
-        LineupView(game: game, lineup: game.homeTeam!.lineup, showAlert: .constant(false), showTeamAlert: .constant(false), selectedTab: "Home")
+         LineupView(gameVM: gameVM, game: game, lineup: gameVM.homeCurrentLineup, showAlert: .constant(false), showTeamAlert: .constant(false), selectedTab: "Home")
             .modelContainer(preview.modelContainer)
     }
 }

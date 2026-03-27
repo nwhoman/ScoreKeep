@@ -16,13 +16,14 @@ struct BookPageView: View {
     //@Binding var game: Game
     //@Binding var orderNumber: Int
     //@Binding var inningNumber: Int
+    @State var lineup: [[PlayerPos]]
     @State var showLargeView: Bool = false
     @State var showPlayerPA: Bool = false
     @State var largeView: Bool = true
     
     var selectedTab: String
     var innings: [Inning] {
-        if selectedTab == "Visitor" {
+        if gameViewModel.selectedTab == "Visitor" {
             
             return gameViewModel.visitorInnings.sorted { $0.number < $1.number }
 
@@ -32,10 +33,10 @@ struct BookPageView: View {
     }
     
     var team: Team {
-        if selectedTab == "Home" {
-            return gameViewModel.game.homeTeam!
-        } else {
+        if gameViewModel.selectedTab == "Visitor" {
             return gameViewModel.game.visitingTeam!
+        } else {
+            return gameViewModel.game.homeTeam!
         }
     }
     
@@ -43,11 +44,11 @@ struct BookPageView: View {
         //NavigationStack {
             GeometryReader { geo in
                 VStack {
-                    HStack {
-                        Text("Batting: \(gameViewModel.batterUp[gameViewModel.halfInning])")
-                        Text("\(gameViewModel.inningNumber)")
-                        //Text("\(gameViewModel.i)")
-                    }
+//                    HStack {
+//                        Text("Batting: \(gameViewModel.batterUp[gameViewModel.halfInning])")
+//                        Text("\(gameViewModel.inningNumber)")
+//                        //Text("\(gameViewModel.i)")
+//                    }
                     
                     // score by inning + RHE
                     HStack {
@@ -70,7 +71,7 @@ struct BookPageView: View {
                     }
                     ScrollView() {
                         HStack(alignment: .top) {
-                            BattingLineupView(gameVM: gameViewModel, geo: geo, team: team, tab: selectedTab)
+                            BattingLineupView(gameVM: gameViewModel, battingOrder: lineup, geo: geo, team: team, tab: selectedTab)
                             //.padding(.leading)
                                 .border(Color.blue)
                             ScrollView(Axis.Set.horizontal) {
@@ -90,12 +91,13 @@ struct BookPageView: View {
 
 #Preview {
     var game = Game.defaultGame
+    let gameVM = GameViewModel(game: game, totalInnings: 3)
     let preview = Preview()
     preview.addSampleGames([game])
     preview.addSampleLineups(game: game)
-    //setUpGame(game: game)
+    //gameVM.setUpGame()
     
-    return BookPageView(gameViewModel: GameViewModel(game: game), selectedTab: "Home - \(game.homeTeam!.name)")
+    return BookPageView(gameViewModel: gameVM, lineup: gameVM.homeLineup, selectedTab: "Home - \(game.homeTeam!.name)")
         .modelContainer(preview.modelContainer)
 }
 
@@ -138,11 +140,12 @@ struct InningsView: View {
                                 SmallPlateAppearanceView(gameViewModel: gameViewModel, player: player, scale: 0.15)
                                     .onTapGesture {
                                         if !gameViewModel.game.isComplete {
-                                            
+                                            print("\(teamBatting)")
                                             if (teamBatting && gameViewModel.halfInning == 0 && gameViewModel.inningNumber == inning.number && gameViewModel.batterUp[gameViewModel.halfInning] == player.order) || (!teamBatting && gameViewModel.halfInning == 1 && gameViewModel.inningNumber == inning.number && gameViewModel.batterUp[gameViewModel.halfInning] == player.order) {
                                                 if player.outcome["home"] == "" {
                                                     player.active = true
                                                     gameViewModel.batter = player
+                                                    gameViewModel.getPitcher()
                                                     currentPlayer = player
                                                     //gameViewModel.inningNumber = inning.number
                                                     let brNode = BaseRunnerNode(player: player)
@@ -177,7 +180,7 @@ struct InningsView: View {
         .sheet(isPresented: $showLargeView, onDismiss: {
             //  update game viewmodel, check outs and switch sides
             gameViewModel.checkGameComplete()
-            if gameViewModel.outs == 3 {
+            if gameViewModel.outs == 3 { // change of sides, reset all game inning variables
                 gameViewModel.outs = 0
                 gameViewModel.balls = 0
                 gameViewModel.strikes = 0
@@ -191,7 +194,7 @@ struct InningsView: View {
                     gameViewModel.halfInning = 0
                     gameViewModel.inningNumber += 10
                 }
-                gameViewModel.getPitcher()
+                
                 try? modelContext.save()
             } else {
                 if !gameViewModel.game.isComplete {

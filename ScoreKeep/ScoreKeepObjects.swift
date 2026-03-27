@@ -31,6 +31,11 @@ class Team: Hashable {
         //self.visitingGames = visitingGames
     }
     
+    private func createQuickTeam() {
+        
+    }
+    
+    
 }
 
 @Model
@@ -416,52 +421,15 @@ enum StatLabels: String, Codable, CaseIterable {
 
 struct BattingLineupView: View {
     
-//    let geo: GeometryProxy
-//    let team: Team
-//    
-//    var battingOrder: [PlayerPos] {
-//        return team.lineup.sorted { $0.batting < $1.batting }
-//    }
     @ObservedObject var gameVM: GameViewModel
     @State var showSubPages: Bool = false
     @State var showAlert: Bool = false
+    @State var battingOrder: [[PlayerPos]]
     let geo: GeometryProxy
     let team: Team
     let tab: String
     
-    
-    var battingOrder: [[PlayerPos]] {
-        var displayLineup: [[PlayerPos]] = []
-        
-        if tab == "Home" {
-            displayLineup.append(contentsOf: gameVM.homeLineup.sorted(by: { $0.last!.batting < $1.last!.batting} ))
-        } else {
-            displayLineup.append(contentsOf: gameVM.visitorLineup.sorted(by: { $0.last!.batting < $1.last!.batting} ))
-        }
-        return displayLineup
-    }
-    
     var body: some View {
-//        VStack(alignment: .leading) {
-//            Text("\(team.name)")
-//                .padding(.horizontal, 5)
-//                .padding(.top, 5)
-//                .frame(width: geo.size.width*0.4, height: 50, alignment: .leading)
-//                .border(Color.blue)
-//            ForEach(battingOrder, id: \.self) { player in
-//                HStack {
-//                    Text("\(player.batting)) \(player.player.number) - \(player.player.lastName), \(player.player.firstName.first!)")
-//                    Spacer(minLength: 10)
-//                    Text("\(player.position)")
-//                }.lineLimit(1)
-//                    .minimumScaleFactor(0.5)
-//                
-//                .padding(.horizontal, 5)
-//                .padding(.top, 5)
-//                .frame(width: geo.size.width*0.4, height: 75, alignment: .topLeading)
-//                .border(Color.blue)
-//            }
-//        }
         VStack(alignment: .leading) {
             Text("\(team.name)")
                 .padding(.horizontal, 5)
@@ -470,6 +438,7 @@ struct BattingLineupView: View {
                 .border(Color.blue)
             ForEach(battingOrder, id: \.self) { orderSlot in
                 VStack(spacing: 0) {
+                    
                     HStack(alignment: .top, spacing: 0) {
                         Text("\(orderSlot.first!.batting))")
                             .padding(.leading, 2)
@@ -511,12 +480,12 @@ struct BattingLineupView: View {
         }
         .sheet(isPresented: $showSubPages, onDismiss: {
             //  update game viewmodel, check outs and switch sides
-            
+            battingOrder = gameVM.selectedTab == "Visitor" ? gameVM.visitorLineup : gameVM.homeLineup
                                 
             
         })
         {
-            ShowSubsView(gameVM: gameVM, team: team, lineup: team.lineup)
+            ShowSubsView(gameVM: gameVM, team: team, lineup: gameVM.selectedTab == "Visitor" ? gameVM.visitorCurrentLineup : gameVM.homeCurrentLineup)
           
         }
             
@@ -526,14 +495,26 @@ struct BattingLineupView: View {
     
         
 }
-//#Preview {
-//    
-//    BattingLineupView()
-//}
+#Preview {
+    var game = Game.defaultGame
+    
+    let preview = Preview()
+    preview.addSampleGames([game])
+    preview.addSampleLineups(game: game)
+    //setUpGame(game: game)
+    let gameVM = GameViewModel(game: game, totalInnings: 3)
+    var lineup = gameVM.setInitialLineup(halfInning: 1)
+        
+    return GeometryReader { geo in
+        BattingLineupView(gameVM: gameVM, battingOrder: lineup, geo: geo, team: gameVM.game.homeTeam!, tab: "Home")
+            .modelContainer(preview.modelContainer)
+    }
+    
+}
 struct ScoreView: View {
     @ObservedObject var gameViewModel: GameViewModel
 
-    let innings: [Any] = [1, 2, 3, 4, 5, 6, 7, "R", "H", "E"]
+    //let innings: [Any] = setUpInnings()//[1, 2, 3, 4, 5, 6, 7, "R", "H", "E"]
     var body: some View {
         HStack(alignment: .lastTextBaseline) {
             VStack(alignment: .trailing) {
@@ -556,7 +537,7 @@ struct ScoreView: View {
             .border(Color.gray, width: 0.5)
             VStack(alignment: .leading) {
                 HStack {
-           
+                    let innings: [Any] = setUpInnings()
                     ForEach(0..<innings.count, id: \.self) {inning in
                         Text("\(innings[inning])")
                             .font(.system(size: 12, weight: .bold))
@@ -604,6 +585,15 @@ struct ScoreView: View {
             .border(Color.gray, width: 0.5)
         }
         .frame(width: 400, height: 75, alignment: .leading)
+    }
+    func setUpInnings() -> [Any] {
+        var temp:[Any] = []
+        let labels = ["R", "H", "E"]
+        for i in 1...gameViewModel.totalInnings {
+            temp.append(i)
+        }
+        temp.append(contentsOf: labels)
+        return temp
     }
 }
 
@@ -673,11 +663,11 @@ struct SacOutView: View {
         }
     }
 }
-#Preview {
-    let player = OffensivePlateAppearance.defaultPlateAppearance
-    
-    SacOutView(player: player)
-}
+//#Preview {
+//    let player = OffensivePlateAppearance.defaultPlateAppearance
+//    
+//    SacOutView(player: player)
+//}
 
 struct CountView: View {
     var pitches: [Pitch]

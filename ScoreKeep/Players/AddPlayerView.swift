@@ -10,6 +10,7 @@ import SwiftData
 
 struct AddPlayerView: View {
     @Environment(\.modelContext) var modelContext
+    @EnvironmentObject var nav: NavigationStateManager
     @Environment(\.dismiss) var dismiss
 
     let team: Team
@@ -26,11 +27,11 @@ struct AddPlayerView: View {
                     TextField("Player's First Name:", text: $firstName)
                     TextField("Player's Last Name:", text: $lastName)
                 }
-                Picker("Player Age:", selection: $age){
-                    ForEach(7..<20){
-                        Text("\($0)")
-                    }
-                }
+//                Picker("Player Age:", selection: $age){
+//                    ForEach(7..<20){
+//                        Text("\($0)")
+//                    }
+//                }
                 Section {
                     Button("Save Player"){
                         //add player

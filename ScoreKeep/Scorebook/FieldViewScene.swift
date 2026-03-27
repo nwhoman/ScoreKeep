@@ -69,7 +69,7 @@ func drawFieldShape(from path: CGPath) -> SKShapeNode {
     let preview = Preview()
     preview.addSampleGames([game])
     preview.addSampleLineups(game: game)
-    let gameVM = GameViewModel(game: game)
+    let gameVM = GameViewModel(game: game, totalInnings: 3)
     gameVM.setUpGame()
     gameVM.getBatter()
     gameVM.getPitcher()
@@ -825,9 +825,15 @@ class FieldScene: SKScene, SKPhysicsContactDelegate {
                     }
                     advanceBRMenu()
                     //                    moveNode(node: brToAdvance ?? gameVM.baseRunners[0], bases: 1)
-                    var node = enumerateChildNodes(withName: "Pitch") { node, stop in
-                        node.isHidden = false
-                    }
+//                    var node = enumerateChildNodes(withName: "Pitch") { node, stop in
+//                        var goNode = self.enumerateChildNodes(withName: "GO") { goNode, stop in
+//                            if goNode.isHidden == false {
+//                                node.isHidden = true
+//                            } else {
+//                                node.isHidden = false
+//                            }
+//                        }
+//                    }
                 }
                 if touchedNode.name == "WP" {
                     switch baseRunner.player.baseOccupied {

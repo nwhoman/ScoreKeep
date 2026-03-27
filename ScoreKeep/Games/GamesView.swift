@@ -37,14 +37,14 @@ struct GamesView: View {
             }
             .navigationTitle("ScoreKeep Games")
             .navigationDestination(for: Game.self) { game in
-                let newGameViewModel = GameViewModel(game: game)
+                let newGameViewModel = GameViewModel(game: game, totalInnings: 3)
                 GameLineupsView(gameViewModel: newGameViewModel)
                 //GameLineupsView(path: $path, game: game)
             }
             .toolbar{
                 
                 ToolbarItem(placement: .topBarLeading){
-                    EditButton()
+                    //EditButton()
                 }
                 ToolbarItem(placement: .topBarTrailing){
                     Button("Add Game", systemImage: "plus"){

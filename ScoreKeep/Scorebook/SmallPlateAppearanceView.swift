@@ -137,7 +137,7 @@ struct SmallPlateAppearanceView: View {
     let preview = Preview()
     preview.addSampleGames([game])
     preview.addSampleLineups(game: game)
-    var gameViewModel = GameViewModel(game: game)
+    var gameViewModel = GameViewModel(game: game, totalInnings: 3)
     gameViewModel.setUpGame()
     
     var player: OffensivePlateAppearance = OffensivePlateAppearance.defaultPlateAppearance

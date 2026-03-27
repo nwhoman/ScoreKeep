@@ -20,7 +20,6 @@ struct ContentView: View {
     }
 }
 
-
 #Preview {
     let preview = Preview()
     let game = Game.defaultGame

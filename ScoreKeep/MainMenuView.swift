@@ -21,7 +21,6 @@ struct MainMenuView: View {
             List {
                 NavigationLink("Teams", value: "Teams")
                 NavigationLink("Play Game", value: "Play Game")
-
             }
             .navigationTitle("ScoreKeep")
             .navigationDestination(for: String.self) {
@@ -36,6 +35,7 @@ struct MainMenuView: View {
                 }
             }
             Button {
+                
                 preview.addSampleLineups(game: game)
                 addSampleData([Game.defaultGame])
                 try? modelContext.save()
@@ -44,9 +44,7 @@ struct MainMenuView: View {
             }
         }
 //        .navigationBarBackButtonHidden()
-        .onAppear {
-            print(nav.path)
-        }
+        
     }
         
     func addSampleData(_ examples: [Game]) {
@@ -62,7 +60,12 @@ struct MainMenuView: View {
 
 
 #Preview {
+    let preview = Preview()
+    let game = Game.defaultGame
+    preview.addSampleGames([game])
+    preview.addSampleLineups(game: game)
     
-    MainMenuView()
+    return MainMenuView()
         .environmentObject(NavigationStateManager())
+        .modelContainer(preview.modelContainer)
 }

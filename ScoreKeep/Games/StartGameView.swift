@@ -10,64 +10,92 @@ import SwiftUI
 
 struct StartGameView: View {
     @Environment(\.modelContext) var modelContext
+    @EnvironmentObject var nav: NavigationStateManager
     @Environment(\.dismiss) var dismiss
     @Query(sort: \Team.name) var teams: [Team]
     //@Binding var path: NavigationPath
 
     @State var homeTeam: Team = Team(name: "", ageGroup: "")
     @State var visitingTeam: Team = Team(name: "", ageGroup: "")
-    @State var gameName: String = "Enter name for new Game"
-    @State var gameLocation: String = "Enter location for new Game"
-    @State var newGame: Game = Game(name: "", date: Date(), location: "")
+    @State var gameName: String = ""
+    @State var gameLocation: String = ""
+    @State var gameInnings: Int = 7
+    @State var newGame: Game?// = Game(name: "", date: Date(), location: "")
     @State var gameDate: Date = Date()
     @State var startGame: Bool = false
+    @State var showAlert: Bool = false
     
     var body: some View {
-        VStack(alignment: .leading) {
-            Form{
-                Spacer(minLength: 50)
-                //TextField("Name of Game", text: $newGame.name) 
-                DatePicker("Date:", selection: $newGame.date)
-                TextField("Game Location", text: $newGame.location)
-                Spacer(minLength: 50)
-                Text("Home Team: \(homeTeam.name)")
-                Picker("pick team", selection: $homeTeam){
-                    ForEach(teams, id: \.name){team in
-                        Text(team.name)
-                            .tag(team as Team)
+        //NavigationStack {
+            VStack(alignment: .leading) {
+                Form{
+                    Spacer(minLength: 50)
+                    //TextField("Name of Game", text: $newGame.name) 
+                    DatePicker("Date:", selection: $gameDate)
+                    TextField("Game Location", text: $gameLocation)
+                    Picker("Number of innings", selection: $gameInnings){
+                        ForEach(1...10, id: \.self){num in
+                            Text("\(num)")
+                        }
                     }
-                }
-                Spacer(minLength: 50)
-                Text("Visiting Team: \(visitingTeam.name)")
-                Picker("pick team", selection: $visitingTeam){
-                    ForEach(teams, id: \.name){team in
-                        Text(team.name)
-                            .tag(team as Team)
+                    Spacer(minLength: 20)
+                    Text("Home Team: \(homeTeam.name)")
+                    Picker("pick team", selection: $homeTeam){
+                        ForEach(teams, id: \.name){team in
+                            Text(team.name)
+                                .tag(team as Team)
+                        }
                     }
+                    NavigationLink("Create Quick Entry Team", destination: QuickEntryView(newTeam: $homeTeam))
+                    
+                    Spacer(minLength: 50)
+                    Text("Visiting Team: \(visitingTeam.name)")
+                    Picker("pick team", selection: $visitingTeam){
+                        ForEach(teams, id: \.name){team in
+                            Text(team.name)
+                                .tag(team as Team)
+                        }
+                    }
+                    NavigationLink("Create Quick Entry Team", destination: QuickEntryView(newTeam: $visitingTeam))
+                    //Spacer(minLength: 50)
                 }
-                //Spacer(minLength: 50)
             }
-        }
+        //}
         Button("Create Game"){
-            newGame.homeTeam = homeTeam
-            newGame.visitingTeam = visitingTeam
-            newGame.name = "\(homeTeam.name) vs. \(visitingTeam.name)"
-            modelContext.insert(newGame)
-            try? modelContext.save()
-            startGame.toggle()
+            if homeTeam.players?.count ?? 0 > 8 && visitingTeam.players?.count ?? 0 > 8 {
+                if newGame == nil {
+                    newGame = Game(name: "\(homeTeam.name) vs. \(visitingTeam.name)", location: gameLocation)
+                    modelContext.insert(newGame!)
+                    
+                }
+                newGame?.homeTeam = homeTeam
+                newGame?.visitingTeam = visitingTeam
+                //newGame?.name = "\(homeTeam.name) vs. \(visitingTeam.name)"
+                //newGame?.location = gameLocation
+                try? modelContext.save()
+                startGame.toggle()
+            }
+            
         }
+        .disabled(homeTeam.name == "" || visitingTeam.name == "")
         .navigationDestination(isPresented: $startGame) {
-            let newGameViewModel = GameViewModel(game: newGame)
+            let newGameViewModel = GameViewModel(game: newGame ?? Game.defaultGame, totalInnings: gameInnings)
             GameLineupsView(gameViewModel: newGameViewModel)
             //GameLineupsView(path: $path, game: newGame)
         }
         .navigationTitle("Create Game")
-        
+        .alert(isPresented: $showAlert) {
+            Alert(title: Text("Lineup Check"), message: Text("One or both teams have less than 9 players."), dismissButton: .default(Text("OK")))
+        }
        
     }
 }
 
 #Preview {
+    let preview = Preview()
+    let game = Game.defaultGame
+    preview.addSampleGames([game])
+    preview.addSampleLineups(game: game)
     do {
         let config = ModelConfiguration(isStoredInMemoryOnly: true)
         let container = try ModelContainer(for: Team.self, configurations: config)
