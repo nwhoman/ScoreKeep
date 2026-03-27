@@ -9,7 +9,6 @@ import Foundation
 import SwiftUI
 
 class GameViewModel: ObservableObject {
-    var id: UUID = UUID()
     var game: Game
     @Published var visitors: [Player]
     @Published var home: [Player]

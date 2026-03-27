@@ -281,13 +281,30 @@ func addGenericNode(center: CGPoint, size: CGFloat, name: String, hidden: Bool, 
 
 func addPositionNodes(positionNames: [PositionDescription], gameVM: GameViewModel, scene: SKScene, setPlay: Bool) {
     for pos in positionNames {
-        let pitcherNode = SKLabelNode(fontNamed: "Trebuchet MS")
-        pitcherNode.text = "#\(gameVM.defensiveLineup["\(pos.abbreviation)"]?.number ?? "\(pos.number)")"
-        pitcherNode.fontSize = 20
-        pitcherNode.fontColor = !setPlay ? SKColor.white : SKColor.systemPink
-        pitcherNode.position = pos.location
-        pitcherNode.name = pos.name
-        scene.addChild(pitcherNode)
+        let node = SKLabelNode(fontNamed: "Trebuchet MS")
+        node.text = "#\(gameVM.defensiveLineup["\(pos.abbreviation)"]?.number ?? "\(pos.number)")"
+        node.fontSize = 20
+        node.fontColor = SKColor.white
+        node.position = pos.location
+        node.name = pos.name
+        scene.addChild(node)
+        
+        let secondNode = SKLabelNode(fontNamed: "Trebuchet MS")
+        secondNode.text = "#\(gameVM.defensiveLineup["\(pos.abbreviation)"]?.number ?? "\(pos.number)")"
+        secondNode.fontSize = 35
+        secondNode.fontColor = SKColor.systemPink
+        secondNode.position = pos.location
+        secondNode.name = pos.name + "2"
+        secondNode.zPosition = 10
+        secondNode.isHidden = true
+        scene.addChild(secondNode)
+    }
+}
+func resetPositionNodes(scene: SKScene) {
+    for child in scene.children {
+        if child.name?.contains("2") == true {
+            child.isHidden = true
+        }
     }
 }
 

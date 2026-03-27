@@ -87,8 +87,10 @@ class Game {
     var name: String
     var homeTeam: Team? = nil
     var homeLineup: [PlayerPos] = []
+    var homeFullLineup: [LineupSlot] = []
     var visitingTeam: Team? = nil
     var visitingLineup: [PlayerPos] = []
+    var visitingFullLineup: [LineupSlot] = []
     var date: Date  //includes time
     var location: String
     var isComplete: Bool = false
@@ -145,6 +147,16 @@ class Game {
         }
         stats = getPlayerStats(plateAppearances: appearances)
         return stats
+    }
+}
+
+@Model
+class LineupSlot: Identifiable {
+    var id: UUID = UUID()
+    var lineupSlot: [PlayerPos] = []
+    
+    init() {
+        
     }
 }
 
@@ -888,7 +900,7 @@ struct BaseRunnerNode {
         self.node.fontSize = 20
         self.node.fontColor = SKColor.blue
         self.node.physicsBody?.isDynamic = true
-        self.node.physicsBody?.restitution = 0.0
+        self.node.physicsBody?.restitution = 1.0
         self.node.physicsBody?.categoryBitMask = (1 << 0)
         self.node.physicsBody?.contactTestBitMask = (1 << 1)
         self.node.physicsBody?.collisionBitMask = (1 << 1)
