@@ -17,6 +17,8 @@ struct GamesView: View {
     @State private var showAddGameScreen = false
     //@State var startGame: Game = Game(name: "", date: Date(), location: "")
     //@Binding var path: NavigationPath
+    @State var JSONString: String = ""
+    @State var showJSON: Bool = false
     
     var body: some View {
         //NavigationStack {
@@ -35,6 +37,14 @@ struct GamesView: View {
                 }
                 .onDelete(perform: deleteGame)
             }
+        Button {
+            for each in games {
+                JSONString += displayJSON(game: each) + "\n"
+            }
+            showJSON.toggle()
+        } label: {
+            Text("JSON")
+        }
             .navigationTitle("ScoreKeep Games")
             .navigationDestination(for: Game.self) { game in
                 let newGameViewModel = GameViewModel(game: game, totalInnings: 3)
@@ -57,9 +67,11 @@ struct GamesView: View {
                 //StartGameView(path: $path)
             }
         //}
-        //.sheet(isPresented: $showAddGameScreen) {
-            //StartGameView(path: $path)
-        //}
+            .sheet(isPresented: $showJSON) {
+                ScrollView {
+                    Text(JSONString)
+                }
+            }
     }
     
     func deleteGame(at offsets: IndexSet){
@@ -79,4 +91,15 @@ struct GamesView: View {
     return NavigationStack {
         GamesView().modelContainer(preview.modelContainer)
     }
+}
+
+func displayJSON(game: Game) -> String {
+    let encoder = JSONEncoder()
+    encoder.outputFormatting = [.prettyPrinted]
+    if let jsonData = try? encoder.encode(game),
+       let jsonString = String(data: jsonData, encoding: .utf8) {
+        print(jsonString)
+        return jsonString
+    }
+    return "failed to encode game"
 }

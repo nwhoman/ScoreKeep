@@ -19,7 +19,6 @@ struct BookView: View {
     var body: some View {
         GeometryReader { geo in
             ZStack {
-
                 TabView(selection: $gameViewModel.selectedTab) {
                     BookPageView(gameViewModel: gameViewModel, lineup: gameViewModel.visitorLineup, selectedTab: gameViewModel.selectedTab)
                         .tabItem {
@@ -33,7 +32,7 @@ struct BookView: View {
                         }.tag("Home")
                 }
 
-    
+
                 VStack {
                     HStack {
                         //Spacer()
@@ -67,13 +66,14 @@ struct BookView: View {
             } else {
                 Button {
                     //gameViewModel.addInning(inning: Inning(number: gameViewModel.inningNumber+1, game: gameViewModel.game, half: gameViewModel.halfInning), lineup: gameViewModel.halfInning == 0 ? gameViewModel.visitorLineup : gameViewModel.homeLineup, halfInning: gameViewModel.halfInning)
-                    gameViewModel.addInning(inning: Inning(number: gameViewModel.inningNumber+1, game: gameViewModel.game, half: gameViewModel.halfInning), lineup: gameViewModel.halfInning == 0 ? gameViewModel.game.visitingLineup : gameViewModel.game.homeLineup, halfInning: gameViewModel.halfInning)
+                    gameViewModel.inningNumber[gameViewModel.halfInning] += 1
+                    gameViewModel.addInning(inning: Inning(number: gameViewModel.inningNumber[gameViewModel.halfInning], game: gameViewModel.game, half: gameViewModel.halfInning), lineup: gameViewModel.halfInning == 0 ? gameViewModel.game.visitingLineup : gameViewModel.game.homeLineup, halfInning: gameViewModel.halfInning)
                 } label: {
                     Image(systemName: "plus.rectangle")
                 }
             }
             Button {
-                nav.popToRoot()
+                nav.path.removeLast()
             } label: {
                 Image(systemName: "trash")
             }

@@ -22,10 +22,12 @@ struct PlayerDetailView: View {
                 HStack(content: {
                     Text("First Name:")
                     TextField("Player's First Name:", text: $player.firstName)
+                        .autocorrectionDisabled()
                 })
                 HStack(content: {
                     Text("Last Name:")
                     TextField("Player's Last Name:", text: $player.lastName)
+                        .autocorrectionDisabled()
                 })
                 HStack(content: {
                     Text("Number:")
@@ -44,6 +46,10 @@ struct PlayerDetailView: View {
                     try? modelContext.save()
                     dismiss()
                 }
+            }
+            Section {
+                let data = displayJSON(player: player)
+                Text(data)
             }
         }
         .toolbar{
@@ -65,4 +71,15 @@ struct PlayerDetailView: View {
         PlayerDetailView(player: game.homeTeam!.players![0])
             .modelContainer(preview.modelContainer)
     }
+}
+
+func displayJSON(player: Player) -> String {
+    let encoder = JSONEncoder()
+    encoder.outputFormatting = [.prettyPrinted]
+    if let jsonData = try? encoder.encode(player),
+       let jsonString = String(data: jsonData, encoding: .utf8) {
+        print(jsonString)
+        return jsonString
+    }
+    return "failed to encode player"
 }

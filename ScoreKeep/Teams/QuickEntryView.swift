@@ -34,6 +34,7 @@ struct QuickEntryView: View {
                         Text("Team Name")
                             .foregroundStyle(Color.blue)
                     }
+                    .autocorrectionDisabled()
                     .foregroundStyle(Color.blue)
                     .padding(10)
                     .border(Color.gray)
@@ -42,6 +43,7 @@ struct QuickEntryView: View {
                         Text("Coach Name")
                             .foregroundStyle(Color.blue)
                     }
+                    .autocorrectionDisabled()
                     .foregroundStyle(Color.blue)
                     .padding(10)
                     .border(Color.gray)
@@ -49,6 +51,7 @@ struct QuickEntryView: View {
                     Text("Enter player names here, one per line")
                     Text("First name last name number")
                     TextEditor(text: $players)
+                        .autocorrectionDisabled()
                         .border(Color.gray)
                         .padding(5)
                         .onChange(of: players) { _, newValue in

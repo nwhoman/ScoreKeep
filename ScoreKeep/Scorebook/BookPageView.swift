@@ -57,11 +57,6 @@ struct BookPageView: View {
                         
                     }
                     HStack {
-                        Button {
-                            print(gameViewModel.undoPlay.count)
-                        } label: {
-                            Text("Undo Last Play")
-                        }
                         NavigationLink {
                             BoxScoreView(gameViewModel: gameViewModel)
                         } label: {
@@ -133,15 +128,14 @@ struct InningsView: View {
                         Text("\(inning.number/10)")//--\(inning.number/10)")
                         .frame(width: 75, height: 50, alignment: .center)
                         .border(Color.blue)
-                        Text("\(gameViewModel.inningNumber)--\(gameViewModel.batterUp[gameViewModel.halfInning])")
+                        Text("\(gameViewModel.inningNumber[gameViewModel.halfInning])-\(gameViewModel.batterUp[gameViewModel.halfInning])/\(gameViewModel.batterCount[gameViewModel.halfInning])")
                         ForEach(inning.offense.sorted(by: {$0.order < $1.order}), id: \.self) { player in
                             GeometryReader { geo in
                                 
                                 SmallPlateAppearanceView(gameViewModel: gameViewModel, player: player, scale: 0.15)
                                     .onTapGesture {
                                         if !gameViewModel.game.isComplete {
-                                            print("\(teamBatting)")
-                                            if (teamBatting && gameViewModel.halfInning == 0 && gameViewModel.inningNumber == inning.number && gameViewModel.batterUp[gameViewModel.halfInning] == player.order) || (!teamBatting && gameViewModel.halfInning == 1 && gameViewModel.inningNumber == inning.number && gameViewModel.batterUp[gameViewModel.halfInning] == player.order) {
+                                            if (teamBatting && gameViewModel.halfInning == 0 && gameViewModel.inningNumber[gameViewModel.halfInning] == inning.number && gameViewModel.batterUp[gameViewModel.halfInning] == player.order) || (!teamBatting && gameViewModel.halfInning == 1 && gameViewModel.inningNumber[gameViewModel.halfInning] == inning.number && gameViewModel.batterUp[gameViewModel.halfInning] == player.order) {
                                                 if player.outcome["home"] == "" {
                                                     player.active = true
                                                     gameViewModel.batter = player
@@ -154,6 +148,7 @@ struct InningsView: View {
                                                     gameViewModel.strikes = 0
                                                     gameViewModel.incrementBatterUp()
                                                     showLargeView.toggle()
+                                                    
                                                 } else {
                                                     //print("\(player.hit), \(player.outcome)")
                                                     showLargeView.toggle()
@@ -189,10 +184,11 @@ struct InningsView: View {
                 gameViewModel.pitches.removeAll()
                 
                 if gameViewModel.halfInning == 0 {
+                    gameViewModel.inningNumber[0] += 10
                     gameViewModel.halfInning = 1
                 } else {
                     gameViewModel.halfInning = 0
-                    gameViewModel.inningNumber += 10
+                    gameViewModel.inningNumber[1] += 10
                 }
                 
                 try? modelContext.save()
@@ -206,6 +202,8 @@ struct InningsView: View {
                         gameViewModel.balls = 0
                         gameViewModel.strikes = 0
                         gameViewModel.pitches.removeAll()
+                        print("\(gameViewModel.undoPlay.count)")
+                        
                     }
                     try? modelContext.save()
                 }

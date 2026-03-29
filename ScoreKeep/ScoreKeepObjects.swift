@@ -11,7 +11,11 @@ import SwiftData
 import SwiftUI
 
 @Model
-class Team: Hashable {
+class Team: Hashable, Codable {
+    enum CodingKeys: CodingKey {
+        case id, name, ageGroup, lineup, coaches, players, homeGames, visitingGames
+    }
+    
     var id: UUID
     var name: String
     var ageGroup: String
@@ -31,15 +35,31 @@ class Team: Hashable {
         //self.visitingGames = visitingGames
     }
     
-    private func createQuickTeam() {
+    required init(from decoder: Decoder) throws {
+        let values = try decoder.container(keyedBy: CodingKeys.self)
+        self.id = try values.decode(UUID.self, forKey: .id)
+        self.name = try values.decode(String.self, forKey: .name)
+        self.ageGroup = try values.decode(String.self, forKey: .ageGroup)
+        self.lineup = try values.decode([PlayerPos].self, forKey: .lineup)
         
+    }
+    
+    func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(id, forKey: .id)
+        try container.encode(name, forKey: .name)
+        try container.encode(ageGroup, forKey: .ageGroup)
+        try container.encode(lineup, forKey: .lineup)
     }
     
     
 }
 
 @Model
-class Coach {
+class Coach: Codable {
+    enum CodingKeys: CodingKey {
+        case id, firstName, lastName, yearsCoaching, team
+    }
     var id: UUID
     var firstName: String
     var lastName: String
@@ -53,11 +73,30 @@ class Coach {
         self.yearsCoaching = yearsCoaching
         self.team = team
     }
+    required init(from decoder: Decoder) throws {
+        let values = try decoder.container(keyedBy: CodingKeys.self)
+        self.id = try values.decode(UUID.self, forKey: .id)
+        self.firstName = try values.decode(String.self, forKey: .firstName)
+        self.lastName = try values.decode(String.self, forKey: .lastName)
+        self.yearsCoaching = try values.decode(Int.self, forKey: .yearsCoaching)
+    }
+    
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(id, forKey: .id)
+        try container.encode(firstName, forKey: .firstName)
+        try container.encode(lastName, forKey: .lastName)
+        try container.encode(yearsCoaching, forKey: .yearsCoaching)
+    }
 
 }
 
 @Model
-class Player {
+class Player: Codable {
+    enum CodingKeys: CodingKey {
+        case id, firstName, lastName, age, number, team, position
+    }
+    
     var id: UUID
     var firstName: String
     var lastName: String
@@ -79,18 +118,42 @@ class Player {
         self.position = position
     }
     
+    required init(from decoder: Decoder) throws {
+        let values = try decoder.container(keyedBy: CodingKeys.self)
+        self.id = try values.decode(UUID.self, forKey: .id)
+        self.firstName = try values.decode(String.self, forKey: .firstName)
+        self.lastName = try values.decode(String.self, forKey: .lastName)
+        self.age = try values.decode(Int.self, forKey: .age)
+        self.number = try values.decode(String.self, forKey: .number)
+        //self.team = try values.decodeIfPresent(Team.self, forKey: .team, configuration: )
+        self.position = try values.decode(String.self, forKey: .position)
+    }
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(id, forKey: .id)
+        try container.encode(firstName, forKey: .firstName)
+        try container.encode(lastName, forKey: .lastName)
+        try container.encode(age, forKey: .age)
+        try container.encode(number, forKey: .number)
+        //try container.encodeIfPresent(team, forKey: .team)
+        try container.encode(position, forKey: .position)
+    }
+    
 }
 
 @Model
-class Game {
+class Game:Codable {
+    enum CodingKeys: CodingKey {
+        case id, name, homeTeam, homeLineup, homeFullLineup, visitingTeam, visitingLineup, visitingFullLineup, date, location, isComplete, isStarted
+    }
     var id: UUID
     var name: String
     var homeTeam: Team? = nil
     var homeLineup: [PlayerPos] = []
-    var homeFullLineup: [LineupSlot] = []
+    var homeFullLineup: [[PlayerPos]] = []
     var visitingTeam: Team? = nil
     var visitingLineup: [PlayerPos] = []
-    var visitingFullLineup: [LineupSlot] = []
+    var visitingFullLineup: [[PlayerPos]] = []
     var date: Date  //includes time
     var location: String
     var isComplete: Bool = false
@@ -107,6 +170,49 @@ class Game {
         self.location = location
         self.isComplete = isComplete
         self.isStarted = isStarted
+    }
+    
+    required init(from decoder: Decoder) throws {
+        let values = try decoder.container(keyedBy: CodingKeys.self)
+        self.id = try values.decode(UUID.self, forKey: .id)
+        self.name = try values.decode(String.self, forKey: .name)
+        self.homeTeam = try values.decode(Team.self, forKey: .homeTeam)
+        self.visitingTeam = try values.decode(Team.self, forKey: .visitingTeam)
+        self.homeLineup = try values.decode([PlayerPos].self, forKey: .homeLineup)
+        self.visitingLineup = try values.decode([PlayerPos].self, forKey: .visitingLineup)
+        var lineupContainer = try values.nestedUnkeyedContainer(forKey: .homeFullLineup)
+        var lineup: [[PlayerPos]] = []
+        while !lineupContainer.isAtEnd {
+            let item = try lineupContainer.decode([PlayerPos].self)
+            lineup.append(item)
+        }
+        self.homeFullLineup = lineup
+        lineupContainer = try values.nestedUnkeyedContainer(forKey: .visitingFullLineup)
+        lineup = []
+        while !lineupContainer.isAtEnd {
+            let item = try lineupContainer.decode([PlayerPos].self)
+            lineup.append(item)
+        }
+        self.visitingFullLineup = lineup
+        self.date = try values.decode(Date.self, forKey: .date)
+        self.location = try values.decode(String.self, forKey: .location)
+        self.isComplete = try values.decode(Bool.self, forKey: .isComplete)
+        self.isStarted = try values.decode(Bool.self, forKey: .isStarted)
+    }
+    func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(id, forKey: .id)
+        try container.encode(name, forKey: .name)
+        try container.encode(date, forKey: .date)
+        try container.encode(homeTeam, forKey: .homeTeam)
+        try container.encode(visitingTeam, forKey: .visitingTeam)
+        try container.encode(homeLineup, forKey: .homeLineup)
+        try container.encode(visitingLineup, forKey: .visitingLineup)
+        try container.encode(homeFullLineup, forKey: .homeFullLineup)
+        try container.encode(visitingFullLineup, forKey: .visitingFullLineup)
+        try container.encode(location, forKey: .location)
+        try container.encode(isComplete, forKey: .isComplete)
+        try container.encode(isStarted, forKey: .isStarted)
     }
     
     func getTeamStats(team: Int) -> PlayerStats {
@@ -150,15 +256,15 @@ class Game {
     }
 }
 
-@Model
-class LineupSlot: Identifiable {
-    var id: UUID = UUID()
-    var lineupSlot: [PlayerPos] = []
-    
-    init() {
-        
-    }
-}
+//@Model
+//class LineupSlot: Identifiable {
+//    var id: UUID = UUID()
+//    var lineupSlot: [PlayerPos] = []
+//    
+//    init() {
+//        
+//    }
+//}
 
 @Model
 class Inning {
@@ -270,7 +376,10 @@ class DefensivePlateAppearance {
 }
 
 @Model
-class PlayerPos: Identifiable, Hashable {
+class PlayerPos: Identifiable, Hashable, Codable {
+    enum CodingKeys: CodingKey {
+        case id, batting, player, position
+    }
     var id: UUID
     var batting: Int
     var player: Player
@@ -281,6 +390,20 @@ class PlayerPos: Identifiable, Hashable {
         self.batting = batting
         self.player = player
         self.position = position
+    }
+    required init(from decoder: Decoder) throws {
+        let values = try decoder.container(keyedBy: CodingKeys.self)
+        self.id = try values.decode(UUID.self, forKey: .id)
+        self.batting = try values.decode(Int.self, forKey: .batting)
+        self.player = try values.decode(Player.self, forKey: .player)
+        self.position = try values.decode(String.self, forKey: .position)
+    }
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(self.id, forKey: .id)
+        try container.encode(self.batting, forKey: .batting)
+        try container.encode(self.player, forKey: .player)
+        try container.encode(self.position, forKey: .position)
     }
 }
 
@@ -515,7 +638,7 @@ struct BattingLineupView: View {
     preview.addSampleLineups(game: game)
     //setUpGame(game: game)
     let gameVM = GameViewModel(game: game, totalInnings: 3)
-    var lineup = gameVM.setInitialLineup(halfInning: 1)
+    var lineup = gameVM.setInitialLineup(halfInning: 0)
         
     return GeometryReader { geo in
         BattingLineupView(gameVM: gameVM, battingOrder: lineup, geo: geo, team: gameVM.game.homeTeam!, tab: "Home")

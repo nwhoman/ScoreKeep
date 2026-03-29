@@ -64,7 +64,7 @@ struct StartGameView: View {
         Button("Create Game"){
             if homeTeam.players?.count ?? 0 > 8 && visitingTeam.players?.count ?? 0 > 8 {
                 if newGame == nil {
-                    newGame = Game(name: "\(homeTeam.name) vs. \(visitingTeam.name)", location: gameLocation)
+                    newGame = Game(name: "\(visitingTeam.name) at \(homeTeam.name)", location: gameLocation)
                     modelContext.insert(newGame!)
                     
                 }

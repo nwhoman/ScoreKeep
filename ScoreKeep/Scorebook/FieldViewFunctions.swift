@@ -105,7 +105,7 @@ func placeBaseRunners(basepathNode: SKShapeNode, baseOccupied: Int, plateAppeara
             
             path.addLine(to: outPoint(p1: firstBase, p2: secondBase, scaleFactor: 0.8)) //(to: thirdBase2)
             
-            pathNode = outLine(p1: secondBase, p2: outPoint(p1: firstBase, p2: secondBase, scaleFactor: 0.7), plateAppearance: plateAppearance, scene: scene)
+            pathNode = outLine(p1: firstBase, p2: outPoint(p1: firstBase, p2: secondBase, scaleFactor: 0.7), plateAppearance: plateAppearance, scene: scene)
             addOutcomes(plateAppearance: plateAppearance, scene: scene)
             //addOutX(base: thirdBase2, scene: scene)
         } else {
@@ -122,7 +122,7 @@ func placeBaseRunners(basepathNode: SKShapeNode, baseOccupied: Int, plateAppeara
         if plateAppearance.outs != 0 {
             path.addLine(to: outPoint(p1: secondBase, p2: thirdBase, scaleFactor: 0.8)) //homePlate2)
             
-            pathNode = outLine(p1: thirdBase, p2: outPoint(p1: secondBase, p2: thirdBase, scaleFactor: 0.7), plateAppearance: plateAppearance, scene: scene)
+            pathNode = outLine(p1: secondBase, p2: outPoint(p1: secondBase, p2: thirdBase, scaleFactor: 0.7), plateAppearance: plateAppearance, scene: scene)
             addOutcomes(plateAppearance: plateAppearance, scene: scene)
             //addOutX(base: homePlate2, scene: scene)
         } else {
@@ -291,7 +291,7 @@ func addPositionNodes(positionNames: [PositionDescription], gameVM: GameViewMode
         
         let secondNode = SKLabelNode(fontNamed: "Trebuchet MS")
         secondNode.text = "#\(gameVM.defensiveLineup["\(pos.abbreviation)"]?.number ?? "\(pos.number)")"
-        secondNode.fontSize = 35
+        secondNode.fontSize = 20
         secondNode.fontColor = SKColor.systemPink
         secondNode.position = pos.location
         secondNode.name = pos.name + "2"
@@ -300,23 +300,47 @@ func addPositionNodes(positionNames: [PositionDescription], gameVM: GameViewMode
         scene.addChild(secondNode)
     }
 }
-func resetPositionNodes(scene: SKScene) {
+func resetPositionNodes(scene: SKScene, positions: [PositionDescription]) {
     for child in scene.children {
+        
         if child.name?.contains("2") == true {
             child.isHidden = true
         }
     }
+    for child in scene.children {
+        for pos in positions {
+            if child.name == pos.name {
+                child.isHidden = false
+            }
+        }
+        
+    }
+}
+func switchBaserunnerOutcome(baseRunner: BaseRunnerNode, outcomeString: String) {
+    switch baseRunner.player.baseOccupied {
+    case 1:
+        baseRunner.player.outcome["home"]! += outcomeString + " at 1B"
+    case 2:
+        baseRunner.player.outcome["first"]! += outcomeString + " at 2B"
+    case 3:
+        baseRunner.player.outcome["second"]! += outcomeString + " at 3B"
+    case 4:
+        baseRunner.player.outcome["third"]! += outcomeString + " at Home"
+    default:
+        break
+        
+    }
 }
 
 func placeBaseRunnerNodes(gameVM: GameViewModel, scene: SKScene) {
-//    var homePlate: CGPoint { CGPoint(x: scene.frame.midX, y: scene.frame.midY*0.92) }
-//    var firstBase: CGPoint { CGPoint(x: scene.frame.maxX*0.83, y: scene.frame.maxY*0.635) }
-//    var secondBase: CGPoint { CGPoint(x: scene.frame.midX, y: scene.frame.maxY*0.8) }
-//    var thirdBase: CGPoint { CGPoint(x: scene.frame.maxX*0.17, y: scene.frame.maxY*0.635) }
-    var homePlate: CGPoint { CGPoint(x: scene.frame.midX, y: scene.frame.maxY*0.65-150) }
-    var firstBase: CGPoint { CGPoint(x: scene.frame.maxX-75, y: scene.frame.maxY*0.65-20) }
-    var secondBase: CGPoint { CGPoint(x: scene.frame.midX, y: scene.frame.maxY*0.65+100) }
-    var thirdBase: CGPoint { CGPoint(x: scene.frame.minX+75, y: scene.frame.maxY*0.65-20) }
+//    var homePlate: CGPoint { CGPoint(x: self.frame.midX, y: self.frame.maxY*0.65-150) }
+//    var firstBase: CGPoint { CGPoint(x: self.frame.maxX-75, y: self.frame.maxY*0.65-20) }
+//    var secondBase: CGPoint { CGPoint(x: self.frame.midX, y: self.frame.maxY*0.65+100) }
+//    var thirdBase: CGPoint { CGPoint(x: self.frame.minX+75, y: self.frame.maxY*0.65-20) }
+    var homePlate: CGPoint { CGPoint(x: scene.frame.midX, y: scene.frame.maxY*0.45) }
+    var firstBase: CGPoint { CGPoint(x: scene.frame.midX*1.64, y: scene.frame.maxY*0.62) }
+    var secondBase: CGPoint { CGPoint(x: scene.frame.midX, y: scene.frame.maxY*0.78) }
+    var thirdBase: CGPoint { CGPoint(x: scene.frame.midX*0.36, y: scene.frame.maxY*0.62) }
     
     for i in gameVM.baseRunners {
         //print("\(i.player.batter.number) - \(i.player.baseOccupied)")
@@ -438,7 +462,7 @@ func resetCount(scene: SKScene, plateAppearance: OffensivePlateAppearance, gameV
         scene.addChild(node)
     }
     if plateAppearance.outs != 0 {
-        addOutLabel(scene: scene, plateAppearance: plateAppearance)
+        //addOutLabel(scene: scene, plateAppearance: plateAppearance)
     }
 }
 

@@ -25,7 +25,9 @@ struct AddPlayerView: View {
                 Section {
                     TextField("Player's Number:", text: $number)
                     TextField("Player's First Name:", text: $firstName)
+                        .autocorrectionDisabled()
                     TextField("Player's Last Name:", text: $lastName)
+                        .autocorrectionDisabled()
                 }
 //                Picker("Player Age:", selection: $age){
 //                    ForEach(7..<20){

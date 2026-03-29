@@ -121,15 +121,15 @@ class FieldScene: SKScene, SKPhysicsContactDelegate {
         // Catch error
         fatalError()
     }
-    var homePlate: CGPoint { CGPoint(x: self.frame.midX, y: self.frame.maxY*0.65-150) }
-    var firstBase: CGPoint { CGPoint(x: self.frame.maxX-75, y: self.frame.maxY*0.65-20) }
-    var secondBase: CGPoint { CGPoint(x: self.frame.midX, y: self.frame.maxY*0.65+100) }
-    var thirdBase: CGPoint { CGPoint(x: self.frame.minX+75, y: self.frame.maxY*0.65-20) }
+//    var homePlate: CGPoint { CGPoint(x: self.frame.midX, y: self.frame.maxY*0.65-150) }
+//    var firstBase: CGPoint { CGPoint(x: self.frame.maxX-75, y: self.frame.maxY*0.65-20) }
+//    var secondBase: CGPoint { CGPoint(x: self.frame.midX, y: self.frame.maxY*0.65+100) }
+//    var thirdBase: CGPoint { CGPoint(x: self.frame.minX+75, y: self.frame.maxY*0.65-20) }
     
-//    var homePlate: CGPoint { CGPoint(x: self.frame.midX, y: self.frame.midY*0.92) }
-//    var firstBase: CGPoint { CGPoint(x: self.frame.maxX*0.83, y: self.frame.maxY*0.635) }
-//    var secondBase: CGPoint { CGPoint(x: self.frame.midX, y: self.frame.maxY*0.8) }
-//    var thirdBase: CGPoint { CGPoint(x: self.frame.maxX*0.17, y: self.frame.maxY*0.635) }
+    var homePlate: CGPoint { CGPoint(x: self.frame.midX, y: self.frame.maxY*0.45) }
+    var firstBase: CGPoint { CGPoint(x: self.frame.midX*1.64, y: self.frame.maxY*0.62) }
+    var secondBase: CGPoint { CGPoint(x: self.frame.midX, y: self.frame.maxY*0.78) }
+    var thirdBase: CGPoint { CGPoint(x: self.frame.midX*0.36, y: self.frame.maxY*0.62) }
     
     //    struct PositionDescription {
     //        var number: Int             // ie 1, 2, 3
@@ -299,8 +299,8 @@ class FieldScene: SKScene, SKPhysicsContactDelegate {
     }
     
     func addOutcomeLabel() {
-        guard let homeOutcome = plateAppearance.outcome["home"] else { return }
-        if homeOutcome.contains("G") || homeOutcome.contains("F") ||
+        guard let homeOutcome = plateAppearance.outcome["home"] else { return } //|| homeOutcome.contains("F") 
+        if homeOutcome.contains("G") ||
             homeOutcome.contains("SAC") || homeOutcome.contains("E") {
             let labelNode = SKLabelNode(fontNamed: "Trebuchet MS")
             labelNode.text = homeOutcome
@@ -368,6 +368,7 @@ class FieldScene: SKScene, SKPhysicsContactDelegate {
                 if plateAppearance.sac != 1 {
                     if posArray.count > 1 {
                         outcomeString += "G"
+                        print("\(posArray)")
                         for i in posArray {
                             outcomeString += "\(i)-"
                         }
@@ -406,7 +407,7 @@ class FieldScene: SKScene, SKPhysicsContactDelegate {
            // print("\(baseRunner.player.batter.number), \(baseRunner.player.baseOccupied)")
                 outcomeString.removeLast()
                 plateAppearance.outcome["home"] = "FC-\(posArray[0])"
-                baseRunner.player.outcome["first"] = outcomeString
+                switchBaserunnerOutcome(baseRunner: baseRunner, outcomeString: outcomeString)
                 //baseRunner.player.baseOccupied -= 1
                 if gameVM.baseRunners.contains(where: { $0.player.baseOccupied == 4 }) && baseRunner.player.baseOccupied != 4 {
                     var scoringRunner: BaseRunnerNode? = gameVM.baseRunners.first(where: { $0.player.baseOccupied == 4 })
@@ -434,35 +435,27 @@ class FieldScene: SKScene, SKPhysicsContactDelegate {
             }
         } else if setThrownOut {
             var outcomeString: String = ""
+            print("\(posArray)")
             for i in posArray {
                 outcomeString += "\(i)-"
             }
             outcomeString.removeLast()
-            switch baseRunner.player.baseOccupied {
-            case 1:
-                baseRunner.player.outcome["first"] = outcomeString + "at 1B"
-            case 2:
-                baseRunner.player.outcome["first"] = outcomeString + "at 2B"
-            case 3:
-                baseRunner.player.outcome["second"] = outcomeString + "at 3B"
-            case 4:
-                baseRunner.player.outcome["third"] = outcomeString + "at Home"
-            default:
-                break
-                
-            }
+            switchBaserunnerOutcome(baseRunner: baseRunner, outcomeString: outcomeString)
+            
+            resetPositionNodes(scene: self, positions: positionNames)
+            posArray.removeAll()
+            setThrownOut = false
         }
+        
         gameVM.baseRunners.removeAll { node in
             node.player.batter.number == baseRunner.player.batter.number
         }
-        //baseRunner.player.baseOccupied = 5
+        
         baseRunner.player.outs = gameVM.outs
         gameVM.balls = 0
         gameVM.strikes = 0
         baseRunner.node.removeFromParent()
-        //setPlay = false
-        //setFlyOut = false
-        //setGroundOut = false
+        
     }
     func addOutNode(gameVM: GameViewModel, scene: SKScene, plateAppearance: OffensivePlateAppearance) {
         gameVM.outs += 1
@@ -655,18 +648,17 @@ class FieldScene: SKScene, SKPhysicsContactDelegate {
                 }
                 for i in positionNames {
                     if touchedNode.name == i.name {
-                        for child in self.children {
-                            if child.name == i.name + "2" {
-                                child.isHidden = false
-                            }
-                        }
+                        
                         plateAppearance.outcome["home"] = "F\(i.number)"
                         
-                        addOutNode(gameVM: gameVM, scene: self, plateAppearance: plateAppearance)
+                        //addOutNode(gameVM: gameVM, scene: self, plateAppearance: plateAppearance)
                         node = enumerateChildNodes(withName: "SFO") { node, stop in
                             node.isHidden = true
                         }
                         setFlyOut = false
+                        let addOutAction = SKAction.run{self.addOutNode(gameVM: self.gameVM, scene: self, plateAppearance: self.plateAppearance)}
+                        let seq = SKAction.sequence([touchedFieldNode, addOutAction])
+                        touchedNode.run(seq)
                     }
                 }
                 //print(plateAppearance.outcome)
@@ -696,19 +688,28 @@ class FieldScene: SKScene, SKPhysicsContactDelegate {
                 for i in positionNames {
                     if touchedNode.name == i.name {
                         posArray.append(i.number)
-                        for child in self.children {
-                            if child.name == i.name + "2" {
-                                child.isHidden = false
-                            }
-                        }
+                        touchedNode.run(touchedFieldNode)
+
+//                        for child in self.children {
+//                            if child.name == i.name + "2" {
+//                                child.isHidden = false
+//                            }
+//                        }
+//                        touchedNode.isHidden = true
                     }
                 }
                 for i in gameVM.baseRunners {
                     if touchedNode.name == i.node.name {
+                        
+
                         if posArray.isEmpty {
+                            i.node.run(touchedBRNode)
                             moveNode(node: i, bases: 1)
                         } else {
-                            getGroundOut(baseRunner: i)
+                            let addOutAction = SKAction.run{self.getGroundOut(baseRunner: i)}
+                            let seq = SKAction.sequence([touchedBRNode, addOutAction])
+                            touchedNode.run(seq)
+                            //getGroundOut(baseRunner: i)
                         }
                     }
                 }
@@ -723,16 +724,19 @@ class FieldScene: SKScene, SKPhysicsContactDelegate {
                 for i in positionNames {
                     if touchedNode.name == i.name {
                         posArray.append(i.number)
-                        for child in self.children {
-                            if child.name == i.name + "2" {
-                                child.isHidden = false
-                            }
-                        }
+                        touchedNode.run(touchedFieldNode)
+//                        for child in self.children {
+//                            if child.name == i.name + "2" {
+//                                child.isHidden = false
+//                            }
+//                        }
+//                        touchedNode.isHidden = true
                     }
                 }
                 for i in gameVM.baseRunners {
                     if touchedNode.name == i.node.name {
-                        advanceBR(node: i)
+                        print("touched runner: \(i.player.baseOccupied)")
+                        i.node.run(touchedBRNode)
                         getGroundOut(baseRunner: i)
                     }
                 }
@@ -758,11 +762,13 @@ class FieldScene: SKScene, SKPhysicsContactDelegate {
                 
                 for i in positionNames {
                     if touchedNode.name == i.name {
-                        for child in self.children {
-                            if child.name == i.name + "2" {
-                                child.isHidden = false
-                            }
-                        }
+                        touchedNode.run(errorAction)
+//                        for child in self.children {
+//                            if child.name == i.name + "2" {
+//                                
+//                            }
+//                        }
+                        
                         plateAppearance.re += 1
                         plateAppearance.outcome["home"] = "E\(i.number)"
                         gameVM.balls = 0
@@ -780,6 +786,16 @@ class FieldScene: SKScene, SKPhysicsContactDelegate {
                 print("\(touchedNode.name ?? "james")")
                 for i in positionNames {
                     if touchedNode.name == i.name {
+                        touchedNode.run(errorAction)
+//                        for child in self.children {
+//                            if child.name == i.name + "2" {
+//                                //child.run(SKAction.sequence([SKAction.unhide(), SKAction.scale(by: 2.0, duration: 0.3), SKAction.wait(forDuration: 1.5), SKAction.scale(by: 0.5, duration: 0.3), SKAction.hide()]))
+//                                //child.isHidden = false
+//                                
+//                                
+//                            }
+//                        }
+                        
                         errorPos = "\(i.number)"
                         print(" in if: \(errorPos)")
                         
@@ -809,7 +825,7 @@ class FieldScene: SKScene, SKPhysicsContactDelegate {
                     moveNode(node: brToAdvance ?? gameVM.baseRunners[0], bases: 1)
                     switch baseRunner.player.baseOccupied {
                     case 1:
-                        baseRunner.player.outcome["first"]! += ""
+                        baseRunner.player.outcome["home"]! += ""
                     case 2:
                         baseRunner.player.outcome["first"] = "Stole  2B"
                         baseRunner.player.sb.append(2)
@@ -833,7 +849,7 @@ class FieldScene: SKScene, SKPhysicsContactDelegate {
                     moveNode(node: brToAdvance ?? gameVM.baseRunners[0], bases: 1)
                     switch baseRunner.player.baseOccupied {
                     case 1:
-                        baseRunner.player.outcome["first"]! += ""
+                        baseRunner.player.outcome["home"]! += ""
                     case 2:
                         baseRunner.player.outcome["first"] = "Adv to  2B"
                     case 3:
@@ -850,7 +866,7 @@ class FieldScene: SKScene, SKPhysicsContactDelegate {
                     moveNode(node: brToAdvance ?? gameVM.baseRunners[0], bases: 1)
                     switch baseRunner.player.baseOccupied {
                     case 1:
-                        baseRunner.player.outcome["first"]! += ""
+                        baseRunner.player.outcome["home"]! += ""
                     case 2:
                         baseRunner.player.outcome["first"] = "WP to  2B"
                     case 3:
@@ -892,28 +908,32 @@ class FieldScene: SKScene, SKPhysicsContactDelegate {
                     moveNode(node: brToAdvance ?? gameVM.baseRunners[0], bases: 1)
                     setErrorField.toggle()
                     advanceBRMenu()
-                    //                    moveNode(node: brToAdvance ?? gameVM.baseRunners[0], bases: 1)
-                    var node: Void = enumerateChildNodes(withName: "Pitch") { node, stop in
-                        node.isHidden = false
+                    if gameVM.baseRunners[0].player.outcome["home"] == "" {
+                        var node: Void = enumerateChildNodes(withName: "Pitch") { node, stop in
+                            node.isHidden = false
+                        }
                     }
+                    
                 }
                 if touchedNode.name == "TO" {
+                    print("TO: \(baseRunner.player.baseOccupied)")
                     switch baseRunner.player.baseOccupied {
                     case 1:
-                        baseRunner.player.outcome["first"] = "Thrown out at 1B"
+                        baseRunner.player.outcome["first"] = "Thrown out "
                         
                     case 2:
-                        baseRunner.player.outcome["first"] = "Thrown out at 2B"
+                        baseRunner.player.outcome["second"] = "Thrown out "
                     case 3:
-                        baseRunner.player.outcome["second"] = "Thrown out at 3B"
+                        baseRunner.player.outcome["third"] = "Thrown out "
                     case 4:
-                        baseRunner.player.outcome["third"] = "Thrown out at Home"
+                        baseRunner.player.outcome["third"] = "Thrown out "
                     default:
                         break
                         
                     }
                     advanceBRMenu()
                     //moveNode(node: brToAdvance ?? gameVM.baseRunners[0], bases: 1)
+                    
                     var node: Void = enumerateChildNodes(withName: "Pitch") { node, stop in
                         node.isHidden = false
                     }
@@ -923,8 +943,10 @@ class FieldScene: SKScene, SKPhysicsContactDelegate {
                 
             }
             if !setGroundOut {
+
                 for i in gameVM.baseRunners {
                     if touchedNode.name == i.node.name {
+                        i.node.run(touchedBRNode)
                         if i.player.baseOccupied != 0 {
                             //print("\(i.player.batter.number)-\(i.player.baseOccupied)")
                             brToAdvance = i
@@ -1327,7 +1349,7 @@ class FieldScene: SKScene, SKPhysicsContactDelegate {
     }
     func moveNode(node: BaseRunnerNode, bases: Int) {
         let brNode = node.node
-        
+        print("before move:\(node.player.baseOccupied)")
             switch node.player.baseOccupied {
             case 0:
                 brNode.run(SKAction.sequence([SKAction.move(to: self.firstBase, duration: 0.5), SKAction.wait(forDuration: 0.5)]))
@@ -1341,11 +1363,17 @@ class FieldScene: SKScene, SKPhysicsContactDelegate {
                 node.player.baseOccupied += 1
                 brNode.physicsBody?.categoryBitMask = (1 << 2)
                 brNode.physicsBody?.contactTestBitMask = (1 << 2)
+                if setThrownOut {
+                    //node.player.baseOccupied -= 1
+                }
             case 2:
                 brNode.run(SKAction.sequence([ SKAction.move(to: self.thirdBase, duration: 0.5), SKAction.wait(forDuration: 0.5)]))
                 node.player.baseOccupied += 1
                 brNode.physicsBody?.categoryBitMask = (1 << 3)
                 brNode.physicsBody?.contactTestBitMask = (1 << 3)
+                if setThrownOut {
+                    //node.player.baseOccupied -= 1
+                }
             case 3:
                 
                 if !setGroundOut && !setThrownOut {
@@ -1363,12 +1391,15 @@ class FieldScene: SKScene, SKPhysicsContactDelegate {
                     }
                 } else {  // if setGroundOut == true or setThrownOut == true
                     node.player.baseOccupied += 1
+                    
+                    
                     brNode.run(SKAction.sequence([SKAction.move(to: self.homePlate, duration: 0.5), SKAction.wait(forDuration: 0.3)]))
                 }
                 
             default:
                 break
             }
+        print("after move:\(node.player.baseOccupied)")
     }
     
     func setUpScene() {
@@ -1443,7 +1474,7 @@ class FieldScene: SKScene, SKPhysicsContactDelegate {
             addHitLoc(plateAppearance: plateAppearance, scene: self)
             placeBaseRunners(basepathNode: basepathNode, baseOccupied: plateAppearance.baseOccupied, plateAppearance: plateAppearance, scene: self)
             placeKLabel(plateAppearance: plateAppearance, scene: self)
-            addOutcomes(plateAppearance: plateAppearance, scene: self)
+            //addOutcomes(plateAppearance: plateAppearance, scene: self)
             
             addGenericNode(center: CGPoint(x: self.frame.maxX*0.20, y: self.frame.maxY*0.35), size: 20, name: "1B", hidden: plateAppearance.hit == 1 ? false : true)
             addGenericNode(center: CGPoint(x: self.frame.maxX*0.40, y: self.frame.maxY*0.35), size: 20, name: "2B", hidden: plateAppearance.hit == 2 ? false : true)

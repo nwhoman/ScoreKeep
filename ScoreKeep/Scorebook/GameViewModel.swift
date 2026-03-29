@@ -19,7 +19,7 @@ class GameViewModel: ObservableObject {
     @Published var selectedTab: String = "Visitor"
     @Published var totalInnings: Int
     @Published var score:[String : [Int]] = [:]
-    @Published var inningNumber = 10
+    @Published var inningNumber = [10, 10]
     @Published var halfInning = 0 // 1 for home half
     @Published var outs: Int = 0
     @Published var balls: Int = 0
@@ -30,7 +30,7 @@ class GameViewModel: ObservableObject {
     @Published var batter: OffensivePlateAppearance?
     @Published var pitcher: DefensivePlateAppearance?
     @Published var baseRunners: [BaseRunnerNode] = []
-    @Published var player: OffensivePlateAppearance?
+    //@Published var player: OffensivePlateAppearance?
     @Published var undoPlay: [GameViewModel] = []
     @Published var pitcherStats: [PitcherStats] = []
     
@@ -85,7 +85,6 @@ class GameViewModel: ObservableObject {
         self.visitorLineup = setInitialLineup(halfInning: 0)
         self.homeLineup = setInitialLineup(halfInning: 1)
         self.batterCount = [visitorCurrentLineup.filter({$0.position != "F"}).count, homeCurrentLineup.filter({$0.position != "F"}).count]
-        print("batterCount \(batterCount)")
         for i in 1...9 {
             print("adding inning: \(i)")
             let vInning = Inning(number: i*10, game: game, half: 0)
@@ -124,9 +123,7 @@ class GameViewModel: ObservableObject {
         
             if halfInning == 0 {
                 inning.half = halfInning
-                print("Vis line: \(lineup.count)")
                 for batter in self.visitorCurrentLineup.sorted(by: { $0.batting < $1.batting }) {
-                    print("adding VOPA to inning: \(batter.player.number) HDPA: \(homePitcher.player.number)")
                     inning.offense.append(OffensivePlateAppearance(order: order, batter: batter.player, inning: inning.number))
                     inning.defense.append(DefensivePlateAppearance(order: order, pitcher: homePitcher.player, inning: inning.number))
                     order += 1
@@ -135,9 +132,7 @@ class GameViewModel: ObservableObject {
                 
             } else {
                 inning.half = halfInning
-                print("home line: \(lineup.count)")
                 for batter in self.homeCurrentLineup.sorted(by: { $0.batting < $1.batting }) {
-                    print("adding HOPA to inning: \(batter.player.number) VDPA: \(homePitcher.player.number)")
                     inning.offense.append(OffensivePlateAppearance(order: order, batter: batter.player, inning: inning.number))
                     inning.defense.append(DefensivePlateAppearance(order: order, pitcher: visitorPitcher.player, inning: inning.number))
                     order += 1
@@ -227,14 +222,14 @@ class GameViewModel: ObservableObject {
     func getBatter() {
         
         if halfInning == 0 {
-            let inning = visitorInnings[inningNumber/10-1]
+            let inning = visitorInnings[inningNumber[0]/10-1]
             self.batter = inning.offense[batterUp[halfInning]]
             inning.offense[batterUp[halfInning]].active = true
             self.batter!.active = true
             
             baseRunners.insert(BaseRunnerNode(player: self.batter!), at: 0)
         } else {
-            let inning = homeInnings[inningNumber/10-1]
+            let inning = homeInnings[inningNumber[1]/10-1]
             self.batter = inning.offense[batterUp[halfInning]]
             self.batter!.active = true
             baseRunners.insert(BaseRunnerNode(player: self.batter!), at: 0)
@@ -244,17 +239,13 @@ class GameViewModel: ObservableObject {
     func getPitcher() {
         
         if halfInning == 0 {
-            let inning = visitorInnings[inningNumber/10-1]
-            print("\(inning.defense.count) \(batterUp[halfInning])")
-            
+            let inning = visitorInnings[inningNumber[0]/10-1]
             self.pitcher = inning.defense[batterUp[halfInning]-1]
             self.pitcher!.active = true
 
         } else {
-            let inning = homeInnings[inningNumber/10-1]
-            print("\(inning.defense.count) \(batterUp[halfInning]-1)")
-            
-            self.pitcher = inning.defense[batterUp[halfInning]]
+            let inning = homeInnings[inningNumber[1]/10-1]
+            self.pitcher = inning.defense[batterUp[halfInning]-1]
             self.pitcher!.active = true
         }
     }
@@ -272,13 +263,11 @@ class GameViewModel: ObservableObject {
     }
     
     func incrementBatterUp() {
-        print("before \(batterUp[halfInning]-1) \(batterCount[halfInning])")
         if batterUp[halfInning] != self.batterCount[halfInning] {
             batterUp[halfInning] += 1
         } else {
             batterUp[halfInning] = 1
         }
-        print("after \(batterUp[halfInning]-1)")
     }
     
     func decrementBatterUp() {
@@ -291,9 +280,9 @@ class GameViewModel: ObservableObject {
     
     func incrementScore(team: Int) {
         if team == 0 {
-            score["visitor"]![inningNumber/10 - 1] += 1
+            score["visitor"]![inningNumber[0]/10 - 1] += 1
         } else {
-            score["home"]![inningNumber/10 - 1] += 1
+            score["home"]![inningNumber[1]/10 - 1] += 1
         }
     }
     
@@ -397,7 +386,6 @@ class GameViewModel: ObservableObject {
         for inning in innings {
             plateAppearances.append(contentsOf: inning.defense.filter { $0.pitcher.id == pitcher.id } )
         }
-        print(plateAppearances.count)
         return plateAppearances
     }
     
@@ -477,7 +465,7 @@ class GameViewModel: ObservableObject {
     
     func checkGameComplete() {
         
-        if self.inningNumber/10 == self.totalInnings {
+        if self.inningNumber[0]/10 == self.totalInnings {
             if self.halfInning == 1 {
                 if self.outs < 3 {
                     if self.getTotalScore(team: "home") > self.getTotalScore(team: "visitor") {

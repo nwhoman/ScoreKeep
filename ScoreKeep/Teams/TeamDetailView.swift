@@ -18,7 +18,8 @@ struct TeamDetailView: View {
     @State private var showEditScreen = false
     @State private var showCoachesScreen = false
     @State private var showPlayersScreen = false
-
+    @State private var showJSONScreen = false
+    
     let team: Team
     
     
@@ -166,29 +167,35 @@ struct TeamDetailView: View {
                     }
                 }
                 Spacer(minLength: 30)
-                Button("Edit"){
-                    showEditScreen.toggle()
+                HStack {
+                    Button("JSON"){
+                        showJSONScreen.toggle()
+                    }
+                    Button("Edit"){
+                        showEditScreen.toggle()
+                    }
+                    .padding(10)
+                    .foregroundStyle(.blue)
+                    .clipShape(.capsule)
+                    .shadow(radius: 5)
+                    .navigationTitle(team.name)
+                    .navigationBarTitleDisplayMode(.inline)
+                    .scrollBounceBehavior(.basedOnSize)
                 }
-                .padding(10)
-                .foregroundStyle(.blue)
-                .clipShape(.capsule)
-                .shadow(radius: 5)
-                .navigationTitle(team.name)
-                .navigationBarTitleDisplayMode(.inline)
-                .scrollBounceBehavior(.basedOnSize)
-                .alert("Delete Team", isPresented: $showDeleteAlert) {
-                    Button("Delete", role: .destructive, action: {})
-                    Button("Cancel", role: .cancel){}
-                } message: {
-                    Text("Are you sure?")
-                }
-                .toolbar {
-                    ToolbarItem(placement: .topBarTrailing){
-                        Button("Delete this team", systemImage: "trash") {
-                            showDeleteAlert = true
+                    .alert("Delete Team", isPresented: $showDeleteAlert) {
+                        Button("Delete", role: .destructive, action: {})
+                        Button("Cancel", role: .cancel){}
+                    } message: {
+                        Text("Are you sure?")
+                    }
+                    .toolbar {
+                        ToolbarItem(placement: .topBarTrailing){
+                            Button("Delete this team", systemImage: "trash") {
+                                showDeleteAlert = true
+                            }
                         }
                     }
-                }
+                
             }
             
             .sheet(isPresented: $showEditScreen){
@@ -199,6 +206,12 @@ struct TeamDetailView: View {
             }
             .sheet(isPresented: $showPlayersScreen){
                 PlayersView(for: team)
+            }
+            .sheet(isPresented: $showJSONScreen){
+                ScrollView {
+                    Text("\(displayJSON(team: team))")
+                }
+                .padding(20)
             }
         }
     }
@@ -214,4 +227,15 @@ struct TeamDetailView: View {
         TeamDetailView(team: game.homeTeam!)
             .modelContainer(preview.modelContainer)
     }
+}
+
+func displayJSON(team: Team) -> String {
+    let encoder = JSONEncoder()
+    encoder.outputFormatting = [.prettyPrinted]
+    if let jsonData = try? encoder.encode(team),
+       let jsonString = String(data: jsonData, encoding: .utf8) {
+        print(jsonString)
+        return jsonString
+    }
+    return "failed to encode team"
 }
