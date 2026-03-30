@@ -202,7 +202,7 @@ struct InningsView: View {
                         gameViewModel.balls = 0
                         gameViewModel.strikes = 0
                         gameViewModel.pitches.removeAll()
-                        print("\(gameViewModel.undoPlay.count)")
+                        //print("\(gameViewModel.undoPlay.count)")
                         
                     }
                     try? modelContext.save()

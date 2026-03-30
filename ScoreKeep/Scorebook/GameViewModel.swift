@@ -9,6 +9,9 @@ import Foundation
 import SwiftUI
 
 class GameViewModel: ObservableObject {
+    enum CodingKeys: CodingKey {
+        case game, visitors, home, visitorLineup, homeLineup, visitorCurrentLineup, homeCurrentLineup, selectedTab, totalInnings, score, inningNumber, halfInning, outs, balls, strikes, pitches, batterUp, batterCount, batter, pitcher, baseRunners, pitcherStats
+    }
     var game: Game
     @Published var visitors: [Player]
     @Published var home: [Player]
@@ -31,7 +34,7 @@ class GameViewModel: ObservableObject {
     @Published var pitcher: DefensivePlateAppearance?
     @Published var baseRunners: [BaseRunnerNode] = []
     //@Published var player: OffensivePlateAppearance?
-    @Published var undoPlay: [GameViewModel] = []
+    //@Published var undoPlay: [GameViewModel] = []
     @Published var pitcherStats: [PitcherStats] = []
     
     var sortedVisitorLineup: [[PlayerPos]] {

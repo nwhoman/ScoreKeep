@@ -454,7 +454,7 @@ class FieldScene: SKScene, SKPhysicsContactDelegate {
         baseRunner.player.outs = gameVM.outs
         gameVM.balls = 0
         gameVM.strikes = 0
-        baseRunner.node.removeFromParent()
+        //baseRunner.node.removeFromParent()
         
     }
     func addOutNode(gameVM: GameViewModel, scene: SKScene, plateAppearance: OffensivePlateAppearance) {

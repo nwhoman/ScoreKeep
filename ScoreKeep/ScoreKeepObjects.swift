@@ -256,18 +256,11 @@ class Game:Codable {
     }
 }
 
-//@Model
-//class LineupSlot: Identifiable {
-//    var id: UUID = UUID()
-//    var lineupSlot: [PlayerPos] = []
-//    
-//    init() {
-//        
-//    }
-//}
-
 @Model
-class Inning {
+class Inning: Codable {
+    enum CodingKeys: CodingKey {
+        case id, number, game, half, offense, defense
+    }
     var id: UUID = UUID()
     var number: Int
     var game: Game
@@ -283,10 +276,33 @@ class Inning {
         self.game = game
         self.half = half
     }
+    required init(from decoder: Decoder) throws {
+        let values = try decoder.container(keyedBy: CodingKeys.self)
+        self.id = try values.decode(UUID.self, forKey: .id)
+        self.number = try values.decode(Int.self, forKey: .number)
+        self.game = try values.decode(Game.self, forKey: .game)
+        self.half = try values.decode(Int.self, forKey: .half)
+        self.offense = try values.decode([OffensivePlateAppearance].self, forKey: .offense)
+        self.defense = try values.decode([DefensivePlateAppearance].self, forKey: .defense)
+    }
+    
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(id, forKey: .id)
+        try container.encode(number, forKey: .number)
+        try container.encode(game, forKey: .game)
+        try container.encode(half, forKey: .half)
+        try container.encode(offense, forKey: .offense)
+        try container.encode(defense, forKey: .defense)
+    }
 }
 
 @Model
-class OffensivePlateAppearance {
+class OffensivePlateAppearance: Codable {
+    enum CodingKeys: CodingKey {
+        case id, order, batter, inning, pitches, outs, hit, outcome, baseOccupied, rbi, run, earnedRun, sb, lob, bb, hp, sac, re, active, hitLocX, hitLocY
+    }
+    
     var id: UUID
     var order: Int
     var batter: Player
@@ -339,10 +355,60 @@ class OffensivePlateAppearance {
     }
     private var _hitLocX: Double = 0.0
     private var _hitLocY: Double = 0.0
+    
+    required init(from decoder: Decoder) throws {
+        let values = try decoder.container(keyedBy: CodingKeys.self)
+        self.id = try values.decode(UUID.self, forKey: .id)
+        self.order = try values.decode(Int.self, forKey: .order)
+        self.batter = try values.decode(Player.self, forKey: .batter)
+        self.inning = try values.decode(Int.self, forKey: .inning)
+        self.pitches = try values.decode([Pitch].self, forKey: .pitches)
+        self.outs = try values.decode(Int.self, forKey: .outs)
+        self.hit = try values.decode(Int.self, forKey: .hit )
+        self.outcome = try values.decode([String : String].self, forKey: .outcome )
+        self.baseOccupied = try values.decode(Int.self, forKey: .baseOccupied)
+        self.rbi = try values.decode(Int.self, forKey: .rbi)
+        self.run = try values.decode(Bool.self, forKey: .run)
+        self.earnedRun = try values.decode(Bool.self, forKey: .earnedRun)
+        self.sb = try values.decode([Int].self, forKey: .sb)
+        self.lob = try values.decodeIfPresent(Int.self, forKey: .lob)
+        self.bb = try values.decode(Int.self, forKey: .bb)
+        self.hp = try values.decode(Int.self, forKey: .hp)
+        self.sac = try values.decode(Int.self, forKey: .sac)
+        self.re = try values.decode(Int.self, forKey: .re)
+        self.active = try values.decode(Bool.self, forKey: .active)
+    }
+    
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(id, forKey: .id)
+        try container.encode(order, forKey: .order)
+        try container.encode(batter, forKey: .batter)
+        try container.encode(inning, forKey: .inning)
+        try container.encode(pitches, forKey: .pitches)
+        try container.encode(outs, forKey: .outs)
+        try container.encode(hit, forKey: .hit )
+        try container.encode(outcome, forKey: .outcome )
+        try container.encode(baseOccupied, forKey: .baseOccupied)
+        try container.encode(rbi, forKey: .rbi)
+        try container.encode(run, forKey: .run)
+        try container.encode(earnedRun, forKey: .earnedRun)
+        try container.encode(sb, forKey: .sb)
+        try container.encodeIfPresent(lob, forKey: .lob)
+        try container.encode(bb, forKey: .bb)
+        try container.encode(hp, forKey: .hp)
+        try container.encode(sac, forKey: .sac)
+        try container.encode(re, forKey: .re)
+        try container.encode(active, forKey: .active)
+    }
 }
 
 @Model
-class DefensivePlateAppearance {
+class DefensivePlateAppearance: Codable {
+    enum CodingKeys: CodingKey {
+        case id, order, pitcher, inning, pitches, hit, run, earnedRun, k, bb, hp, sac, wp, po, assist, error, active
+    }
+    
     var id: UUID
     var order: Int
     var pitcher: Player
@@ -372,6 +438,46 @@ class DefensivePlateAppearance {
         self.assist = []
         self.error = []
         self.active = false
+    }
+    required init(from decoder: Decoder) throws {
+        let values = try decoder.container(keyedBy: CodingKeys.self)
+        self.id = try values.decode(UUID.self, forKey: .id)
+        self.order = try values.decode(Int.self, forKey: .order)
+        self.pitcher = try values.decode(Player.self, forKey: .pitcher)
+        self.inning = try values.decode(Int.self, forKey: .inning)
+        self.pitches = try values.decode([Pitch].self, forKey: .pitches)
+        self.hit = try values.decode(Int.self, forKey: .hit)
+        self.run = try values.decode(Bool.self, forKey: .run)
+        self.earnedRun = try values.decode(Bool.self, forKey: .earnedRun)
+        self.k = try values.decode(Int.self, forKey: .k)
+        self.bb = try values.decode(Int.self, forKey: .bb)
+        self.hp = try values.decode(Int.self, forKey: .hp)
+        self.sac = try values.decode(Int.self, forKey: .sac)
+        self.wp = try values.decode(Int.self, forKey: .wp)
+        self.po = try values.decode([String].self, forKey: .po)
+        self.assist = try values.decode([String].self, forKey: .assist)
+        self.error = try values.decode([String].self, forKey: .error)
+        self.active = try values.decode(Bool.self, forKey: .active)
+    }
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(id, forKey: .id)
+        try container.encode(order, forKey: .order)
+        try container.encode(pitcher, forKey: .pitcher)
+        try container.encode(inning, forKey: .inning)
+        try container.encode(pitches, forKey: .pitches)
+        try container.encode(hit, forKey: .hit)
+        try container.encode(run, forKey: .run)
+        try container.encode(earnedRun, forKey: .earnedRun)
+        try container.encode(k, forKey: .k)
+        try container.encode(bb, forKey: .bb)
+        try container.encode(hp, forKey: .hp)
+        try container.encode(sac, forKey: .sac)
+        try container.encode(wp, forKey: .wp)
+        try container.encode(po, forKey: .po)
+        try container.encode(assist, forKey: .assist)
+        try container.encode(error, forKey: .error)
+        try container.encode(active, forKey: .active)
     }
 }
 
@@ -434,7 +540,11 @@ struct PlayerStats: Identifiable, Hashable {
     }
 }
 
-struct PitcherStats: Identifiable, Hashable {
+struct PitcherStats: Identifiable, Hashable, Codable {
+    enum CodingKeys: CodingKey {
+        case inningsPitched, balls, strikes, battersFaced, hits, k, bb, hp, wp, doubles, triples, homeRuns, runs, er, sac
+    }
+    
     var id: UUID = UUID()
     var inningsPitched: Double = 0.0
     var balls: Int = 0
@@ -1028,4 +1138,7 @@ struct BaseRunnerNode {
         self.node.physicsBody?.contactTestBitMask = (1 << 1)
         self.node.physicsBody?.collisionBitMask = (1 << 1)
     }
+    
+    
+    
 }
