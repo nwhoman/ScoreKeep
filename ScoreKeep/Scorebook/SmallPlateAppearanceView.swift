@@ -9,14 +9,15 @@ import SpriteKit
 import SwiftUI
 
 struct SmallPlateAppearanceView: View {
-    @ObservedObject var gameViewModel: GameViewModel
+//    @ObservedObject var gameViewModel: GameViewModel
+    @State var gameViewModel: GameViewModel
     @State var player: OffensivePlateAppearance
     let scale: CGFloat
     
     var baseOccupied: Int {
         for i in gameViewModel.baseRunners {
-            if i.player.batter.number == player.batter.number {
-                return i.player.baseOccupied
+            if i.batter.number == player.batter.number {
+                return i.baseOccupied
             }
         }
         return 5
@@ -137,7 +138,7 @@ struct SmallPlateAppearanceView: View {
     let preview = Preview()
     preview.addSampleGames([game])
     preview.addSampleLineups(game: game)
-    var gameViewModel = GameViewModel(game: game, totalInnings: 3)
+    var gameViewModel = GameViewModel(game: game, totalInnings: 3, inningRunRule: 0)
     gameViewModel.setUpGame()
     
     var player: OffensivePlateAppearance = OffensivePlateAppearance.defaultPlateAppearance
@@ -147,7 +148,8 @@ struct SmallPlateAppearanceView: View {
 }
 
 class BasePathScene: SKScene, SKPhysicsContactDelegate {
-    @ObservedObject var gameVM: GameViewModel
+//    @ObservedObject var gameVM: GameViewModel
+    @State var gameVM: GameViewModel
     var baseOccupied: Int
     var plateAppearance: OffensivePlateAppearance
     var playerNode = SKSpriteNode()

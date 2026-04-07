@@ -10,9 +10,9 @@ import SwiftUI
 struct BookPageView: View {
     @Environment(\.modelContext) var modelContext
     @Environment(\.dismiss) var dismiss
-    @ObservedObject var gameViewModel: GameViewModel
+    //@ObservedObject var gameViewModel: GameViewModel
     @EnvironmentObject var nav: NavigationStateManager
-
+    @State var gameViewModel: GameViewModel
     //@Binding var game: Game
     //@Binding var orderNumber: Int
     //@Binding var inningNumber: Int
@@ -70,7 +70,7 @@ struct BookPageView: View {
                             //.padding(.leading)
                                 .border(Color.blue)
                             ScrollView(Axis.Set.horizontal) {
-                                InningsView(gameViewModel: gameViewModel, showLargeView: $showLargeView, showPlayerPA: $showPlayerPA, largeView: $largeView, team: team, innings: innings, selectedTab: selectedTab)
+                                InningsView(showLargeView: $showLargeView, showPlayerPA: $showPlayerPA, largeView: $largeView, gameViewModel: gameViewModel, team: team, innings: innings, selectedTab: selectedTab)
                                 
                             }
                             
@@ -86,7 +86,7 @@ struct BookPageView: View {
 
 #Preview {
     var game = Game.defaultGame
-    let gameVM = GameViewModel(game: game, totalInnings: 3)
+    let gameVM = GameViewModel(game: game, totalInnings: 3, inningRunRule: 0)
     let preview = Preview()
     preview.addSampleGames([game])
     preview.addSampleLineups(game: game)
@@ -100,15 +100,15 @@ struct InningsView: View {
     @Environment(\.modelContext) var modelContext
     @EnvironmentObject var nav: NavigationStateManager
 
-    @ObservedObject var gameViewModel: GameViewModel
+    //@ObservedObject var gameViewModel: GameViewModel
     @Binding var showLargeView: Bool
     @Binding var showPlayerPA: Bool
     @Binding var largeView: Bool
-
+    @State var gameViewModel: GameViewModel
     //@Binding var orderNumber: Int
     //@Binding var inningNumber: Int
     @State var currentPlayer: OffensivePlateAppearance?
-    //@State var outs: Int = 0
+    @State var currentPitcher: DefensivePlateAppearance?
     var team: Team
     var innings: [Inning]
     var selectedTab: String?
@@ -129,7 +129,7 @@ struct InningsView: View {
                         .frame(width: 75, height: 50, alignment: .center)
                         .border(Color.blue)
                         Text("\(gameViewModel.inningNumber[gameViewModel.halfInning])-\(gameViewModel.batterUp[gameViewModel.halfInning])/\(gameViewModel.batterCount[gameViewModel.halfInning])")
-                        ForEach(inning.offense.sorted(by: {$0.order < $1.order}), id: \.self) { player in
+                        ForEach(inning.plateAppearances.sorted(by: {$0.order < $1.order}), id: \.self) { player in
                             GeometryReader { geo in
                                 
                                 SmallPlateAppearanceView(gameViewModel: gameViewModel, player: player, scale: 0.15)
@@ -139,11 +139,12 @@ struct InningsView: View {
                                                 if player.outcome["home"] == "" {
                                                     player.active = true
                                                     gameViewModel.batter = player
-                                                    gameViewModel.getPitcher()
+                                                    //gameViewModel.updatePitcherStats()
                                                     currentPlayer = player
+                                                    //currentPitcher?.active = true
                                                     //gameViewModel.inningNumber = inning.number
-                                                    let brNode = BaseRunnerNode(player: player)
-                                                    gameViewModel.baseRunners.insert(brNode, at: 0)
+                                                    
+                                                    gameViewModel.baseRunners.insert(player, at: 0)
                                                     gameViewModel.balls = 0
                                                     gameViewModel.strikes = 0
                                                     gameViewModel.incrementBatterUp()
@@ -174,15 +175,16 @@ struct InningsView: View {
         }
         .sheet(isPresented: $showLargeView, onDismiss: {
             //  update game viewmodel, check outs and switch sides
+            //gameViewModel.updatePitcherStats()
             gameViewModel.checkGameComplete()
-            if gameViewModel.outs == 3 { // change of sides, reset all game inning variables
+            if gameViewModel.checkInningComplete() { // change of sides, reset all game inning variables
                 gameViewModel.outs = 0
                 gameViewModel.balls = 0
                 gameViewModel.strikes = 0
                 
                 gameViewModel.baseRunners.removeAll()
-                gameViewModel.pitches.removeAll()
                 
+                gameViewModel.inningRuns = 0
                 if gameViewModel.halfInning == 0 {
                     gameViewModel.inningNumber[0] += 10
                     gameViewModel.halfInning = 1
@@ -201,7 +203,6 @@ struct InningsView: View {
                     } else {
                         gameViewModel.balls = 0
                         gameViewModel.strikes = 0
-                        gameViewModel.pitches.removeAll()
                         //print("\(gameViewModel.undoPlay.count)")
                         
                     }
@@ -216,7 +217,7 @@ struct InningsView: View {
             }
         })
         {
-            LargePlateAppearanceView(gameViewModel: gameViewModel, player: gameViewModel.batter!, pitcher: gameViewModel.pitcher!, largeView: $largeView)
+            LargePlateAppearanceView(gameViewModel: gameViewModel, player: gameViewModel.batter!, largeView: $largeView)
                 .presentationBackground(alignment: .top) {
                     LinearGradient(colors: [Color.gray, Color.green], startPoint: .bottomLeading, endPoint: .topTrailing)
                 }

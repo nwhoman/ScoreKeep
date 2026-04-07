@@ -11,7 +11,8 @@ import SwiftUI
 struct LineupView: View {
     @Environment(\.modelContext) var modelContext
     @Environment(\.dismiss) var dismiss
-    @ObservedObject var gameVM: GameViewModel
+//    @ObservedObject var gameVM: GameViewModel
+    @State var gameVM: GameViewModel
     @State var game: Game
 
     @State var selected: Player?
@@ -118,7 +119,8 @@ func playerUsed(player: Player, lineup: [PlayerPos]) -> Bool {
 struct RosterView: View {
     @Environment(\.modelContext) var modelContext
     @Environment(\.dismiss) var dismiss
-    @ObservedObject var gameVM: GameViewModel
+//    @ObservedObject var gameVM: GameViewModel
+    @State var gameVM: GameViewModel
     @State private var positions: [String] = ["P", "C", "1B", "2B", "3B", "SS", "LF", "CF", "RF", "DP", "F", "EP"]
     @State var team: Team
     @Binding var selectedTab: String
@@ -260,7 +262,7 @@ struct RosterItemView: View {
 
 #Preview {
     var game = Game.defaultGame
-    let gameVM = GameViewModel(game: game, totalInnings: 3)
+    let gameVM = GameViewModel(game: game, totalInnings: 3, inningRunRule: 0)
     let preview = Preview()
     preview.addSampleGames([game])
 

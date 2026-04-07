@@ -15,7 +15,7 @@ enum Pitch: String, Codable, CaseIterable {
     case strikeSwinging = "strike swinging"
     case strikeLooking = "strike looking"
     case foul
-    //case inPlay = "in play"
+    case inPlay = "in play"
     //case hbp
     
 }

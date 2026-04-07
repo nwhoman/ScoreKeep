@@ -6,36 +6,50 @@
 //
 
 import Foundation
+import SwiftData
 import SwiftUI
 
-class GameViewModel: ObservableObject {
+@Model
+class GameViewModel: Codable, Identifiable {
     enum CodingKeys: CodingKey {
-        case game, visitors, home, visitorLineup, homeLineup, visitorCurrentLineup, homeCurrentLineup, selectedTab, totalInnings, score, inningNumber, halfInning, outs, balls, strikes, pitches, batterUp, batterCount, batter, pitcher, baseRunners, pitcherStats
+        case game, visitors, home, visitorLineup, homeLineup, visitorCurrentLineup, homeCurrentLineup, selectedTab, totalInnings, score, inningNumber, halfInning, outs, balls, strikes, pitches, batterUp, batterCount, batter, pitcherStats, baserunnerObjectsForBackup, visitorInnings, homeInnings
     }
+    var id: UUID = UUID()
     var game: Game
-    @Published var visitors: [Player]
-    @Published var home: [Player]
-    @Published var visitorLineup: [[PlayerPos]] = []                // book lineup
-    @Published var homeLineup: [[PlayerPos]] = []
-    @Published var visitorCurrentLineup: [PlayerPos]           // lineup changing lineup
-    @Published var homeCurrentLineup: [PlayerPos]
-    @Published var selectedTab: String = "Visitor"
-    @Published var totalInnings: Int
-    @Published var score:[String : [Int]] = [:]
-    @Published var inningNumber = [10, 10]
-    @Published var halfInning = 0 // 1 for home half
-    @Published var outs: Int = 0
-    @Published var balls: Int = 0
-    @Published var strikes: Int = 0
-    @Published var pitches: [Pitch] = []
-    @Published var batterUp = [1, 1]
-    @Published var batterCount = [0, 0]
-    @Published var batter: OffensivePlateAppearance?
-    @Published var pitcher: DefensivePlateAppearance?
-    @Published var baseRunners: [BaseRunnerNode] = []
-    //@Published var player: OffensivePlateAppearance?
-    //@Published var undoPlay: [GameViewModel] = []
-    @Published var pitcherStats: [PitcherStats] = []
+    var visitors: [Player]
+    var home: [Player]
+    var visitorLineup: [[PlayerPos]] = []                // book lineup
+    var homeLineup: [[PlayerPos]] = []
+    var visitorCurrentLineup: [PlayerPos] = []           // lineup changing lineup
+    var homeCurrentLineup: [PlayerPos] = []
+    var selectedTab: String = "Visitor"
+    var totalInnings: Int
+    var inningRunRule: Int = 0
+    var inningRuns: Int = 0
+    var score:[String : [Int]] = [:]
+    var inningNumber = [10, 10]
+    var halfInning = 0 // 1 for home half
+    var outs: Int = 0
+    var balls: Int = 0
+    var strikes: Int = 0
+    var pitches = [
+        0: [
+            "balls": 0,
+            "strikes": 0,
+        ],
+        1: [
+            "balls": 0,
+            "strikes": 0,
+        ]
+    ]
+    var batterUp = [1, 1]
+    var batterCount = [0, 0]
+    var batter: OffensivePlateAppearance?
+    var baseRunners: [OffensivePlateAppearance] = []
+    var pitcherStats: [PitcherStats] = []
+    var baserunnerObjectsForBackup: [OffensivePlateAppearance] = []
+    var visitorInnings: [Inning] = []
+    var homeInnings: [Inning] = []
     
     var sortedVisitorLineup: [[PlayerPos]] {
         visitorLineup.sorted(by: { $0.last!.batting < $1.last!.batting })
@@ -45,23 +59,8 @@ class GameViewModel: ObservableObject {
         homeLineup.sorted(by: { $0.last!.batting < $1.last!.batting })
     }
     
-    var defensiveLineup: [String: Player] {
-        if halfInning == 0 {
-            return getDefense(defense: game.homeLineup)
-        } else {
-            return getDefense(defense: game.visitingLineup)
-        }
-    }
     
-    var visitorInnings: [Inning] {
-        game.innings.filter { $0.half == 0 }.sorted(by: {$0.number < $1.number})
-    }
-    
-    var homeInnings: [Inning] {
-        game.innings.filter { $0.half == 1 }.sorted(by: {$0.number < $1.number})
-    }
-    
-    init(game: Game, totalInnings: Int) {
+    init(game: Game, totalInnings: Int, inningRunRule: Int) {
         self.game = game
         self.visitors = game.visitingTeam!.players!
         self.home = game.homeTeam!.players!
@@ -69,13 +68,88 @@ class GameViewModel: ObservableObject {
         self.visitorCurrentLineup = game.visitingTeam?.lineup ?? []
         self.homeCurrentLineup = game.homeTeam?.lineup ?? []
         self.totalInnings = totalInnings
+        self.inningRunRule = inningRunRule
         self.score = setScoreTable()
-        //self.visitorLineup = setInitialLineup(halfInning: 0)
-        //self.homeLineup = setInitialLineup(halfInning: 1)
-        //setUpGame()
-        //getBatter()
         
     }
+    
+    init(gameViewModel: GameViewModel) {
+        self.game = gameViewModel.game
+        self.visitors = gameViewModel.game.visitingTeam!.players!
+        self.home = gameViewModel.game.homeTeam!.players!
+        
+        self.visitorCurrentLineup = gameViewModel.game.visitingTeam?.lineup ?? []
+        self.homeCurrentLineup = gameViewModel.game.homeTeam?.lineup ?? []
+        self.totalInnings = gameViewModel.totalInnings
+        
+    }
+    
+    required init(from decoder: Decoder) throws {
+        let values = try decoder.container(keyedBy: CodingKeys.self)
+        self.game = try values.decode(Game.self, forKey: .game)
+        self.visitors = try values.decode([Player].self, forKey: .visitors)
+        self.home = try values.decode([Player].self, forKey: .home)
+        
+        var lineupContainer = try values.nestedUnkeyedContainer(forKey: .visitorLineup)
+        var lineup: [[PlayerPos]] = []
+        while !lineupContainer.isAtEnd {
+            let item = try lineupContainer.decode([PlayerPos].self)
+            lineup.append(item)
+        }
+        self.visitorLineup = lineup
+        
+        lineupContainer = try values.nestedUnkeyedContainer(forKey: .homeLineup)
+        lineup = []
+        while !lineupContainer.isAtEnd {
+            let item = try lineupContainer.decode([PlayerPos].self)
+            lineup.append(item)
+        }
+        self.homeLineup = lineup
+        
+        self.visitorCurrentLineup = try values.decode([PlayerPos].self, forKey: .visitorCurrentLineup)
+        self.homeCurrentLineup = try values.decode([PlayerPos].self, forKey: .homeCurrentLineup)
+        self.selectedTab = try values.decode(String.self, forKey: .selectedTab)
+        self.totalInnings = try values.decode(Int.self, forKey: .totalInnings)
+        self.score = try values.decode([String:[Int]].self, forKey: .score)
+        self.inningNumber = try values.decode([Int].self, forKey: .inningNumber)
+        self.halfInning = try values.decode(Int.self, forKey: .halfInning)
+        self.outs = try values.decode(Int.self, forKey: .outs)
+        self.batterUp = try values.decode([Int].self, forKey: .batterUp)
+        self.batterCount = try values.decode([Int].self, forKey: .batterCount)
+        self.batter = try values.decode(OffensivePlateAppearance.self, forKey: .batter)
+        self.pitcherStats = try values.decode([PitcherStats].self, forKey: .pitcherStats)
+        self.baserunnerObjectsForBackup = try values.decode([OffensivePlateAppearance].self, forKey: .baserunnerObjectsForBackup)
+        self.visitorInnings = try values.decode([Inning].self, forKey: .visitorInnings)
+        self.homeInnings = try values.decode([Inning].self, forKey: .homeInnings)
+
+    }
+    
+    func encode(to encoder: Encoder) throws {
+        var values = encoder.container(keyedBy: CodingKeys.self)
+        try values.encode(game, forKey: .game)
+        try values.encode(visitors, forKey: .visitors)
+        try values.encode(home, forKey: .home)
+        try values.encode(visitorLineup, forKey: .visitorLineup)
+        try values.encode(homeLineup, forKey: .homeLineup)
+        try values.encode(visitorCurrentLineup, forKey: .visitorCurrentLineup)
+        try values.encode(homeCurrentLineup, forKey: .homeCurrentLineup)
+        try values.encode(selectedTab, forKey: .selectedTab)
+        try values.encode(totalInnings, forKey: .totalInnings)
+        try values.encode(score, forKey: .score)
+        try values.encode(inningNumber, forKey: .inningNumber)
+        try values.encode(halfInning, forKey: .halfInning)
+        try values.encode(outs, forKey: .outs)
+        try values.encode(balls, forKey: .balls)
+        try values.encode(strikes, forKey: .strikes)
+        try values.encode(pitches, forKey: .pitches)
+        try values.encode(batterUp, forKey: .batterUp)
+        try values.encode(batterCount, forKey: .batterCount)
+        try values.encode(batter, forKey: .batter)
+        try values.encode(pitcherStats, forKey: .pitcherStats)
+        try values.encode(baserunnerObjectsForBackup, forKey: .baserunnerObjectsForBackup)
+        try values.encode(visitorInnings, forKey: .visitorInnings)
+        try values.encode(homeInnings, forKey: .homeInnings)
+}
     
     func popPlayerFromLineup(lineup: [PlayerPos], player: PlayerPos) -> [PlayerPos] {
         var temp: [PlayerPos] = lineup
@@ -88,15 +162,15 @@ class GameViewModel: ObservableObject {
         self.visitorLineup = setInitialLineup(halfInning: 0)
         self.homeLineup = setInitialLineup(halfInning: 1)
         self.batterCount = [visitorCurrentLineup.filter({$0.position != "F"}).count, homeCurrentLineup.filter({$0.position != "F"}).count]
-        for i in 1...9 {
-            print("adding inning: \(i)")
+        for i in 1...self.totalInnings {
             let vInning = Inning(number: i*10, game: game, half: 0)
             addInning(inning: vInning, lineup: game.visitingLineup, halfInning: 0)
             let hInning = Inning(number: i*10, game: game, half: 1)
             addInning(inning: hInning, lineup: game.homeLineup, halfInning: 1)
         }
-        //getPitcher()
-        //print(self.batterCount)
+//        self.pitcherStats.append(PitcherStats(pitcherID: getCurrentPitcher(i: 0)))
+//        self.pitcherStats.append(PitcherStats(pitcherID: getCurrentPitcher(i: 1)))
+        print("start game: \(self.pitcherStats.count)")
         
     }
     func setScoreTable() -> [String:[Int]]{
@@ -108,39 +182,44 @@ class GameViewModel: ObservableObject {
         score["home"] = temp
         return score
     }
+    func getCurrentPitcher(i: Int) -> PlayerPos {
+        var pitcher: PlayerPos!
+        if i == 0 {
+            if self.visitorCurrentLineup.filter({$0.position == "P"}).first != nil {
+                pitcher = self.visitorCurrentLineup.filter({$0.position == "P"}).first
+            } else {
+                pitcher = self.visitorCurrentLineup.filter({$0.position == "F"}).first
+            }
+        } else {
+            if self.homeCurrentLineup.filter({$0.position == "P"}).first != nil {
+                pitcher = self.homeCurrentLineup.filter({$0.position == "P"}).first
+            } else {
+                pitcher = self.homeCurrentLineup.filter({$0.position == "F"}).first
+            }
+        }
+        return pitcher
+    }
     func addInning(inning: Inning, lineup: [PlayerPos], halfInning: Int) {
-        var visitorPitcher: PlayerPos!
-        var homePitcher: PlayerPos!
-        if self.visitorCurrentLineup.filter({$0.position == "P"}).first != nil {
-            visitorPitcher = self.visitorCurrentLineup.filter({$0.position == "P"}).first
-        } else {
-            visitorPitcher = self.visitorCurrentLineup.filter({$0.position == "F"}).first
-        }
-        if self.homeCurrentLineup.filter({$0.position == "P"}).first != nil {
-            homePitcher = self.homeCurrentLineup.filter({$0.position == "P"}).first
-        } else {
-            homePitcher = self.homeCurrentLineup.filter({$0.position == "F"}).first
-        }
+        var visitorPitcher = getCurrentPitcher(i: 0)
+        var homePitcher = getCurrentPitcher(i: 1)
         
         var order = 1
         
             if halfInning == 0 {
                 inning.half = halfInning
                 for batter in self.visitorCurrentLineup.sorted(by: { $0.batting < $1.batting }) {
-                    inning.offense.append(OffensivePlateAppearance(order: order, batter: batter.player, inning: inning.number))
-                    inning.defense.append(DefensivePlateAppearance(order: order, pitcher: homePitcher.player, inning: inning.number))
+                    inning.plateAppearances.append(OffensivePlateAppearance(order: order, batter: batter.player, pitcher: homePitcher.player, inning: inning.number))
                     order += 1
                 }
-                game.innings.append(inning)
+                self.visitorInnings.append(inning)
                 
             } else {
                 inning.half = halfInning
                 for batter in self.homeCurrentLineup.sorted(by: { $0.batting < $1.batting }) {
-                    inning.offense.append(OffensivePlateAppearance(order: order, batter: batter.player, inning: inning.number))
-                    inning.defense.append(DefensivePlateAppearance(order: order, pitcher: visitorPitcher.player, inning: inning.number))
+                    inning.plateAppearances.append(OffensivePlateAppearance(order: order, batter: batter.player, pitcher: visitorPitcher.player,inning: inning.number))
                     order += 1
                 }
-                game.innings.append(inning)
+                self.homeInnings.append(inning)
             }
     }
     
@@ -205,7 +284,7 @@ class GameViewModel: ObservableObject {
             self.homeLineup = temp2
         }
         for each in game.innings {
-            for app in each.offense {
+            for app in each.plateAppearances {
                 
                 if !app.active && app.batter == selectedPlayer.player {
                     app.batter = newPlayerPos.player
@@ -226,32 +305,43 @@ class GameViewModel: ObservableObject {
         
         if halfInning == 0 {
             let inning = visitorInnings[inningNumber[0]/10-1]
-            self.batter = inning.offense[batterUp[halfInning]]
-            inning.offense[batterUp[halfInning]].active = true
+            self.batter = inning.plateAppearances[batterUp[halfInning]]
+            inning.plateAppearances[batterUp[halfInning]].active = true
             self.batter!.active = true
             
-            baseRunners.insert(BaseRunnerNode(player: self.batter!), at: 0)
+            baseRunners.insert(self.batter!, at: 0)
         } else {
             let inning = homeInnings[inningNumber[1]/10-1]
-            self.batter = inning.offense[batterUp[halfInning]]
+            self.batter = inning.plateAppearances[batterUp[halfInning]]
             self.batter!.active = true
-            baseRunners.insert(BaseRunnerNode(player: self.batter!), at: 0)
+            baseRunners.insert(self.batter!, at: 0)
         }
         
     }
-    func getPitcher() {
-        
-        if halfInning == 0 {
-            let inning = visitorInnings[inningNumber[0]/10-1]
-            self.pitcher = inning.defense[batterUp[halfInning]-1]
-            self.pitcher!.active = true
-
-        } else {
-            let inning = homeInnings[inningNumber[1]/10-1]
-            self.pitcher = inning.defense[batterUp[halfInning]-1]
-            self.pitcher!.active = true
-        }
-    }
+//    func getPitchers() -> [[PitcherStats]] {
+//        var allPitchers: [[PitcherStats]] = []
+//        var pitchers: [PitcherStats] = []
+//        
+//        for each in self.pitcherStats {
+//            if self.visitors.contains(where: { $0.id == each.pitcherID }) {
+//                print("vis: \(each.pitcherID)")
+//                pitchers.append(each)
+//            }
+//        }
+//        print("vis: \(pitchers.count)")
+//        allPitchers.append(pitchers)
+//        pitchers.removeAll()
+//        for each in self.pitcherStats {
+//            if self.home.contains(where: { $0.id == each.pitcherID }) {
+//                print("home: \(each.pitcherID)")
+//                pitchers.append(each)
+//            }
+//        }
+//        print("home: \(pitchers.count)")
+//        allPitchers.append(pitchers)
+//        return allPitchers
+//    }
+    
     func getDefense(defense: [PlayerPos]) -> [String: Player]{
         let positions = ["P", "C", "1B", "2B", "3B", "SS", "LF", "CF", "RF"]
         var lineup: [String: Player] = [:]
@@ -259,7 +349,8 @@ class GameViewModel: ObservableObject {
             for player in defense {
                 if player.position == pos {
                     lineup[pos] = player.player
-                }
+                    print("pos: \(pos) player:\(lineup[pos]?.number ?? "no player") assigned pos: \(lineup[pos]?.position ?? "no position")")
+}
             }
         }
         return lineup
@@ -282,10 +373,16 @@ class GameViewModel: ObservableObject {
     }
     
     func incrementScore(team: Int) {
-        if team == 0 {
-            score["visitor"]![inningNumber[0]/10 - 1] += 1
-        } else {
-            score["home"]![inningNumber[1]/10 - 1] += 1
+        print("\(inningRunRule)")
+        if inningRuns < inningRunRule || inningRunRule == 0 {
+            if team == 0 {
+                print("vis score + 1 \(inningNumber[team])")
+                score["visitor"]![inningNumber[0]/10 - 1] += 1
+            } else {
+                print("home score + 1 \(inningNumber[team])")
+                score["home"]![inningNumber[1]/10 - 1] += 1
+            }
+            inningRuns += 1
         }
     }
     
@@ -297,10 +394,10 @@ class GameViewModel: ObservableObject {
         var vHits = 0
         var hHits = 0
         for inning in self.visitorInnings {
-            vHits += inning.offense.count(where: {$0.hit > 0})
+            vHits += inning.plateAppearances.count(where: {$0.hit > 0})
         }
         for inning in self.homeInnings {
-            hHits += inning.offense.count(where: {$0.hit > 0})
+            hHits += inning.plateAppearances.count(where: {$0.hit > 0})
         }
         return [
             "visitor": vHits,
@@ -311,25 +408,25 @@ class GameViewModel: ObservableObject {
     func moveRunners(bases: Int, runnerToAdvance: Int) { //0, 1, 2, 3 for which base runner is at 0 = home
         if runnerToAdvance == 0 {
             for runner in baseRunners {
-                runner.player.baseOccupied += bases
+                runner.baseOccupied += bases
             }
         } else if runnerToAdvance == 1 {
             for i in 1..<baseRunners.count {
-                baseRunners[i].player.baseOccupied += bases
+                baseRunners[i].baseOccupied += bases
             }
         } else if runnerToAdvance == 2 {
             for i in 2..<baseRunners.count {
-                baseRunners[i].player.baseOccupied += bases
+                baseRunners[i].baseOccupied += bases
             }
         } else {
             for i in 3..<baseRunners.count {
-                baseRunners[i].player.baseOccupied += bases
+                baseRunners[i].baseOccupied += bases
             }
         }
     }
-    func getBaserunner(number: String) -> BaseRunnerNode {
+    func getBaserunner(number: String) -> OffensivePlateAppearance {
         for runner in baseRunners {
-            if runner.player.batter.number == number {
+            if runner.batter.number == number {
                 return runner
             }
         }
@@ -340,7 +437,7 @@ class GameViewModel: ObservableObject {
         var plateAppearances: [OffensivePlateAppearance] = []
         
         for inning in innings {
-            plateAppearances.append(contentsOf: inning.offense.filter { $0.batter.id == player.id } )
+            plateAppearances.append(contentsOf: inning.plateAppearances.filter { $0.batter.id == player.id } )
         }
         return plateAppearances
     }
@@ -383,20 +480,20 @@ class GameViewModel: ObservableObject {
         return playerStats
     }
     
-    func getPitcherPA(innings: [Inning], pitcher: Player) -> [DefensivePlateAppearance] {
-        var plateAppearances: [DefensivePlateAppearance] = []
+    func getPitcherPA(innings: [Inning], pitcher: Player) -> [OffensivePlateAppearance] {
+        var plateAppearances: [OffensivePlateAppearance] = []
         
         for inning in innings {
-            plateAppearances.append(contentsOf: inning.defense.filter { $0.pitcher.id == pitcher.id } )
+            plateAppearances.append(contentsOf: inning.plateAppearances.filter { $0.pitcher.id == pitcher.id } )
         }
         return plateAppearances
     }
     
-    func getPitcherStats(plateAppearances: [DefensivePlateAppearance]) -> PitcherStats {
+    func getPitcherStats(plateAppearances: [OffensivePlateAppearance]) -> PitcherStats {
         var pitcherStats = PitcherStats()
         var minInning = 200
-        var maxInning = 0
-        
+        var maxInning = 10
+        print("pa: \(plateAppearances.count)")
         for appearance in plateAppearances {
             if appearance.active {
                 if appearance.inning < minInning {
@@ -404,13 +501,15 @@ class GameViewModel: ObservableObject {
                 } else if appearance.inning > maxInning {
                     maxInning = appearance.inning
                 }
+                print("min: \(minInning) max: \(maxInning)")
                 for pitch in appearance.pitches {
                     if pitch == .ball {
                         pitcherStats.balls += 1
-                    } else if pitch == .strikeLooking || pitch == .strikeSwinging || pitch == .foul{
+                    } else if pitch != .ball {
                         pitcherStats.strikes += 1
                     }
                 }
+                print("pitches: \(appearance.pitches.count)")
                 pitcherStats.battersFaced += 1
                 if appearance.hit != 0 {
                     pitcherStats.hits += 1
@@ -424,11 +523,13 @@ class GameViewModel: ObservableObject {
                 }
                 
                 if appearance.run {
+                    print("add run")
                     pitcherStats.runs += 1
+                    if appearance.earnedRun {
+                        pitcherStats.er += 1
+                    }
                 }
-                if appearance.earnedRun {
-                    pitcherStats.er += 1
-                }
+                
                 pitcherStats.bb += appearance.bb
                 pitcherStats.k += appearance.k
                 
@@ -438,10 +539,19 @@ class GameViewModel: ObservableObject {
             }
 
         }
-        pitcherStats.inningsPitched = Double(maxInning/10 - minInning/10) + Double(self.outs/3)
-        
+        pitcherStats.inningsPitched = Double(maxInning/10 - minInning/10) + Double(self.outs)/3
+        if pitcherStats.inningsPitched < 0 {
+            pitcherStats.inningsPitched = 0.0
+        }
+            
+        print("IP: \(pitcherStats.inningsPitched) \(self.outs)")
         return pitcherStats
     }
+//    func updatePitcherStats() {
+//        let innings = self.halfInning == 0 ? self.visitorInnings : self.homeInnings
+//        let pa = self.getPitcherPA(innings: innings)
+//        self.pitcherStats[self.pitcherStats.count-1] = self.getPitcherStats(plateAppearances: pa, pitcher: self.batter!.pitcher)
+//    }
     
     func getTeamStats(team: Int) -> PlayerStats {
         var innings: [Inning] = []
@@ -455,7 +565,7 @@ class GameViewModel: ObservableObject {
         var appearances: [OffensivePlateAppearance] = []
         
         for inning in innings {
-            for appearance in inning.offense {
+            for appearance in inning.plateAppearances {
                 if appearance.active {
                     appearances.append(appearance)
                 }
@@ -495,13 +605,44 @@ class GameViewModel: ObservableObject {
             self.game.homeLineup = decomposeLineup(lineup: self.homeLineup)
             
             for inning in game.innings {
-                for app in inning.offense {
-                    inning.offense.removeAll(where: { !$0.active })
-                }
-                for app in inning.defense {
-                    inning.defense.removeAll(where: { !$0.active })
+                for _ in inning.plateAppearances {
+                    inning.plateAppearances.removeAll(where: { !$0.active })
                 }
             }
         }
     }
+    func checkInningComplete() -> Bool {
+        if self.inningRunRule != 0 {
+            if self.inningRuns == self.inningRunRule {
+                return true
+            }
+        } else {
+            if self.outs == 3 {
+                return true
+            }
+        }
+        return false
+    }
+    
+    func saveViewModelAsJSON() -> String {
+        game.visitingFullLineup = self.visitorLineup
+        game.homeFullLineup = self.homeLineup
+        game.visitingLineup = self.visitorCurrentLineup
+        game.homeLineup = self.homeCurrentLineup
+        game.innings.append(contentsOf: self.visitorInnings)
+        game.innings.append(contentsOf: self.homeInnings)
+        
+//        let encoder = JSONEncoder()
+//        encoder.outputFormatting = [.prettyPrinted]
+//        if let jsonData = try? encoder.encode(self),
+//           let jsonString = String(data: jsonData, encoding: .utf8) {
+//            game.viewModel.append(jsonData)
+//            print("saved view model")
+//            return jsonString
+//        }
+        
+        return "failed to encode view model"
+    }
+    
+    
 }

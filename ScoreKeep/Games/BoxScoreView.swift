@@ -10,23 +10,12 @@ import SwiftUI
 struct BoxScoreView: View {
     @Environment(\.modelContext) var modelContext
     @Environment(\.dismiss) var dismiss
-    @ObservedObject var gameViewModel: GameViewModel
+    @State var gameViewModel: GameViewModel
     
-//    private var visitingTeam: [PlayerPos] {
-//        return gameViewModel.game.visitingLineup.sorted { $0.batting < $1.batting }
-//    }
-//    
-//    private var homeTeam: [PlayerPos] {
-//        return gameViewModel.game.homeLineup.sorted { $0.batting < $1.batting }
-//    }
-//    
-//    private var plateAppearances: [OffensivePlateAppearance] {
-//        return []
-//    }
+    
     var teams:[Team] {
         [gameViewModel.game.visitingTeam!, gameViewModel.game.homeTeam!]
     }
-    
     
     var body: some View {
         //NavigationStack {
@@ -42,25 +31,30 @@ struct BoxScoreView: View {
                             Text("\(team.name)")
                             ScrollView(.horizontal) {
                                 var index = teams.firstIndex(of: team)!
-                                var team: PlayerStats {
+                                var teamStats: PlayerStats {
                                     return gameViewModel.getTeamStats(team: index)
+                                }
+                                var pitcher: PlayerPos {
+                                    gameViewModel.getCurrentPitcher(i: index)
                                 }
                                 HStack {
                                     Text("Player")
-                                    Spacer(minLength: 90)
+                                    Spacer(minLength: 50)
                                     HStack {
                                         ForEach(StatLabels.allCases, id: \.self) { stat in
                                             Text("\(stat.rawValue)")
                                                 .frame(width: geo.size.width / 15)
                                         }
                                     }
-                                    .frame(width: geo.size.width * 0.9)
+                                    .frame(width: geo.size.width * 1.2)
+                                    Spacer()
                                 }
                                 .font(.caption2)
                                 
                                 ForEach(selectTeam(index: index), id: \.self) { player in
                                     var plateAppearances: [OffensivePlateAppearance] {
-                                        return gameViewModel.getPlayerPA(innings: gameViewModel.visitorInnings, player: player.player)
+                                        let innings = index == 0 ? gameViewModel.visitorInnings : gameViewModel.homeInnings
+                                        return gameViewModel.getPlayerPA(innings: innings, player: player.player)
                                     }
                                     var playerStats: PlayerStats {
                                         return gameViewModel.getPlayerStats(plateAppearances: plateAppearances)
@@ -75,32 +69,35 @@ struct BoxScoreView: View {
                                                 Text("\(stat)")
                                                     .frame(width: geo.size.width / 15)
                                             }
+                                            Spacer()
                                         }
-                                        .frame(width: geo.size.width * 0.9)
+                                        .frame(width: geo.size.width * 1.3)
                                     }
                                     
                                 }
                                 Divider()
                                 HStack {
                                     Text("Totals")
-                                        .frame(width: geo.size.width * 0.3, alignment: .init(horizontal: .leading, vertical: .center))
-                                        .font(.caption2)
+                                    Spacer(minLength: 50)
                                     HStack {
-                                        ForEach(team.statSummary, id: \.self) { stat in
+                                        ForEach(teamStats.statSummary, id: \.self) { stat in
                                             Text("\(stat)")
                                                 .frame(width: geo.size.width / 15)
                                         }
                                     }
-                                    .frame(width: geo.size.width * 0.9)
+                                    .frame(width: geo.size.width * 1.2)
+                                    Spacer()
                                 }
-                            }
-                            Divider()
-                            Divider()
-                            
+                                .font(.caption2)
+                                Divider()
+                                PitchersBoxScoreView(gameViewModel: gameViewModel, geo: geo, index: index)
+                                    .padding(0)
+                            //Divider()
                         }
                     }
                 }
-            //}
+            }
+                .frame(width: geo.size.width, height: geo.size.height, alignment: .leading)
             
         }
         
@@ -108,6 +105,7 @@ struct BoxScoreView: View {
     func selectTeam(index: Int) -> [PlayerPos] {
         return index == 0 ? decomposeLineup(lineup: gameViewModel.visitorLineup) : decomposeLineup(lineup: gameViewModel.homeLineup)
     }
+    
 }
 
 #Preview {
@@ -117,6 +115,66 @@ struct BoxScoreView: View {
     preview.addSampleLineups(game: game)
     //setUpGame(game: game)
     
-    return BoxScoreView(gameViewModel: GameViewModel(game: game, totalInnings: 3))
+    return BoxScoreView(gameViewModel: GameViewModel(game: game, totalInnings: 3, inningRunRule: 0))
         .modelContainer(preview.modelContainer)
     }
+
+struct PitchersBoxScoreView: View {
+    @Environment(\.modelContext) var modelContext
+    @Environment(\.dismiss) var dismiss
+    @State var gameViewModel: GameViewModel
+    @State var geo: GeometryProxy
+    var pitcherStats: [PitcherStats] {
+        [getPitcherStats(index: 0), getPitcherStats(index: 1)]
+    }
+    var pitcher: [PlayerPos] {
+        [gameViewModel.getCurrentPitcher(i: 0), gameViewModel.getCurrentPitcher(i: 1)]
+    }
+    let index: Int
+    
+    var body: some View {
+        
+    
+        VStack(alignment: .leading) {
+//                var pitcherStats: PitcherStats = getPitcherStats(index: index)
+                
+                HStack {
+                    Text("Pitcher")
+                        .frame(width: geo.size.width / 5, alignment: .leading)
+                    Spacer(minLength: 60)
+                    ForEach(PitchingStatLabels.allCases, id: \.self) { stat in
+                        Text("\(stat.rawValue)")
+                            .frame(width: geo.size.width / 14)
+                    }
+                    Spacer()
+                }
+                .font(.caption2)
+                HStack {
+                    Text("\(pitcher[index].player.lastName), \(pitcher[index].player.firstName.prefix(1))")
+                        .frame(width: geo.size.width / 5, alignment: .leading)
+                    Spacer(minLength: 60)
+                    Text("\(pitcherStats[index].inningsPitched, specifier: "%.2f")")
+                        .frame(width: geo.size.width / 15)
+                    ForEach(pitcherStats[index].statSummary, id: \.self) { stat in
+                        Text("\(stat)")
+                            .frame(width: geo.size.width / 14)
+                    }
+                    Text("\(pitcherStats[index].era, specifier: "%.2f")")
+                        .frame(width: geo.size.width / 13)
+                    Spacer()
+                }
+                .frame(width: geo.size.width * 1.6)
+                .font(.caption2)
+            }
+        
+        
+    
+    Divider()
+        
+    }
+    func getPitcherStats(index: Int) -> PitcherStats {
+        let pitcher = gameViewModel.getCurrentPitcher(i: index)
+        let innings = index == 1 ? gameViewModel.visitorInnings : gameViewModel.homeInnings
+        return gameViewModel.getPitcherStats(plateAppearances: gameViewModel.getPitcherPA(innings: innings, pitcher: pitcher.player))
+    }
+}

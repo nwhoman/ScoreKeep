@@ -279,10 +279,14 @@ func addGenericNode(center: CGPoint, size: CGFloat, name: String, hidden: Bool, 
     scene.addChild(labelNode)
 }
 
-func addPositionNodes(positionNames: [PositionDescription], gameVM: GameViewModel, scene: SKScene, setPlay: Bool) {
+func addPositionNodes(positionNames: [PositionDescription], lineup: [PlayerPos], scene: SKScene, setPlay: Bool) {
+    //    eg:      PositionDescription(number: 1, name: "pitcher", location: CGPoint(x: self.frame.midX, y: self.frame.maxY*0.65), abbreviation: "P"),
+
     for pos in positionNames {
         let node = SKLabelNode(fontNamed: "Trebuchet MS")
-        node.text = "#\(gameVM.defensiveLineup["\(pos.abbreviation)"]?.number ?? "\(pos.number)")"
+        let player = lineup.first(where: { $0.position.lowercased() == pos.abbreviation.lowercased() })
+        node.text = "#\(player?.player.number ?? "\(pos.number)")"
+//        node.text = "#\(gameVM.defensiveLineup["\(pos.abbreviation)"]?.number ?? "\(pos.number)")"
         node.fontSize = 20
         node.fontColor = SKColor.white
         node.position = pos.location
@@ -290,7 +294,7 @@ func addPositionNodes(positionNames: [PositionDescription], gameVM: GameViewMode
         scene.addChild(node)
         
         let secondNode = SKLabelNode(fontNamed: "Trebuchet MS")
-        secondNode.text = "#\(gameVM.defensiveLineup["\(pos.abbreviation)"]?.number ?? "\(pos.number)")"
+        secondNode.text = "#\(player?.player.number ?? "\(pos.number)")"
         secondNode.fontSize = 20
         secondNode.fontColor = SKColor.systemPink
         secondNode.position = pos.location
@@ -316,16 +320,16 @@ func resetPositionNodes(scene: SKScene, positions: [PositionDescription]) {
         
     }
 }
-func switchBaserunnerOutcome(baseRunner: BaseRunnerNode, outcomeString: String) {
-    switch baseRunner.player.baseOccupied {
+func switchBaserunnerOutcome(baseRunner: OffensivePlateAppearance, outcomeString: String) {
+    switch baseRunner.baseOccupied {
     case 1:
-        baseRunner.player.outcome["home"]! += outcomeString + " at 1B"
+        baseRunner.outcome["home"]! += outcomeString + " at 1B"
     case 2:
-        baseRunner.player.outcome["first"]! += outcomeString + " at 2B"
+        baseRunner.outcome["first"]! += outcomeString + " at 2B"
     case 3:
-        baseRunner.player.outcome["second"]! += outcomeString + " at 3B"
+        baseRunner.outcome["second"]! += outcomeString + " at 3B"
     case 4:
-        baseRunner.player.outcome["third"]! += outcomeString + " at Home"
+        baseRunner.outcome["third"]! += outcomeString + " at Home"
     default:
         break
         
@@ -333,43 +337,63 @@ func switchBaserunnerOutcome(baseRunner: BaseRunnerNode, outcomeString: String) 
 }
 
 func placeBaseRunnerNodes(gameVM: GameViewModel, scene: SKScene) {
-//    var homePlate: CGPoint { CGPoint(x: self.frame.midX, y: self.frame.maxY*0.65-150) }
-//    var firstBase: CGPoint { CGPoint(x: self.frame.maxX-75, y: self.frame.maxY*0.65-20) }
-//    var secondBase: CGPoint { CGPoint(x: self.frame.midX, y: self.frame.maxY*0.65+100) }
-//    var thirdBase: CGPoint { CGPoint(x: self.frame.minX+75, y: self.frame.maxY*0.65-20) }
+    
+    for player in gameVM.baseRunners {
+        
+        let node = createBaseRunnerNode(player: player, scene: scene)
+        
+        print("\(node.text)\(player.batter.number) - \(player.baseOccupied)")
+        scene.addChild(node)
+    }
+}
+func createBaseRunnerNode(player: OffensivePlateAppearance, scene: SKScene) -> SKLabelNode {
     var homePlate: CGPoint { CGPoint(x: scene.frame.midX, y: scene.frame.maxY*0.45) }
     var firstBase: CGPoint { CGPoint(x: scene.frame.midX*1.64, y: scene.frame.maxY*0.62) }
     var secondBase: CGPoint { CGPoint(x: scene.frame.midX, y: scene.frame.maxY*0.78) }
     var thirdBase: CGPoint { CGPoint(x: scene.frame.midX*0.36, y: scene.frame.maxY*0.62) }
+    var node = SKLabelNode(fontNamed: "Trebuchet MS")
+    node.fontColor = .blue
+
+
+    node.physicsBody = SKPhysicsBody(circleOfRadius: 25)
+    node.physicsBody?.affectedByGravity = false
+
+    node.text = "#\(player.batter.number)"
+    node.name = "\(player.batter.number)"
+    node.fontSize = 20
+    node.fontColor = SKColor.blue
+    node.physicsBody?.isDynamic = true
+    node.physicsBody?.restitution = 1.0
     
-    for i in gameVM.baseRunners {
-        //print("\(i.player.batter.number) - \(i.player.baseOccupied)")
-        
-        if i.player.baseOccupied == 0 {
-            i.node.physicsBody?.categoryBitMask = (1 << 0)
-            i.node.physicsBody?.contactTestBitMask = (1 << 1)
-            i.node.physicsBody?.collisionBitMask = (1 << 1)
-            i.node.position = homePlate
-        } else if i.player.baseOccupied == 1 {
-            i.node.physicsBody?.categoryBitMask = (1 << 1)
-            i.node.physicsBody?.contactTestBitMask = (1 << 1)
-            i.node.physicsBody?.collisionBitMask = (1 << 1)
-            i.node.position = firstBase
-        } else if i.player.baseOccupied == 2 {
-            i.node.physicsBody?.categoryBitMask = (1 << 2)
-            i.node.physicsBody?.contactTestBitMask = (1 << 2)
-            i.node.physicsBody?.collisionBitMask = (1 << 2)
-            i.node.position = secondBase
-        } else if i.player.baseOccupied == 3 {
-            i.node.physicsBody?.categoryBitMask = (1 << 3)
-            i.node.physicsBody?.contactTestBitMask = (1 << 3)
-            i.node.physicsBody?.collisionBitMask = (1 << 3)
-            i.node.position = thirdBase
-        }
-        i.node.zPosition = 10
-        
-        scene.addChild(i.node)
+
+    node.userData = ["player": player]
+    switch player.baseOccupied {
+    case 0:
+        node.physicsBody?.categoryBitMask = (1 << 0)
+        node.physicsBody?.contactTestBitMask = (1 << 1)
+        node.physicsBody?.collisionBitMask = (1 << 1)
+        node.position = homePlate
+    case 1:
+        node.physicsBody?.categoryBitMask = (1 << 1)
+        node.physicsBody?.contactTestBitMask = (1 << 1)
+        node.physicsBody?.collisionBitMask = (1 << 1)
+        node.position = firstBase
+    case 2:
+        node.physicsBody?.categoryBitMask = (1 << 2)
+        node.physicsBody?.contactTestBitMask = (1 << 2)
+        node.physicsBody?.collisionBitMask = (1 << 2)
+        node.position = secondBase
+    case 3:
+        node.physicsBody?.categoryBitMask = (1 << 3)
+        node.physicsBody?.contactTestBitMask = (1 << 3)
+        node.physicsBody?.collisionBitMask = (1 << 3)
+        node.position = thirdBase
+        default :
+        break
     }
+    node.zPosition = 100
+    return node
+    
 }
 
 func resetCount(scene: SKScene, plateAppearance: OffensivePlateAppearance, gameVM: GameViewModel) {
@@ -437,18 +461,20 @@ func resetCount(scene: SKScene, plateAppearance: OffensivePlateAppearance, gameV
                 node.fillColor = .yellow
                 scene.addChild(node)
                 strikes += 1
+            case .inPlay:
+                print("in play")
             }
         }
         if plateAppearance.outcome["home"] == "KS" || plateAppearance.outcome["home"] == "KL" {
             addKLabel(scene: scene, plateAppearance: plateAppearance)
         }
     }
-    let strikes = gameVM.pitches.filter { $0 == .strikeLooking || $0 == .strikeSwinging }
-    if strikes.last == .strikeLooking {
-     // enumerate nodes
-    } else {
-        // enumerate nodes
-    }
+//    let strikes = gameVM.pitches[gameVM.halfInning].filter { $0 == .strikeLooking || $0 == .strikeSwinging }
+//    if strikes.last == .strikeLooking {
+//     // enumerate nodes
+//    } else {
+//        // enumerate nodes
+//    }
     for i in 0..<gameVM.outs {
         
         let path = CGMutablePath()
@@ -533,23 +559,20 @@ func addStrike(pos: Int, gameVM: GameViewModel, scene: SKScene, plateAppearance:
     
     node.isHidden = false
     node.name = "pitched-strike"
+    gameVM.pitches[gameVM.halfInning]?["strikes"]! += 1
     switch pos {
     case 1: //looking
         node.strokeColor = .black
         node.fillColor = .red
         gameVM.strikes += 1
-        gameVM.pitches.append(.strikeLooking)
         gameVM.batter!.pitches.append(.strikeLooking)
-        gameVM.pitcher!.pitches.append(.strikeLooking)
         swing = false
         
     case 2: //swinging
         node.strokeColor = .black
         node.fillColor = .black
         gameVM.strikes += 1
-        gameVM.pitches.append(.strikeSwinging)
         gameVM.batter!.pitches.append(.strikeSwinging)
-        gameVM.pitcher!.pitches.append(.strikeSwinging)
         swing = true
     default: //foul
         node.strokeColor = .black
@@ -557,9 +580,7 @@ func addStrike(pos: Int, gameVM: GameViewModel, scene: SKScene, plateAppearance:
         if gameVM.strikes < 2 {
             gameVM.strikes += 1
         }
-        gameVM.pitches.append(.foul)
         gameVM.batter!.pitches.append(.foul)
-        gameVM.pitcher!.pitches.append(.foul)
     }
     scene.addChild(node)
     

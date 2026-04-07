@@ -12,7 +12,8 @@ struct GameSummaryView: View {
     //@Environment(\.dismiss) var dismiss
     @EnvironmentObject var nav: NavigationStateManager
 
-    @ObservedObject var gameViewModel: GameViewModel
+//    @ObservedObject var gameViewModel: GameViewModel
+    @State var gameViewModel: GameViewModel
     //@Binding var navPath: NavigationPath
 
     @State var game: Game
@@ -128,6 +129,6 @@ struct GameSummaryView: View {
     preview.addSampleLineups(game: game)
     //setUpGame(game: game)
     
-    return GameSummaryView(gameViewModel: GameViewModel(game: game, totalInnings: 3), game: game)
+    return GameSummaryView(gameViewModel: GameViewModel(game: game, totalInnings: 3, inningRunRule: 0), game: game)
         .modelContainer(preview.modelContainer)
     }

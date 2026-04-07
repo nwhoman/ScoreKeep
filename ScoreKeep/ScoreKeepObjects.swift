@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import Observation
 import SpriteKit
 import SwiftData
 import SwiftUI
@@ -142,9 +143,9 @@ class Player: Codable {
 }
 
 @Model
-class Game:Codable {
+class Game: Codable {
     enum CodingKeys: CodingKey {
-        case id, name, homeTeam, homeLineup, homeFullLineup, visitingTeam, visitingLineup, visitingFullLineup, date, location, isComplete, isStarted
+        case id, name, homeTeam, homeLineup, homeFullLineup, visitingTeam, visitingLineup, visitingFullLineup, date, location, isComplete, isStarted, viewModel
     }
     var id: UUID
     var name: String
@@ -212,7 +213,7 @@ class Game:Codable {
         try container.encode(visitingFullLineup, forKey: .visitingFullLineup)
         try container.encode(location, forKey: .location)
         try container.encode(isComplete, forKey: .isComplete)
-        try container.encode(isStarted, forKey: .isStarted)
+        try container.encode(isStarted, forKey: .isStarted)        
     }
     
     func getTeamStats(team: Int) -> PlayerStats {
@@ -227,7 +228,7 @@ class Game:Codable {
         var appearances: [OffensivePlateAppearance] = []
         
         for inning in innings {
-            for appearance in inning.offense {
+            for appearance in inning.plateAppearances {
                 if appearance.active {
                     appearances.append(appearance)
                 }
@@ -249,7 +250,7 @@ class Game:Codable {
         var appearances: [OffensivePlateAppearance] = []
         
         for inning in self.innings {
-            appearances.append(contentsOf: inning.offense.filter { $0.batter.id == player.id } )
+            appearances.append(contentsOf: inning.plateAppearances.filter { $0.batter.id == player.id } )
         }
         stats = getPlayerStats(plateAppearances: appearances)
         return stats
@@ -259,17 +260,15 @@ class Game:Codable {
 @Model
 class Inning: Codable {
     enum CodingKeys: CodingKey {
-        case id, number, game, half, offense, defense
+        case id, number, game, half, plateAppearances
     }
     var id: UUID = UUID()
     var number: Int
     var game: Game
     var half: Int
     
-    var offense: [OffensivePlateAppearance] = []
-    var defense: [DefensivePlateAppearance] = []
-    //var homeOffense: [OffensivePlateAppearance] = []
-    //var visitorDefense: [DefensivePlateAppearance] = []
+    var plateAppearances: [OffensivePlateAppearance] = []
+    
    
     init(number: Int, game: Game, half: Int) {
         self.number = number
@@ -282,8 +281,7 @@ class Inning: Codable {
         self.number = try values.decode(Int.self, forKey: .number)
         self.game = try values.decode(Game.self, forKey: .game)
         self.half = try values.decode(Int.self, forKey: .half)
-        self.offense = try values.decode([OffensivePlateAppearance].self, forKey: .offense)
-        self.defense = try values.decode([DefensivePlateAppearance].self, forKey: .defense)
+        self.plateAppearances = try values.decode([OffensivePlateAppearance].self, forKey: .plateAppearances)
     }
     
     func encode(to encoder: Encoder) throws {
@@ -292,20 +290,20 @@ class Inning: Codable {
         try container.encode(number, forKey: .number)
         try container.encode(game, forKey: .game)
         try container.encode(half, forKey: .half)
-        try container.encode(offense, forKey: .offense)
-        try container.encode(defense, forKey: .defense)
+        try container.encode(plateAppearances, forKey: .plateAppearances)
     }
 }
 
 @Model
 class OffensivePlateAppearance: Codable {
     enum CodingKeys: CodingKey {
-        case id, order, batter, inning, pitches, outs, hit, outcome, baseOccupied, rbi, run, earnedRun, sb, lob, bb, hp, sac, re, active, hitLocX, hitLocY
+        case id, order, batter, pitcher, inning, pitches, outs, hit, outcome, baseOccupied, rbi, run, earnedRun, sb, lob, k, bb, hp, sac, re, po, assist, error, wp, active, hitLocX, hitLocY
     }
     
     var id: UUID
     var order: Int
     var batter: Player
+    var pitcher: Player
     var inning: Int
     var pitches: [Pitch]
     var outs: Int
@@ -317,10 +315,15 @@ class OffensivePlateAppearance: Codable {
     var earnedRun: Bool
     var sb: [Int]
     var lob: Int?
+    var k: Int = 0
     var bb: Int = 0
     var hp: Int = 0
     var sac: Int = 0
     var re: Int = 0
+    var po: [String] = []
+    var assist: [String] = []
+    var error: [String] = []
+    var wp: Int = 0
     var active: Bool
     var hitLoc: CGPoint {
         get {
@@ -332,10 +335,11 @@ class OffensivePlateAppearance: Codable {
         }
     }
     
-    init(order: Int, batter: Player, inning: Int) {
+    init(order: Int, batter: Player, pitcher: Player, inning: Int) {
         self.id = UUID()
         self.order = order
         self.batter = batter
+        self.pitcher = pitcher
         self.inning = inning
         self.pitches = []
         self.outs = 0
@@ -347,7 +351,7 @@ class OffensivePlateAppearance: Codable {
         self.baseOccupied = 0
         self.rbi = 0
         self.run = false
-        self.earnedRun = false
+        self.earnedRun = true
         self.sb = []
         self.lob = 0
         self.active = false
@@ -361,6 +365,7 @@ class OffensivePlateAppearance: Codable {
         self.id = try values.decode(UUID.self, forKey: .id)
         self.order = try values.decode(Int.self, forKey: .order)
         self.batter = try values.decode(Player.self, forKey: .batter)
+        self.pitcher = try values.decode(Player.self, forKey: .pitcher)
         self.inning = try values.decode(Int.self, forKey: .inning)
         self.pitches = try values.decode([Pitch].self, forKey: .pitches)
         self.outs = try values.decode(Int.self, forKey: .outs)
@@ -513,6 +518,38 @@ class PlayerPos: Identifiable, Hashable, Codable {
     }
 }
 
+//@Model
+//class SavedViewModel: Identifiable, Codable {
+//    enum CodingKeys: CodingKey {
+//        case id, game, viewModel
+//    }
+//    var id: UUID = UUID()
+//    var game: Game
+//    var viewModel: GameViewModel
+//    
+//    init(id: UUID, game: Game, viewModel: GameViewModel) {
+//        self.id = id
+//        self.game = game
+//        self.viewModel = viewModel
+//    }
+//    
+//    required init(from decoder: Decoder) throws {
+//        let values = try decoder.container(keyedBy: CodingKeys.self)
+//        self.id = try values.decode(UUID.self, forKey: .id)
+//        self.game = try values.decode(Game.self, forKey: .game)
+//        self.viewModel = try values.decode(GameViewModel.self, forKey: .viewModel)
+//    }
+//    
+//    func encode(to encoder: any Encoder) throws {
+//        var container = encoder.container(keyedBy: CodingKeys.self)
+//        try container.encode(id, forKey: .id)
+//        try container.encode(game, forKey: .game)
+//        try container.encode(viewModel, forKey: .viewModel)
+//    }
+//}
+
+
+
 struct PlayerStats: Identifiable, Hashable {
     var id: UUID
     var plateAppearances: Int = 0
@@ -546,6 +583,7 @@ struct PitcherStats: Identifiable, Hashable, Codable {
     }
     
     var id: UUID = UUID()
+
     var inningsPitched: Double = 0.0
     var balls: Int = 0
     var strikes: Int = 0
@@ -566,11 +604,18 @@ struct PitcherStats: Identifiable, Hashable, Codable {
         return self.battersFaced - self.bb - self.hp - self.sac
     }
     var era: Double {
-        Double(self.er) * 7.0 / Double(self.inningsPitched)
+        if self.inningsPitched != 0 {
+             return Double(self.er) * 7.0 / Double(self.inningsPitched)
+        } else {
+            return 999.0
+        }
+        
     }
-    var statSummary: [Any] {
-        return [self.inningsPitched, self.strikes, self.balls, self.battersFaced, self.atBats, self.hits, self.doubles, self.triples, self.homeRuns, self.runs, self.bb, self.k, self.hp, self.sac, self.era]
+    var statSummary: [Int] {
+        return [self.battersFaced, self.hits, self.doubles, self.triples, self.homeRuns, self.runs, self.er, self.bb, self.k, self.hp, self.wp]
     }
+    
+    //self.inningsPitched, , self.era self.strikes, self.balls, self.atBats,
 }
 
 struct TeamStats: Identifiable, Hashable {
@@ -664,9 +709,26 @@ enum StatLabels: String, Codable, CaseIterable {
     case SAC
 }
 
+enum PitchingStatLabels: String, Codable, CaseIterable {
+    case IP
+    case BF
+    case H
+    case double = "2B"
+    case triple = "3B"
+    case HR
+    case R
+    case ER
+    case BB
+    case K
+    case HP
+    case WP
+    case ERA
+}
+
 struct BattingLineupView: View {
     
-    @ObservedObject var gameVM: GameViewModel
+//    @ObservedObject var gameVM: GameViewModel
+    @State var gameVM: GameViewModel
     @State var showSubPages: Bool = false
     @State var showAlert: Bool = false
     @State var battingOrder: [[PlayerPos]]
@@ -747,7 +809,7 @@ struct BattingLineupView: View {
     preview.addSampleGames([game])
     preview.addSampleLineups(game: game)
     //setUpGame(game: game)
-    let gameVM = GameViewModel(game: game, totalInnings: 3)
+    let gameVM = GameViewModel(game: game, totalInnings: 3, inningRunRule: 0)
     var lineup = gameVM.setInitialLineup(halfInning: 0)
         
     return GeometryReader { geo in
@@ -757,8 +819,8 @@ struct BattingLineupView: View {
     
 }
 struct ScoreView: View {
-    @ObservedObject var gameViewModel: GameViewModel
-
+//    @ObservedObject var gameViewModel: GameViewModel
+    @State var gameViewModel: GameViewModel
     //let innings: [Any] = setUpInnings()//[1, 2, 3, 4, 5, 6, 7, "R", "H", "E"]
     var body: some View {
         HStack(alignment: .lastTextBaseline) {
@@ -1115,30 +1177,3 @@ struct FieldView: View {
 }
 
 
-struct BaseRunnerNode {
-    var player: OffensivePlateAppearance
-    var node: SKLabelNode
-    
-    init(player: OffensivePlateAppearance) {
-        self.player = player
-        self.node = SKLabelNode(fontNamed: "Trebuchet MS")
-        self.node.fontColor = .blue
-        
-    
-        self.node.physicsBody = SKPhysicsBody(circleOfRadius: 25)
-        self.node.physicsBody?.affectedByGravity = false
-    
-        self.node.text = "#\(player.batter.number)"
-        self.node.name = "\(player.batter.number)"
-        self.node.fontSize = 20
-        self.node.fontColor = SKColor.blue
-        self.node.physicsBody?.isDynamic = true
-        self.node.physicsBody?.restitution = 1.0
-        self.node.physicsBody?.categoryBitMask = (1 << 0)
-        self.node.physicsBody?.contactTestBitMask = (1 << 1)
-        self.node.physicsBody?.collisionBitMask = (1 << 1)
-    }
-    
-    
-    
-}

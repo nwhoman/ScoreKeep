@@ -12,31 +12,34 @@ struct BookView: View {
     @Environment(\.modelContext) var modelContext
     @Environment(\.dismiss) var dismiss
     @EnvironmentObject var nav: NavigationStateManager
-
-    @ObservedObject var gameViewModel: GameViewModel
+    @Query private var games: [Game]
+    
     @State private var selectedTab: String = "Visitor"
+    @State var gameViewModel: GameViewModel
 
     var body: some View {
         GeometryReader { geo in
             ZStack {
                 TabView(selection: $gameViewModel.selectedTab) {
-                    BookPageView(gameViewModel: gameViewModel, lineup: gameViewModel.visitorLineup, selectedTab: gameViewModel.selectedTab)
-                        .tabItem {
-                            Image(systemName: "person.fill")
-                            Text("Visitor - \(gameViewModel.game.visitingTeam!.name)")
-                        }.tag("Visitor")
-                    BookPageView(gameViewModel: gameViewModel, lineup: gameViewModel.homeLineup, selectedTab: gameViewModel.selectedTab)
-                        .tabItem {
-                            Image(systemName: "person.fill")
-                            Text("Home - \(gameViewModel.game.homeTeam!.name)")
-                        }.tag("Home")
+                    
+                        BookPageView(gameViewModel: gameViewModel, lineup: gameViewModel.visitorLineup, selectedTab: gameViewModel.selectedTab)
+                            .tabItem {
+                                Image(systemName: "person.fill")
+                                Text("Visitor - \(gameViewModel.game.visitingTeam!.name)")
+                            }.tag("Visitor")
+                        BookPageView(gameViewModel: gameViewModel, lineup: gameViewModel.homeLineup, selectedTab: gameViewModel.selectedTab)
+                            .tabItem {
+                                Image(systemName: "person.fill")
+                                Text("Home - \(gameViewModel.game.homeTeam!.name)")
+                            }.tag("Home")
+                    
+                
                 }
-
 
                 VStack {
                     HStack {
                         //Spacer()
-                       
+                    
                     }
                     //Spacer()
                 }
@@ -73,9 +76,16 @@ struct BookView: View {
                 }
             }
             Button {
+                //print("leaving game: " + gameViewModel.saveViewModelAsJSON())
+                Task {
+                    modelContext.insert(gameViewModel)
+                    try? modelContext.save()
+                }
+                
+                
                 nav.path.removeLast()
             } label: {
-                Image(systemName: "trash")
+                Image(systemName: "backward.fill")
             }
         }
     }
@@ -87,7 +97,7 @@ func advanceLineup() {
 #Preview {
     var game = Game.defaultGame
     let preview = Preview()
-    let gameViewModel: GameViewModel = .init(game: game, totalInnings: 3)
+    let gameViewModel: GameViewModel = .init(game: game, totalInnings: 3, inningRunRule: 0)
     preview.addSampleGames([game])
     preview.addSampleLineups(game: game)
     //setUpGame(game: game)

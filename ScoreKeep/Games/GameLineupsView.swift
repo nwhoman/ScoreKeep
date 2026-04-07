@@ -12,7 +12,8 @@ struct GameLineupsView: View {
     @Environment(\.modelContext) var modelContext
     @Environment(\.dismiss) var dismiss
     @EnvironmentObject var nav: NavigationStateManager
-    @StateObject var gameViewModel: GameViewModel
+    @State var gameViewModel: GameViewModel
+    
     //var game: Game
     
     @State private var selectedTab: String = "Home"
@@ -159,7 +160,7 @@ func checkFlex(lineup: [PlayerPos]) -> Bool {
     preview.addSampleLineups(game: game)
     
     return NavigationStack {
-        GameLineupsView(gameViewModel: GameViewModel(game: game, totalInnings: 3))
+        GameLineupsView(gameViewModel: GameViewModel(game: game, totalInnings: 3, inningRunRule: 0))
             .modelContainer(preview.modelContainer)
     }
 }

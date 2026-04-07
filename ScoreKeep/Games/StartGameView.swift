@@ -20,6 +20,7 @@ struct StartGameView: View {
     @State var gameName: String = ""
     @State var gameLocation: String = ""
     @State var gameInnings: Int = 7
+    @State var inningRR: Int = 0
     @State var newGame: Game?// = Game(name: "", date: Date(), location: "")
     @State var gameDate: Date = Date()
     @State var startGame: Bool = false
@@ -35,6 +36,11 @@ struct StartGameView: View {
                     TextField("Game Location", text: $gameLocation)
                     Picker("Number of innings", selection: $gameInnings){
                         ForEach(1...10, id: \.self){num in
+                            Text("\(num)")
+                        }
+                    }
+                    Picker("Inning Run Rule", selection: $inningRR){
+                        ForEach(0...10, id: \.self){num in
                             Text("\(num)")
                         }
                     }
@@ -79,7 +85,7 @@ struct StartGameView: View {
         }
         .disabled(homeTeam.name == "" || visitingTeam.name == "")
         .navigationDestination(isPresented: $startGame) {
-            let newGameViewModel = GameViewModel(game: newGame ?? Game.defaultGame, totalInnings: gameInnings)
+            let newGameViewModel = GameViewModel(game: newGame ?? Game.defaultGame, totalInnings: gameInnings, inningRunRule: inningRR)
             GameLineupsView(gameViewModel: newGameViewModel)
             //GameLineupsView(path: $path, game: newGame)
         }
@@ -98,7 +104,7 @@ struct StartGameView: View {
     preview.addSampleLineups(game: game)
     do {
         let config = ModelConfiguration(isStoredInMemoryOnly: true)
-        let container = try ModelContainer(for: Team.self, configurations: config)
+        let container = try ModelContainer(for: GameViewModel.self, configurations: config)
         //@State var example = NavigationPath()
         let team = Team(name: "B-town", ageGroup: "18U")
         

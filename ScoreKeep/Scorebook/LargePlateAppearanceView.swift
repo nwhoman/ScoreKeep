@@ -9,28 +9,23 @@ import SwiftUI
 
 struct LargePlateAppearanceView: View {
     @Environment(\.modelContext) var modelContext
-    @ObservedObject var gameViewModel: GameViewModel
+    //@ObservedObject var gameViewModel: GameViewModel
+    @State var gameViewModel: GameViewModel
     var player: OffensivePlateAppearance
-    var pitcher: DefensivePlateAppearance
+    //var pitcher: DefensivePlateAppearance
+    @State var playerStats: PlayerStats = PlayerStats()
+    @State var pitcherStats: PitcherStats = PitcherStats()
+    
     @Binding var largeView: Bool
     var scale: CGFloat = 1
-    //@State var firstBase: OffensivePlateAppearance?
-    //@State var secondBase: OffensivePlateAppearance?
-    //@State var thirdBase: OffensivePlateAppearance?
-    //@State var count = ["balls": 0, "strikes": 0]
-    let pitches: [Pitch] = [.ball, .ball, .ball, .strikeSwinging, .foul, .strikeLooking, .ball, .ball]
     
-//    var baserunners:[OffensivePlateAppearance?] {
-//        return [player, firstBase, secondBase, thirdBase]
-//    }
     var body: some View {
-        var stats = getStats(player: gameViewModel.batter!)
-        var dstats = getPitcherStats(player: gameViewModel.pitcher!)
+
         GeometryReader { geo in
             
             VStack(alignment: .leading) {
                 ZStack {
-                    FieldViewScene(gameVM: gameViewModel, plateAppearance: player, batterFaced: pitcher, scale: scale, largeView: largeView)
+                    FieldViewScene(gameVM: gameViewModel, plateAppearance: player, scale: scale, largeView: largeView)
                         .frame(width: geo.size.width, height: geo.size.height)
                         .padding(.top, 25)
                     
@@ -39,18 +34,25 @@ struct LargePlateAppearanceView: View {
                         HStack(alignment: .top) {
                             VStack(alignment: .leading) {
                                 Text("#\(gameViewModel.batter!.batter.number) - \(gameViewModel.batter!.batter.lastName), \(gameViewModel.batter!.batter.firstName)")
-                                Text("\(stats.hits)/\(stats.atBats) \(stats.doubles > 0 ? String(stats.doubles) + " 2B" : "")")
-                                Text("\(stats.triples > 0 ? String(stats.triples) + " 3B" : "")")
-                                Text("\(stats.homeRuns > 0 ? String(stats.homeRuns) + " HR" : "")")
-                                Text("\(stats.runs > 0 ? String(stats.runs) + " runs" : "")")
-                                Text("\(stats.rbi > 0 ? String(stats.rbi) + " rbi" : "")")
-                                Text("\(stats.k > 0 ? String(stats.k) + " k" : "")")
+                                Text("\(playerStats.hits)/\(playerStats.atBats) \(playerStats.doubles > 0 ? String(playerStats.doubles) + " 2B" : "")")
+                                Text("\(playerStats.triples > 0 ? String(playerStats.triples) + " 3B" : "")")
+                                Text("\(playerStats.homeRuns > 0 ? String(playerStats.homeRuns) + " HR" : "")")
+                                Text("\(playerStats.runs > 0 ? String(playerStats.runs) + " runs" : "")")
+                                Text("\(playerStats.rbi > 0 ? String(playerStats.rbi) + " rbi" : "")")
+                                Text("\(playerStats.k > 0 ? String(playerStats.k) + " k" : "")")
                             }
                             Spacer()
                             VStack(alignment: .trailing) {
-                                Text("#\(gameViewModel.pitcher!.pitcher.number) - \(gameViewModel.pitcher!.pitcher.lastName), \(gameViewModel.pitcher!.pitcher.firstName)")
-                                Text("\(dstats.inningsPitched) \(dstats.balls + dstats.strikes)")
-                                Text("\(dstats.hits) \(dstats.runs) \(dstats.bb) \(dstats.k)")
+                                Text("#\(gameViewModel.batter!.pitcher.number) - \(gameViewModel.batter!.pitcher.lastName), \(gameViewModel.batter!.pitcher.firstName)")
+                                Text("\(pitcherStats.inningsPitched, specifier: "%.2f")-\(gameViewModel.outs)/3")
+                                HStack {
+                                    Text("B: \(pitcherStats.balls)") //gameViewModel.pitches[gameViewModel.halfInning]?["balls"]! ?? 0)
+                                    Text("S: \(pitcherStats.strikes)") //gameViewModel.pitches[gameViewModel.halfInning]?["strikes"]! ?? 0
+                                }
+                                Text("H: \(pitcherStats.hits)")
+                                Text("R: \(pitcherStats.runs)")
+                                Text("BB: \(pitcherStats.bb)")
+                                Text("K: \(pitcherStats.k)")
                             }
                         }
                         .font(.caption)
@@ -85,24 +87,20 @@ struct LargePlateAppearanceView: View {
             .frame(width: geo.size.width, height: geo.size.height, alignment: .topLeading)
                 //.border(Color.black, width: 1)
                 
-            
         }
-        
         .background(Color.white)
         .scaleEffect(scale)
+        .onAppear {
+            let innings = gameViewModel.halfInning == 0 ? gameViewModel.visitorInnings : gameViewModel.homeInnings
+            self.playerStats = gameViewModel.getPlayerStats(plateAppearances: gameViewModel.getPlayerPA(innings: innings, player: gameViewModel.batter!.batter))
+            self.pitcherStats = gameViewModel.getPitcherStats(plateAppearances: gameViewModel.getPitcherPA(innings: innings, pitcher: gameViewModel.batter!.pitcher))
+        }
     }
     func getStats(player: OffensivePlateAppearance) -> PlayerStats {
         var stats = PlayerStats()
         let plateAppearances = gameViewModel.getPlayerPA(innings: gameViewModel.game.innings, player: player.batter)
         stats = gameViewModel.getPlayerStats(plateAppearances: plateAppearances)
         
-        return stats
-    }
-    
-    func getPitcherStats(player: DefensivePlateAppearance) -> PitcherStats {
-        var stats = PitcherStats()
-        let plateAppearances = gameViewModel.getPitcherPA(innings: gameViewModel.game.innings, pitcher: player.pitcher)
-        stats = gameViewModel.getPitcherStats(plateAppearances: plateAppearances)
         return stats
     }
 }

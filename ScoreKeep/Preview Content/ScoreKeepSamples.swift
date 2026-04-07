@@ -112,7 +112,7 @@ extension PlayerPos {
 
 extension OffensivePlateAppearance {
     static var defaultPlateAppearance: OffensivePlateAppearance {
-        var appearance: OffensivePlateAppearance = OffensivePlateAppearance(order: 1, batter: Player(firstName: Player.firstNames, lastName: Player.lastNames, number: Player.numbers), inning: 1)
+        var appearance: OffensivePlateAppearance = OffensivePlateAppearance(order: 1, batter: Player(firstName: Player.firstNames, lastName: Player.lastNames, number: Player.numbers), pitcher: Player(firstName: Player.firstNames, lastName: Player.lastNames, number: Player.numbers),inning: 1)
         appearance.hit = 2
         appearance.outcome = ["home" : "E7", "first" : "", "second" : "Stole 3B", "third" : ""]
         appearance.run = true
@@ -122,6 +122,10 @@ extension OffensivePlateAppearance {
         appearance.sb = [3]
         appearance.outs = 2
         appearance.active = true
+        appearance.wp = 1
+        appearance.po = ["1B"]
+        appearance.assist = ["SS", "2B"]
+        appearance.error = ["C"]
         return appearance
     }
 }
@@ -135,6 +139,9 @@ extension DefensivePlateAppearance {
         appearance.pitches = [.ball, .strikeLooking, .strikeSwinging, .ball, .foul]
         appearance.wp = 1
         appearance.active = true
+        appearance.po = ["1B"]
+        appearance.assist = ["SS", "2B"]
+        appearance.error = ["C"]
         return appearance
     }
 }

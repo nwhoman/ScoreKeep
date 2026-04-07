@@ -27,10 +27,10 @@ struct QuickEntryView: View {
     @Binding var newTeam: Team
     
     var body: some View {
-            GeometryReader { geo in
-                VStack {
-                    //ScrollView {
-                        TextField(text: $teamName) {
+        GeometryReader { geo in
+            VStack {
+                ScrollView {
+                    TextField(text: $teamName) {
                         Text("Team Name")
                             .foregroundStyle(Color.blue)
                     }
@@ -60,15 +60,17 @@ struct QuickEntryView: View {
                         .frame(width: geo.size.width, height: 200)
                     Text("Player count: \(playerArray.count) \n Must be 9 or more")
                     
-                        List(playerArray, id: \.self) { line in
-                            Text(line)
-                        }
-                        .listStyle(.plain)
-                        .frame(width: geo.size.width, height: 300)
-                        .border(Color.gray)
-                        
-                        
+                    List(playerArray, id: \.self) { line in
+                        Text(line)
                     }
+                    .listStyle(.plain)
+                    .frame(width: geo.size.width, height: 300)
+                    .border(Color.gray)
+                    
+                    
+                }
+            }
+        
                     .toolbar {
                         ToolbarItem(placement: .bottomBar) { // Places item in the bottom bar
                             HStack {
@@ -86,7 +88,7 @@ struct QuickEntryView: View {
                     }
                 }
             .navigationTitle(Text("Team Entry"))
-        
+            .ignoresSafeArea(.keyboard, edges: .bottom)
     }
     func addTeam() {
         newTeam = Team(name: teamName)

@@ -21,7 +21,13 @@ struct TeamDetailView: View {
     @State private var showJSONScreen = false
     
     let team: Team
-    
+    var completeGames: [Game] {
+        (team.homeGames?.filter { game in
+            game.isComplete
+        })! + (team.visitingGames?.filter { game in
+            game.isComplete
+        })!
+    }
     
     var body: some View {
         GeometryReader { geo in

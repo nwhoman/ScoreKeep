@@ -17,7 +17,8 @@ import SwiftUI
 struct ShowSubsView: View {
     @Environment(\.modelContext) var modelContext
     @Environment(\.dismiss) var dismiss
-    @ObservedObject var gameVM: GameViewModel
+//    @ObservedObject var gameVM: GameViewModel
+    @State var gameVM: GameViewModel
     @State var team: Team
        
     @State var lineup: [PlayerPos]
@@ -80,7 +81,7 @@ struct ShowSubsView: View {
     
     preview.addSampleGames([game])
 
-    return ShowSubsView(gameVM: GameViewModel(game: game, totalInnings: 3), team: game.homeTeam!, lineup: game.createLineup(players: game.homeTeam!.players!), showAlert: false, showSubs: false)
+    return ShowSubsView(gameVM: GameViewModel(game: game, totalInnings: 3, inningRunRule: 0), team: game.homeTeam!, lineup: game.createLineup(players: game.homeTeam!.players!), showAlert: false, showSubs: false)
             .modelContainer(preview.modelContainer)
     
 }
@@ -143,8 +144,8 @@ func validateSubs(lineup: [PlayerPos]) -> Bool {
 struct RosterSubsView: View {
     @Environment(\.modelContext) var modelContext
     @Environment(\.dismiss) var dismiss
-    @ObservedObject var gameVM: GameViewModel
-
+//    @ObservedObject var gameVM: GameViewModel
+    @State var gameVM: GameViewModel
     @State private var positions: [String] = ["P", "C", "1B", "2B", "3B", "SS", "LF", "CF", "RF", "DP", "F", "EP"]
     @State var team: Team
     @State var selectedPlayer: PlayerPos = PlayerPos.defaultPos
