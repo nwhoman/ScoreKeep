@@ -616,10 +616,8 @@ class GameViewModel: Codable, Identifiable {
             if self.inningRuns == self.inningRunRule {
                 return true
             }
-        } else {
-            if self.outs == 3 {
-                return true
-            }
+        } else if self.outs == 3 {
+            return true
         }
         return false
     }

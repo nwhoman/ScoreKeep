@@ -25,6 +25,7 @@ struct QuickEntryView: View {
     @State var playerInfoArray: [Player] = []
     @State var playerInfo: [String: String] = [ "firstName": "", "lastName": "", "number": ""]
     @Binding var newTeam: Team
+    @FocusState var isFocused: Bool
     
     var body: some View {
         GeometryReader { geo in
@@ -51,6 +52,7 @@ struct QuickEntryView: View {
                     Text("Enter player names here, one per line")
                     Text("First name last name number")
                     TextEditor(text: $players)
+                        .focused($isFocused)
                         .autocorrectionDisabled()
                         .border(Color.gray)
                         .padding(5)
@@ -69,10 +71,11 @@ struct QuickEntryView: View {
                     
                     
                 }
+                .scrollDismissesKeyboard(.interactively)
             }
         
                     .toolbar {
-                        ToolbarItem(placement: .bottomBar) { // Places item in the bottom bar
+                        ToolbarItem(placement: isFocused ? .keyboard : .bottomBar) { // Places item in the bottom bar
                             HStack {
                                 Spacer()
                                 Button {
@@ -80,9 +83,16 @@ struct QuickEntryView: View {
                                 } label: {
                                     Text("Save Team")
                                 }
-                                .disabled(playerArray.count < 9)
+                                //.disabled(playerArray.count < 9)
                                 
                                 
+                            }
+                        }
+                        ToolbarItem(placement: .keyboard) {
+                            Button {
+                                isFocused = false
+                            } label: {
+                                Text("Done")
                             }
                         }
                     }

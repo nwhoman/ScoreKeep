@@ -583,6 +583,6 @@ func addStrike(pos: Int, gameVM: GameViewModel, scene: SKScene, plateAppearance:
         gameVM.batter!.pitches.append(.foul)
     }
     scene.addChild(node)
-    
+    print("S: \(gameVM.strikes)")
 }
 

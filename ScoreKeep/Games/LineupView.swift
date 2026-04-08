@@ -59,7 +59,7 @@ struct LineupView: View {
                                 gameVM.homeCurrentLineup = lineup.sorted(by: { $0.batting < $1.batting })
                             }
                             
-//                             team.lineup = lineup
+                             team.lineup = lineup
 //                            for i in 0..<lineup.count {
 //                                lineup[i].batting = i+1
 //                            }
@@ -71,11 +71,11 @@ struct LineupView: View {
 //                                //game.visitingTeam!.lineup.removeAll()
 //                                gameVM.visitorCurrentLineup = lineup.sorted(by: { $0.batting < $1.batting })
 //                            }
-//                            do {
-//                                try modelContext.save()
-//                            } catch {
-//                                print("\(error)")
-//                            }
+                            do {
+                                try modelContext.save()
+                            } catch {
+                                print("\(error)")
+                            }
                         } else {
                             showAlert = true
                             showTeamAlert = true
@@ -165,6 +165,7 @@ struct RosterView: View {
                                     RosterItemView(player: player, lineup: $lineup, unusedPositions: unusedPositions, position: "")
                                 
                                 }
+                                
                             }
                             .padding(.horizontal, -5)
                             .listStyle(.plain)
@@ -229,7 +230,7 @@ struct RosterItemView: View {
     
     var body: some View {
         GeometryReader { geo in
-            HStack(alignment: .bottom) {
+            HStack(alignment: .center) {
                 VStack(alignment: .leading) {
                     Text("#\(player.number)")
                     Text("\(player.lastName), \(player.firstName)")
@@ -244,11 +245,12 @@ struct RosterItemView: View {
                         }
                     }
                     .frame(width: 5, height: geo.size.height)
-              
+                    Spacer()
                 }
                 
             }
             .padding(.horizontal, -5)
+            .border(Color(.secondarySystemBackground), width: 1)
             .onChange(of: position) {
                 if (position == "") { return }
                 let order: Int = lineup.count + 1

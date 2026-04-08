@@ -27,96 +27,114 @@ struct GameSummaryView: View {
     }
     
     var body: some View {
-        //NavigationStack {
-            GeometryReader { geo in
-                VStack(alignment: .leading) {
-                    HStack {
-                        ScoreView(gameViewModel: gameViewModel)
-                            .padding(.horizontal)
-                    }
-                    ForEach(teams, id: \.id) { team in
-                        ScrollView {
-                            Text("\(team.name)")
-                            ScrollView(.horizontal) {
-                                var index = teams.firstIndex(of: team)!
-                                var team: PlayerStats {
-                                    return game.getTeamStats(team: index)
-                                }
-                                HStack {
-                                    Text("Player")
-                                    Spacer(minLength: 90)
-                                    HStack {
-                                        ForEach(StatLabels.allCases, id: \.self) { stat in
-                                            Text("\(stat.rawValue)")
-                                                .frame(width: geo.size.width / 15)
-                                        }
-                                    }
-                                    .frame(width: geo.size.width * 0.9)
-                                }
-                                .font(.caption2)
-                                
-                                ForEach(lineups[index], id: \.self) { player in
-//
-                                    var playerStats: PlayerStats {
-                                        return game.getPlayerGameStats(player: player.player)
-                                    }
-//
-                                    HStack {
-                                        Text("\(player.player.lastName), \(player.player.firstName.prefix(1))")
-                                            .frame(width: geo.size.width * 0.3, alignment: .init(horizontal: .leading, vertical: .center))
-                                            .font(.caption2)
-                                        HStack {
-                                            ForEach(playerStats.statSummary, id: \.self) { stat in
-                                                Text("\(stat)")
-                                                    .frame(width: geo.size.width / 15)
-                                            }
-                                        }
-                                        .frame(width: geo.size.width * 0.9)
-                                    }
-//
-                                }
-                                Divider()
-                                HStack {
-                                    Text("Totals")
-                                        .frame(width: geo.size.width * 0.3, alignment: .init(horizontal: .leading, vertical: .center))
-                                        .font(.caption2)
-                                    HStack {
-                                        ForEach(team.statSummary, id: \.self) { stat in
-                                            Text("\(stat)")
-                                                .frame(width: geo.size.width / 15)
-                                        }
-                                    }
-                                    .frame(width: geo.size.width * 0.9)
-                                }
-                            }
-                            Divider()
-                            Divider()
-                            
-                        }
-                    }
-                }
-            }.toolbar {
-                Button {
-                    nav.popToRoot()
-                    
-                } label: {
-                    Image(systemName: "arrow.left")
-                }
+        VStack{
+            BoxScoreView(gameViewModel: gameViewModel)
+        }
+        .toolbar {
+            Button {
+                nav.popToRoot()
+                
+            } label: {
+                Image(systemName: "arrow.left")
+            }
 //                    NavigationLink {
 //                        ContentView()
 //                    } label: {
 //                        Image(systemName: "arrow.left")
 //                    }
-                
-            }
-            .navigationBarBackButtonHidden()
             
-            
-        //}
-        
-    }
-    func selectTeam(index: Int) -> [PlayerPos] {
-        return index == 0 ? decomposeLineup(lineup: gameViewModel.visitorLineup) : decomposeLineup(lineup: gameViewModel.homeLineup)
+        }
+        .navigationBarBackButtonHidden()
+        //NavigationStack {
+//            GeometryReader { geo in
+//                VStack(alignment: .leading) {
+//                    HStack {
+//                        ScoreView(gameViewModel: gameViewModel)
+//                            .padding(.horizontal)
+//                    }
+//                    ForEach(teams, id: \.id) { team in
+//                        ScrollView {
+//                            Text("\(team.name)")
+//                            ScrollView(.horizontal) {
+//                                var index = teams.firstIndex(of: team)!
+//                                var team: PlayerStats {
+//                                    return game.getTeamStats(team: index)
+//                                }
+//                                HStack {
+//                                    Text("Player")
+//                                    Spacer(minLength: 90)
+//                                    HStack {
+//                                        ForEach(StatLabels.allCases, id: \.self) { stat in
+//                                            Text("\(stat.rawValue)")
+//                                                .frame(width: geo.size.width / 15)
+//                                        }
+//                                    }
+//                                    .frame(width: geo.size.width * 0.9)
+//                                }
+//                                .font(.caption2)
+//                                
+//                                ForEach(lineups[index], id: \.self) { player in
+////
+//                                    var playerStats: PlayerStats {
+//                                        return game.getPlayerGameStats(player: player.player)
+//                                    }
+////
+//                                    HStack {
+//                                        Text("\(player.player.lastName), \(player.player.firstName.prefix(1))")
+//                                            .frame(width: geo.size.width * 0.3, alignment: .init(horizontal: .leading, vertical: .center))
+//                                            .font(.caption2)
+//                                        HStack {
+//                                            ForEach(playerStats.statSummary, id: \.self) { stat in
+//                                                Text("\(stat)")
+//                                                    .frame(width: geo.size.width / 15)
+//                                            }
+//                                        }
+//                                        .frame(width: geo.size.width * 0.9)
+//                                    }
+////
+//                                }
+//                                Divider()
+//                                HStack {
+//                                    Text("Totals")
+//                                        .frame(width: geo.size.width * 0.3, alignment: .init(horizontal: .leading, vertical: .center))
+//                                        .font(.caption2)
+//                                    HStack {
+//                                        ForEach(team.statSummary, id: \.self) { stat in
+//                                            Text("\(stat)")
+//                                                .frame(width: geo.size.width / 15)
+//                                        }
+//                                    }
+//                                    .frame(width: geo.size.width * 0.9)
+//                                }
+//                            }
+//                            Divider()
+//                            Divider()
+//                            
+//                        }
+//                    }
+//                }
+//            }.toolbar {
+//                Button {
+//                    nav.popToRoot()
+//                    
+//                } label: {
+//                    Image(systemName: "arrow.left")
+//                }
+////                    NavigationLink {
+////                        ContentView()
+////                    } label: {
+////                        Image(systemName: "arrow.left")
+////                    }
+//                
+//            }
+//            .navigationBarBackButtonHidden()
+//            
+//            
+//        //}
+//        
+//    }
+//    func selectTeam(index: Int) -> [PlayerPos] {
+//        return index == 0 ? decomposeLineup(lineup: gameViewModel.visitorLineup) : decomposeLineup(lineup: gameViewModel.homeLineup)
     }
 }
 

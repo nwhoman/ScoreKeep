@@ -10,6 +10,7 @@ import SwiftData
 
 struct AddTeamView: View {
     @Environment(\.modelContext) var modelContext
+    @Environment(\.undoManager) var undoManager
     @Environment(\.dismiss) var dismiss
     
     @State private var name: String = ""
@@ -76,22 +77,34 @@ struct AddTeamView: View {
                 
             Spacer(minLength: 100)
                 Section {
-                    Button("Save Team"){
-                        newTeam.name = name
-                        newTeam.ageGroup = ageGroup
-                        modelContext.insert(newTeam)
-                        try? modelContext.save()
-
-                        dismiss()
-                        /*if (!showCoachPlayer){
-                            showCoachPlayer = true
+                    HStack {
+                        Spacer(minLength: 20)
+                        Button("Save Team"){
                             newTeam.name = name
                             newTeam.ageGroup = ageGroup
                             modelContext.insert(newTeam)
-                        } else {
                             try? modelContext.save()
+                            
                             dismiss()
-                        }*/
+                            /*if (!showCoachPlayer){
+                             showCoachPlayer = true
+                             newTeam.name = name
+                             newTeam.ageGroup = ageGroup
+                             modelContext.insert(newTeam)
+                             } else {
+                             try? modelContext.save()
+                             dismiss()
+                             }*/
+                        }
+                        Spacer(minLength: 20)
+                        Button {
+                            print("\(undoManager?.undoCount)")
+                            undoManager?.undo()
+                        } label: {
+                            Text("Undo")
+                        }
+                        .disabled(!(undoManager?.canUndo ?? false))
+                        Spacer(minLength: 20)
                     }
                 }.navigationTitle("Add Team")
                 //.sheet(isPresented: $showAddCoachScreen) {

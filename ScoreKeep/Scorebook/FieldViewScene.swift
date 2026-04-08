@@ -322,7 +322,7 @@ class FieldScene: SKScene, SKPhysicsContactDelegate {
         gameVM.batter!.pitches.append(.ball)
 
         gameVM.balls += 1
-        
+        print("B: \(gameVM.balls)")
         if gameVM.balls == 4 {
             var node = enumerateChildNodes(withName: gameVM.batter!.batter.number) {
             node, stop in
@@ -550,6 +550,7 @@ class FieldScene: SKScene, SKPhysicsContactDelegate {
                     plateAppearance.k = 1
                     addKLabel(scene: self, plateAppearance: plateAppearance)
                 }
+                
             }
             if touchedNode.name == "Swinging" {
                 resetPitch()

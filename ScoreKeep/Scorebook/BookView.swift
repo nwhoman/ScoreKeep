@@ -10,6 +10,7 @@ import SwiftUI
 
 struct BookView: View {
     @Environment(\.modelContext) var modelContext
+    @Environment(\.undoManager) var undoManager
     @Environment(\.dismiss) var dismiss
     @EnvironmentObject var nav: NavigationStateManager
     @Query private var games: [Game]
@@ -21,7 +22,7 @@ struct BookView: View {
         GeometryReader { geo in
             ZStack {
                 TabView(selection: $gameViewModel.selectedTab) {
-                    
+            
                         BookPageView(gameViewModel: gameViewModel, lineup: gameViewModel.visitorLineup, selectedTab: gameViewModel.selectedTab)
                             .tabItem {
                                 Image(systemName: "person.fill")

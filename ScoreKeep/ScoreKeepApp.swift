@@ -15,7 +15,7 @@ struct ScoreKeepApp: App {
         WindowGroup {
             ContentView()
         }
-        .modelContainer(for: [Team.self, Player.self, Coach.self, Game.self, GameViewModel.self])
+        .modelContainer(for: [Team.self, Player.self, Coach.self, Game.self, GameViewModel.self], isUndoEnabled: true)
 
     }
 }

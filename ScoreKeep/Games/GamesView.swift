@@ -54,7 +54,7 @@ struct GamesView: View {
                 }
                 //
             }
-            .onDelete(perform: deleteGame)
+            .onDelete(perform: deleteVM)
         }
             
         

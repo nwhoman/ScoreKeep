@@ -9,17 +9,15 @@ import SwiftUI
 
 struct BookPageView: View {
     @Environment(\.modelContext) var modelContext
+    @Environment(\.undoManager) var undoManager
     @Environment(\.dismiss) var dismiss
-    //@ObservedObject var gameViewModel: GameViewModel
     @EnvironmentObject var nav: NavigationStateManager
     @State var gameViewModel: GameViewModel
-    //@Binding var game: Game
-    //@Binding var orderNumber: Int
-    //@Binding var inningNumber: Int
     @State var lineup: [[PlayerPos]]
     @State var showLargeView: Bool = false
     @State var showPlayerPA: Bool = false
     @State var largeView: Bool = true
+    @State var completeGame: Bool = false
     
     var selectedTab: String
     var innings: [Inning] {
@@ -41,7 +39,6 @@ struct BookPageView: View {
     }
     
     var body: some View {
-        //NavigationStack {
             GeometryReader { geo in
                 VStack {
 //                    HStack {
@@ -62,6 +59,11 @@ struct BookPageView: View {
                         } label: {
                             Text("Box Score")
                         }
+                        Button {
+                            completeGame = true
+                        } label: {
+                            Text("Complete Game")
+                        }
                         
                     }
                     ScrollView() {
@@ -79,7 +81,14 @@ struct BookPageView: View {
                     }
                 }
             }
-        //}
+            .alert("Complete Game?", isPresented: $completeGame) {
+                Button {
+                    try? modelContext.save()
+                    gameViewModel.game.isComplete = true
+                } label: {
+                    Text("Complete Game")
+                }
+    }
         
     }
 }
@@ -128,30 +137,26 @@ struct InningsView: View {
                         Text("\(inning.number/10)")//--\(inning.number/10)")
                         .frame(width: 75, height: 50, alignment: .center)
                         .border(Color.blue)
-                        Text("\(gameViewModel.inningNumber[gameViewModel.halfInning])-\(gameViewModel.batterUp[gameViewModel.halfInning])/\(gameViewModel.batterCount[gameViewModel.halfInning])")
+//                        Text("\(gameViewModel.inningNumber[gameViewModel.halfInning])-\(gameViewModel.batterUp[gameViewModel.halfInning])/\(gameViewModel.batterCount[gameViewModel.halfInning])")
                         ForEach(inning.plateAppearances.sorted(by: {$0.order < $1.order}), id: \.self) { player in
                             GeometryReader { geo in
                                 
                                 SmallPlateAppearanceView(gameViewModel: gameViewModel, player: player, scale: 0.15)
                                     .onTapGesture {
                                         if !gameViewModel.game.isComplete {
-                                            if (teamBatting && gameViewModel.halfInning == 0 && gameViewModel.inningNumber[gameViewModel.halfInning] == inning.number && gameViewModel.batterUp[gameViewModel.halfInning] == player.order) || (!teamBatting && gameViewModel.halfInning == 1 && gameViewModel.inningNumber[gameViewModel.halfInning] == inning.number && gameViewModel.batterUp[gameViewModel.halfInning] == player.order) {
+                                            if checkBatter(inning: inning, player: player) {
                                                 if player.outcome["home"] == "" {
-                                                    player.active = true
                                                     gameViewModel.batter = player
-                                                    //gameViewModel.updatePitcherStats()
                                                     currentPlayer = player
-                                                    //currentPitcher?.active = true
-                                                    //gameViewModel.inningNumber = inning.number
-                                                    
                                                     gameViewModel.baseRunners.insert(player, at: 0)
-                                                    gameViewModel.balls = 0
-                                                    gameViewModel.strikes = 0
                                                     gameViewModel.incrementBatterUp()
                                                     showLargeView.toggle()
-                                                    
+                                                    if !player.active {
+                                                        player.active = true
+                                                        gameViewModel.balls = 0
+                                                        gameViewModel.strikes = 0
+                                                    }
                                                 } else {
-                                                    //print("\(player.hit), \(player.outcome)")
                                                     showLargeView.toggle()
                                                 }
                                             } else {
@@ -175,7 +180,6 @@ struct InningsView: View {
         }
         .sheet(isPresented: $showLargeView, onDismiss: {
             //  update game viewmodel, check outs and switch sides
-            //gameViewModel.updatePitcherStats()
             gameViewModel.checkGameComplete()
             if gameViewModel.checkInningComplete() { // change of sides, reset all game inning variables
                 gameViewModel.outs = 0
@@ -208,7 +212,7 @@ struct InningsView: View {
                     }
                     try? modelContext.save()
                 }
-                
+                try? modelContext.save()
                 // check for walk-off win
             }
             
@@ -228,7 +232,11 @@ struct InningsView: View {
         }) {
             PlateAppearanceView(gameViewModel: gameViewModel, player: gameViewModel.batter!)
         }
-
-        
+    }
+    func checkBatter(inning: Inning, player: OffensivePlateAppearance) -> Bool {
+        if (teamBatting && gameViewModel.halfInning == 0 && gameViewModel.inningNumber[gameViewModel.halfInning] == inning.number && gameViewModel.batterUp[gameViewModel.halfInning] == player.order) || (!teamBatting && gameViewModel.halfInning == 1 && gameViewModel.inningNumber[gameViewModel.halfInning] == inning.number && gameViewModel.batterUp[gameViewModel.halfInning] == player.order) {
+            return true
+        }
+        return false
     }
 }
