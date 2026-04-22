@@ -70,7 +70,7 @@ class GameViewModel: Codable, Identifiable {
         self.totalInnings = totalInnings
         self.inningRunRule = inningRunRule
         self.score = setScoreTable()
-        
+        print("V: \(self.visitorCurrentLineup.count) H: \(self.homeCurrentLineup.count) on game init")
     }
     
     init(gameViewModel: GameViewModel) {
@@ -81,7 +81,7 @@ class GameViewModel: Codable, Identifiable {
         self.visitorCurrentLineup = gameViewModel.game.visitingTeam?.lineup ?? []
         self.homeCurrentLineup = gameViewModel.game.homeTeam?.lineup ?? []
         self.totalInnings = gameViewModel.totalInnings
-        
+        print("V: \(self.visitorCurrentLineup.count) H: \(self.homeCurrentLineup.count) on GVM init")
     }
     
     required init(from decoder: Decoder) throws {
@@ -164,14 +164,21 @@ class GameViewModel: Codable, Identifiable {
         self.batterCount = [visitorCurrentLineup.filter({$0.position != "F"}).count, homeCurrentLineup.filter({$0.position != "F"}).count]
         for i in 1...self.totalInnings {
             let vInning = Inning(number: i*10, game: game, half: 0)
-            addInning(inning: vInning, lineup: game.visitingLineup, halfInning: 0)
             let hInning = Inning(number: i*10, game: game, half: 1)
-            addInning(inning: hInning, lineup: game.homeLineup, halfInning: 1)
+            modelContext?.insert(vInning)
+            modelContext?.insert(hInning)
+            do {
+                try modelContext?.save()
+            } catch {
+                print("save inning error \(error), \(error._domain)")
+            }
+            addInning(inning: vInning, lineup: visitorCurrentLineup, halfInning: 0)
+            addInning(inning: hInning, lineup: homeCurrentLineup, halfInning: 1)
         }
 //        self.pitcherStats.append(PitcherStats(pitcherID: getCurrentPitcher(i: 0)))
 //        self.pitcherStats.append(PitcherStats(pitcherID: getCurrentPitcher(i: 1)))
-        print("start game: \(self.pitcherStats.count)")
-        
+        print("start game: \(self.batterCount[0]) \(self.batterCount[1])")
+        print("start game: \(self.visitorInnings.count) \(self.homeInnings.count)")
     }
     func setScoreTable() -> [String:[Int]]{
         var temp:[Int] = []
@@ -208,21 +215,39 @@ class GameViewModel: Codable, Identifiable {
             if halfInning == 0 {
                 inning.half = halfInning
                 for batter in self.visitorCurrentLineup.sorted(by: { $0.batting < $1.batting }) {
-                    inning.plateAppearances.append(OffensivePlateAppearance(order: order, batter: batter.player, pitcher: homePitcher.player, inning: inning.number))
+                    let plateAppearance = OffensivePlateAppearance(order: order, batter: batter.player, pitcher: homePitcher.player, inning: inning.number)
+                    modelContext?.insert(plateAppearance)
+                    do {
+                        try modelContext?.save()
+                    } catch {
+                        print("save VOPA error \(error), \(error._domain)")
+                    }
+                    
+                    inning.plateAppearances.append(plateAppearance)
                     order += 1
                 }
+                print("save VOPA count \(inning.half), \(inning.plateAppearances)")
                 self.visitorInnings.append(inning)
                 
             } else {
                 inning.half = halfInning
                 for batter in self.homeCurrentLineup.sorted(by: { $0.batting < $1.batting }) {
-                    inning.plateAppearances.append(OffensivePlateAppearance(order: order, batter: batter.player, pitcher: visitorPitcher.player,inning: inning.number))
+                    let plateAppearance = OffensivePlateAppearance(order: order, batter: batter.player, pitcher: visitorPitcher.player, inning: inning.number)
+                    modelContext?.insert(plateAppearance)
+                    do {
+                        try modelContext?.save()
+                    } catch {
+                        print("save HOPA error \(error), \(error._domain)")
+                    }
+                    inning.plateAppearances.append(plateAppearance
+                    )
                     order += 1
                 }
+                print("save HOPA count \(inning.half), \(inning.plateAppearances)")
                 self.homeInnings.append(inning)
             }
     }
-    
+
     func setInitialLineup(halfInning: Int) -> [[PlayerPos]]{
         var lineup: [[PlayerPos]] = []
         if halfInning == 0 {
@@ -283,11 +308,17 @@ class GameViewModel: Codable, Identifiable {
             }
             self.homeLineup = temp2
         }
+        // replace batter in plate appearances and pitcher if the pither was changed
         for each in game.innings {
             for app in each.plateAppearances {
                 
-                if !app.active && app.batter == selectedPlayer.player {
-                    app.batter = newPlayerPos.player
+                if !app.active {
+                    if app.batter == selectedPlayer.player {
+                        app.batter = newPlayerPos.player
+                    }
+                    if app.pitcher == selectedPlayer.player {
+                        app.pitcher = newPlayerPos.player
+                    }
                 }
             }
         }
@@ -405,25 +436,26 @@ class GameViewModel: Codable, Identifiable {
         ]
     }
     
-    func moveRunners(bases: Int, runnerToAdvance: Int) { //0, 1, 2, 3 for which base runner is at 0 = home
-        if runnerToAdvance == 0 {
-            for runner in baseRunners {
-                runner.baseOccupied += bases
-            }
-        } else if runnerToAdvance == 1 {
-            for i in 1..<baseRunners.count {
-                baseRunners[i].baseOccupied += bases
-            }
-        } else if runnerToAdvance == 2 {
-            for i in 2..<baseRunners.count {
-                baseRunners[i].baseOccupied += bases
-            }
-        } else {
-            for i in 3..<baseRunners.count {
-                baseRunners[i].baseOccupied += bases
-            }
-        }
-    }
+//    func moveRunners(bases: Int, runnerToAdvance: Int) { //0, 1, 2, 3 for which base runner is at 0 = home
+//        if runnerToAdvance == 0 {
+//            for runner in baseRunners {
+//                runner.baseOccupied += bases
+//            }
+//        } else if runnerToAdvance == 1 {
+//            for i in 1..<baseRunners.count {
+//                baseRunners[i].baseOccupied += bases
+//            }
+//        } else if runnerToAdvance == 2 {
+//            for i in 2..<baseRunners.count {
+//                baseRunners[i].baseOccupied += bases
+//            }
+//        } else {
+//            for i in 3..<baseRunners.count {
+//                baseRunners[i].baseOccupied += bases
+//            }
+//        }
+//    }
+    
     func getBaserunner(number: String) -> OffensivePlateAppearance {
         for runner in baseRunners {
             if runner.batter.number == number {
@@ -603,7 +635,8 @@ class GameViewModel: Codable, Identifiable {
         if self.game.isComplete {
             self.game.visitingLineup = decomposeLineup(lineup: self.visitorLineup)
             self.game.homeLineup = decomposeLineup(lineup: self.homeLineup)
-            
+            self.game.homeTeam?.lineup = self.homeCurrentLineup
+            self.game.visitingTeam?.lineup = self.visitorCurrentLineup
             for inning in game.innings {
                 for _ in inning.plateAppearances {
                     inning.plateAppearances.removeAll(where: { !$0.active })
@@ -612,13 +645,18 @@ class GameViewModel: Codable, Identifiable {
         }
     }
     func checkInningComplete() -> Bool {
+        print("outs: \(self.outs)")
         if self.inningRunRule != 0 {
             if self.inningRuns == self.inningRunRule {
+                print("run rule")
                 return true
             }
-        } else if self.outs == 3 {
+        }
+        if self.outs >= 3 {
+            print("3 outs")
             return true
         }
+        print("continue inning")
         return false
     }
     

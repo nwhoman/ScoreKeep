@@ -21,16 +21,18 @@ struct GameLineupsView: View {
     @State var showHomeAlert = false
     @State var showVisitorAlert = false
     @State var startGame: Bool = false
+    @State var editPlayers: Bool = false
+    
 
     var body: some View {
         ZStack {
             VStack {
                 Spacer(minLength: 70)
                 TabView(selection: $selectedTab) {
-                    LineupView(gameVM: gameViewModel, game: gameViewModel.game, lineup: gameViewModel.homeCurrentLineup, showAlert: $showAlert, showTeamAlert: $showHomeAlert, selectedTab: selectedTab)
+                    LineupView(gameVM: gameViewModel, game: gameViewModel.game, lineup: gameViewModel.homeCurrentLineup, showAlert: $showAlert, showTeamAlert: $showHomeAlert, editPlayers: $editPlayers, selectedTab: selectedTab)
                         .tabItem { Text("\(gameViewModel.game.homeTeam!.name)") }.tag("Home")
                     
-                    LineupView(gameVM: gameViewModel, game: gameViewModel.game, lineup: gameViewModel.visitorCurrentLineup, showAlert: $showAlert, showTeamAlert: $showVisitorAlert,selectedTab: selectedTab)
+                    LineupView(gameVM: gameViewModel, game: gameViewModel.game, lineup: gameViewModel.visitorCurrentLineup, showAlert: $showAlert, showTeamAlert: $showVisitorAlert, editPlayers: $editPlayers, selectedTab: selectedTab)
                         .tabItem { Text("\(gameViewModel.game.visitingTeam!.name)") }.tag("Visitor")
                     
                 }
@@ -86,24 +88,33 @@ struct GameLineupsView: View {
                 }
                 
                 HStack {
-                    NavigationLink(value: selectedTab == "Home" ? gameViewModel.game.homeTeam! : gameViewModel.game.visitingTeam!) {
+                    Button {
+                        modelContext.delete(gameViewModel)
+                        //nav.push(.teams)
+//                        nav.pop()
+                        nav.push(.team(team: selectedTab == "Home" ? gameViewModel.game.homeTeam! : gameViewModel.game.visitingTeam!))
+                    } label: {
                         Text(selectedTab == "Home" ? gameViewModel.game.homeTeam!.name : gameViewModel.game.visitingTeam!.name)
                     }
+//                    NavigationLink(value: selectedTab == "Home" ? gameViewModel.game.homeTeam! : gameViewModel.game.visitingTeam!) {
+//                        Text(selectedTab == "Home" ? gameViewModel.game.homeTeam!.name : gameViewModel.game.visitingTeam!.name)
+//                    }
                     .padding(.horizontal)
                     .padding(.top, 10)
                     Spacer()
                 }
-                .navigationDestination(for: Team.self) {
-                    team in
-                    TeamDetailView(team: team)
-                }
+//                .navigationDestination(for: Team.self) {
+//                    team in
+//                    TeamDetailView(team: team)
+//                }
                 Spacer()
             }
         
         }
-        
+        .sheet(isPresented: $editPlayers, content: {
+            AddPlayerView(team: selectedTab == "Home" ? gameViewModel.game.homeTeam! : gameViewModel.game.visitingTeam!)
+        })
         .navigationDestination(isPresented: $startGame) {
-            
             BookView(gameViewModel: gameViewModel)
         }
     }
@@ -112,7 +123,7 @@ func validateLineup(lineup: [PlayerPos]) -> Bool {
     let positions: [String] = ["P", "C", "1B", "2B", "3B", "SS", "LF", "CF", "RF"]
     let order = lineup.sorted { $0.batting < $1.batting }
     if order.count < 9 {
-        print("<9")
+        print("<9 \(order.count)")
         return false
     }
     if order.contains(where: { $0.position == "F" }) {
@@ -154,13 +165,15 @@ func checkFlex(lineup: [PlayerPos]) -> Bool {
 }  //|| !lineup.contains(where: { $0.position == "DP" })
 
 #Preview {
+    @Previewable @State var navPath = NavigationPath()
     let preview = Preview()
     let game = Game.defaultGame
     preview.addSampleGames([game])
     preview.addSampleLineups(game: game)
     
+    
     return NavigationStack {
-        GameLineupsView(gameViewModel: GameViewModel(game: game, totalInnings: 3, inningRunRule: 0))
+         GameLineupsView(gameViewModel: GameViewModel(game: game, totalInnings: 3, inningRunRule: 0))
             .modelContainer(preview.modelContainer)
     }
 }

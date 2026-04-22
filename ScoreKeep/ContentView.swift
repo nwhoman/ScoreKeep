@@ -8,13 +8,21 @@ import SwiftData
 import SwiftUI
 
 struct ContentView: View {
-    
+    @Environment(\.modelContext) var modelContext
     @StateObject var nav = NavigationStateManager()
     
     var body: some View {
         NavigationStack(path: $nav.path) {
             //PlateAppearanceView()
             MainMenuView()
+                .navigationDestination(for: AppRoute.self) { route in
+                    switch route {
+                    case .home: ContentView()
+                    case .team(let team): TeamDetailView(team: team)
+                    case .teams: TeamsView()
+                    case .games: GamesView()
+                    }
+                }
         }
         .environmentObject(nav)
     }

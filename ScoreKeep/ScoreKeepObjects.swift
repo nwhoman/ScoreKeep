@@ -128,6 +128,7 @@ class Player: Codable {
         self.number = try values.decode(String.self, forKey: .number)
         //self.team = try values.decodeIfPresent(Team.self, forKey: .team, configuration: )
         self.position = try values.decode(String.self, forKey: .position)
+        //self.plateAppearances = try values.decode([OffensivePlateAppearance].self, forKey: .plateAppearances)
     }
     func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
@@ -138,6 +139,7 @@ class Player: Codable {
         try container.encode(number, forKey: .number)
         //try container.encodeIfPresent(team, forKey: .team)
         try container.encode(position, forKey: .position)
+        //try container.encode(plateAppearances, forKey: .plateAppearances)
     }
     
 }
@@ -489,12 +491,16 @@ class DefensivePlateAppearance: Codable {
 @Model
 class PlayerPos: Identifiable, Hashable, Codable {
     enum CodingKeys: CodingKey {
-        case id, batting, player, position
+        case id, inning, batting, player, position, assists, putOuts, errors
     }
     var id: UUID
+    var inning: Int = 1
     var batting: Int
     var player: Player
     var position: String
+    var assists: Int = 0
+    var putOuts: Int = 0
+    var errors: Int = 0
     
     init(player: Player, position: String, batting: Int = 0) {
         self.id = UUID()
@@ -505,50 +511,26 @@ class PlayerPos: Identifiable, Hashable, Codable {
     required init(from decoder: Decoder) throws {
         let values = try decoder.container(keyedBy: CodingKeys.self)
         self.id = try values.decode(UUID.self, forKey: .id)
+        self.inning = try values.decode(Int.self, forKey: .inning)
         self.batting = try values.decode(Int.self, forKey: .batting)
         self.player = try values.decode(Player.self, forKey: .player)
         self.position = try values.decode(String.self, forKey: .position)
-    }
+        self.assists = try values.decode(Int.self, forKey: .assists)
+        self.putOuts = try values.decode(Int.self, forKey: .putOuts)
+        self.errors = try values.decode(Int.self, forKey: .errors)
+}
     func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
         try container.encode(self.id, forKey: .id)
+        try container.encode(self.inning, forKey: .inning)
         try container.encode(self.batting, forKey: .batting)
         try container.encode(self.player, forKey: .player)
         try container.encode(self.position, forKey: .position)
+        try container.encode(self.assists, forKey: .assists)
+        try container.encode(self.putOuts, forKey: .putOuts)
+        try container.encode(self.errors, forKey: .errors)
     }
 }
-
-//@Model
-//class SavedViewModel: Identifiable, Codable {
-//    enum CodingKeys: CodingKey {
-//        case id, game, viewModel
-//    }
-//    var id: UUID = UUID()
-//    var game: Game
-//    var viewModel: GameViewModel
-//    
-//    init(id: UUID, game: Game, viewModel: GameViewModel) {
-//        self.id = id
-//        self.game = game
-//        self.viewModel = viewModel
-//    }
-//    
-//    required init(from decoder: Decoder) throws {
-//        let values = try decoder.container(keyedBy: CodingKeys.self)
-//        self.id = try values.decode(UUID.self, forKey: .id)
-//        self.game = try values.decode(Game.self, forKey: .game)
-//        self.viewModel = try values.decode(GameViewModel.self, forKey: .viewModel)
-//    }
-//    
-//    func encode(to encoder: any Encoder) throws {
-//        var container = encoder.container(keyedBy: CodingKeys.self)
-//        try container.encode(id, forKey: .id)
-//        try container.encode(game, forKey: .game)
-//        try container.encode(viewModel, forKey: .viewModel)
-//    }
-//}
-
-
 
 struct PlayerStats: Identifiable, Hashable {
     var id: UUID
@@ -571,6 +553,13 @@ struct PlayerStats: Identifiable, Hashable {
     }
     var atBats: Int {
         return self.plateAppearances - self.bb - self.hp - self.sac
+    }
+    var avg: Double {
+        return Double(self.hits) / Double(self.atBats)
+    }
+    var slg: Double {
+        let tb = self.doubles * 2 + self.triples * 3 + self.homeRuns * 4 + self.hits - self.doubles + self.triples + self.homeRuns
+        return Double(tb) / Double(self.atBats)
     }
     var statSummary: [Int] {
         return [self.plateAppearances, self.atBats, self.hits, self.doubles, self.triples, self.homeRuns, self.runs, self.rbi, self.bb, self.k, self.hp, self.sac]
@@ -759,6 +748,7 @@ struct BattingLineupView: View {
                                     Text("\(player.player.number) - \(player.player.lastName), \(player.player.firstName.first!)")
                                     Spacer(minLength: 10)
                                     Text("\(player.position)")
+                                    Text("\(player.inning)").font(.system(size: 6).italic())
                                 }
                                 .font(.system(size: 12))
                                 .padding(.horizontal, 5)

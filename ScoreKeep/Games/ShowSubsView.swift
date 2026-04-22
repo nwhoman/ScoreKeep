@@ -246,15 +246,7 @@ struct RosterSubsView: View {
                                 .padding(.horizontal, 15)
                                 .onTapGesture {
                                     print("home: \(lineup)")
-                                    // create PlayerPos for inserted player
-                                    var newPlayerPos = PlayerPos(player: player, position: selectedPlayer.position, batting: selectedPlayer.batting)
-                                    // insert PlayerPos into lineup
-                                    lineup.removeAll { $0.id == selectedPlayer.id }
-                                    lineup.append(newPlayerPos)
-                                    gameVM.insertSubIntoLineup(newPlayerPos: newPlayerPos, selectedPlayer: selectedPlayer)
-                                    
-                                    selectedPlayer = newPlayerPos
-                                    lineup = lineup.sorted(by: { $0.batting < $1.batting })
+                                    selectedPlayer = createNewLineupSlot(player: player, selectedPlayer: selectedPlayer, lineup: &lineup, gameVM: gameVM)
                                     
                                     print("newhome: \(lineup)")
                                 }
@@ -266,7 +258,7 @@ struct RosterSubsView: View {
                     }
                     GroupBox(label: Text("Selected Player")) {
                         VStack(alignment: .leading) {
-                            RosterSubsItemView(player: $selectedPlayer, lineup: $lineup, unusedPositions: positions, position: "")
+                            RosterSubsItemView(gameVM: $gameVM, player: selectedPlayer, lineup: $lineup, unusedPositions: positions, position: "")
                                 .padding(15)
 
                         }
@@ -276,14 +268,39 @@ struct RosterSubsView: View {
         }
     }
 }
+func createNewLineupSlot(player: Player, selectedPlayer: PlayerPos, lineup: inout [PlayerPos], gameVM: GameViewModel) -> PlayerPos {
+    // create PlayerPos for inserted player
+    var newPlayerPos = PlayerPos(player: player, position: selectedPlayer.position, batting: selectedPlayer.batting)
+    // insert PlayerPos into lineup
+    newPlayerPos.inning = gameVM.inningNumber[gameVM.halfInning] / 10
+    lineup.removeAll { $0.id == selectedPlayer.id }
+    lineup.append(newPlayerPos)
+    gameVM.insertSubIntoLineup(newPlayerPos: newPlayerPos, selectedPlayer: selectedPlayer)
+    lineup = lineup.sorted(by: { $0.batting < $1.batting })
 
+    return newPlayerPos
+}
 
+func positionChangeOnly(player: Player, position: String, batting: Int, lineup: inout [PlayerPos], gameVM: GameViewModel, selectedPlayer: PlayerPos) -> PlayerPos {
+    // create PlayerPos for inserted player
+    var newPlayerPos = PlayerPos(player: player, position: position, batting: batting)
+    // insert PlayerPos into lineup
+    newPlayerPos.inning = gameVM.inningNumber[gameVM.halfInning] / 10
+    lineup.removeAll { $0.player.id == player.id }
+    lineup.append(newPlayerPos)
+    gameVM.insertSubIntoLineup(newPlayerPos: newPlayerPos, selectedPlayer: selectedPlayer)
+    lineup = lineup.sorted(by: { $0.batting < $1.batting })
+
+    return newPlayerPos
+}
 
 struct RosterSubsItemView: View {
     @Environment(\.modelContext) var modelContext
     @Environment(\.dismiss) var dismiss
-     
-    @Binding var player: PlayerPos
+    @Binding var gameVM: GameViewModel
+
+    //@Binding var player: PlayerPos
+    var player: PlayerPos
     @Binding var lineup: [PlayerPos]
     var unusedPositions: [String]
     @State var position: String
@@ -311,8 +328,10 @@ struct RosterSubsItemView: View {
             //.frame(width: 5, height: 200)
             .padding(.horizontal, -5)
             .onChange(of: position) {
-                player.position = position
-                lineup = lineup.sorted(by: { $0.batting < $1.batting })
+                //player.position = position
+                
+                //lineup = lineup.sorted(by: { $0.batting < $1.batting })
+                let newPlayer = positionChangeOnly(player: player.player, position: position, batting: player.batting, lineup: &lineup, gameVM: gameVM, selectedPlayer: player)
             }
         
     }

@@ -20,7 +20,7 @@ struct LineupView: View {
     @State var lineup: [PlayerPos]
     @Binding var showAlert: Bool
     @Binding var showTeamAlert: Bool
-    
+    @Binding var editPlayers: Bool
     @State var selectedTab: String
 
     var team: Team {
@@ -58,8 +58,8 @@ struct LineupView: View {
                             } else {
                                 gameVM.homeCurrentLineup = lineup.sorted(by: { $0.batting < $1.batting })
                             }
-                            
-                             team.lineup = lineup
+                            team.lineup.removeAll()
+                            team.lineup.append(contentsOf: lineup)
 //                            for i in 0..<lineup.count {
 //                                lineup[i].batting = i+1
 //                            }
@@ -84,7 +84,7 @@ struct LineupView: View {
                 }
                 
                 .padding(10)
-                RosterView(gameVM: gameVM, team: team, selectedTab: $selectedTab, lineup: $lineup)
+                RosterView(gameVM: gameVM, team: team, selectedTab: $selectedTab, lineup: $lineup, editPlayers: $editPlayers)
                 
             }
             .background(Color.clear)
@@ -125,7 +125,7 @@ struct RosterView: View {
     @State var team: Team
     @Binding var selectedTab: String
     @Binding var lineup: [PlayerPos]
-    
+    @Binding var editPlayers: Bool
     
     private var unusedPositions: [String] {
         var possiblePositions = positions
@@ -157,11 +157,21 @@ struct RosterView: View {
         GeometryReader { geo in
             VStack {
                 HStack {
-                    GroupBox(label: Text("Roster")) {
+                    GroupBox(label:
+                        HStack{Text("Roster")
+                        Spacer()
+                        Button {
+                            editPlayers.toggle()
+                        } label: {
+                            Image(systemName: "pencil")
+                                .fontWeight(.bold)
+                                .font(.system(size: 12))
+                        }}
+                    ) {
                         VStack {
                             
                             List {
-                                ForEach(unusedPlayers, id: \.id) { player in
+                                ForEach(unusedPlayers.sorted(by: { Int($0.number)! < Int($1.number)! }), id: \.id) { player in
                                     RosterItemView(player: player, lineup: $lineup, unusedPositions: unusedPositions, position: "")
                                 
                                 }
@@ -193,11 +203,12 @@ struct RosterView: View {
                                         .font(.caption)
                                         .onTapGesture {
                                             
-                                            lineup = gameVM.popPlayerFromLineup(lineup: lineup, player: player)
+                                            lineup = popPlayerFromLineup(lineup: lineup, player: player)
                                             
                                             for i in 0..<lineup.count {
                                                 lineup[i].batting = i+1
                                             }
+                                            modelContext.delete(player)
                                             //try? modelContext.save()
                                         }
                                     }
@@ -214,6 +225,13 @@ struct RosterView: View {
             .background(Color.clear)
         }
     }
+}
+
+func popPlayerFromLineup(lineup: [PlayerPos], player: PlayerPos) -> [PlayerPos] {
+    var temp: [PlayerPos] = lineup
+    temp.remove(at: temp.firstIndex(of: player)!)
+    
+    return temp
 }
 
 struct RosterItemView: View {
@@ -254,8 +272,14 @@ struct RosterItemView: View {
             .onChange(of: position) {
                 if (position == "") { return }
                 let order: Int = lineup.count + 1
-                lineup.append(PlayerPos(player: player, position: position, batting: order))
-                try? modelContext.save()
+                let newPlayer: PlayerPos = PlayerPos(player: player, position: position, batting: order)
+                modelContext.insert(newPlayer)
+                lineup.append(newPlayer)
+                do {
+                    try modelContext.save()
+                } catch {
+                    print("error inserting PlayerPos \(error)")
+                }
                 position = ""
             }
         }
@@ -269,7 +293,7 @@ struct RosterItemView: View {
     preview.addSampleGames([game])
 
     return NavigationStack {
-         LineupView(gameVM: gameVM, game: game, lineup: gameVM.homeCurrentLineup, showAlert: .constant(false), showTeamAlert: .constant(false), selectedTab: "Home")
+         LineupView(gameVM: gameVM, game: game, lineup: gameVM.homeCurrentLineup, showAlert: .constant(false), showTeamAlert: .constant(false), editPlayers: .constant(false), selectedTab: "Home")
             .modelContainer(preview.modelContainer)
     }
 }

@@ -17,23 +17,39 @@ struct MainMenuView: View {
     let game = Game.defaultGame
     
     var body: some View {
-        NavigationStack { //path: $path.animation(.bouncy)) {
+        //NavigationStack { //path: $path.animation(.bouncy)) {
             List {
-                NavigationLink("Teams", value: "Teams")
-                NavigationLink("Play Game", value: "Play Game")
+                Button {
+                    nav.push(.teams)
+                } label: {
+                    Image(systemName: "pencil")
+                        .fontWeight(.bold)
+                        .font(.system(size: 12))
+                    Text("Teams")
+                }
+                Button {
+                    nav.push(.games)
+                } label: {
+                    Image(systemName: "pencil")
+                        .fontWeight(.bold)
+                        .font(.system(size: 12))
+                    Text("Games")
+                }
+//                NavigationLink("Teams", value: "Teams")
+//                NavigationLink("Play Game", value: "Play Game")
             }
             .navigationTitle("ScoreKeep")
-            .navigationDestination(for: String.self) {
-                name in
-                if name == "Teams" {
-                    TeamsView()
-                    //TeamsView(path: $path)
-                } else if name == "Play Game" {
-                    GamesView()
-                    //StartGameView(path: $path)
-                    //GamesView(path: $path)
-                }
-            }
+//            .navigationDestination(for: String.self) {
+//                name in
+//                if name == "Teams" {
+//                    TeamsView()
+//                    //TeamsView(path: $path)
+//                } else if name == "Play Game" {
+//                    GamesView()
+//                    //StartGameView(path: $path)
+//                    //GamesView(path: $path)
+//                }
+//            }
             Button {
                 
                 preview.addSampleLineups(game: game)
@@ -42,7 +58,7 @@ struct MainMenuView: View {
             } label: {
                 Text("Add Default Data")
             }
-        }
+        //}
 //        .navigationBarBackButtonHidden()
         
     }

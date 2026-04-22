@@ -25,6 +25,10 @@ struct StartGameView: View {
     @State var gameDate: Date = Date()
     @State var startGame: Bool = false
     @State var showAlert: Bool = false
+    @State var homeTeamName: String = ""
+    @State var visitorTeamName: String = ""
+    
+    
     
     var body: some View {
         //NavigationStack {
@@ -46,8 +50,15 @@ struct StartGameView: View {
                     }
                     Spacer(minLength: 20)
                     Text("Home Team: \(homeTeam.name)")
+                    TextField("Search Teams", text: $homeTeamName)
+                        .padding(.leading)
+                        .background(Color.gray.opacity(0.4))
+                        .clipShape(RoundedRectangle(cornerRadius: 10.0, style: .continuous))
+                    if !homeTeamName.isEmpty {
+                        PickerView(searchString: homeTeamName, selection: $homeTeam)
+                    }
                     Picker("pick team", selection: $homeTeam){
-                        ForEach(teams, id: \.name){team in
+                        ForEach(teams.sorted {$0.name < $1.name}, id: \.name){team in
                             Text(team.name)
                                 .tag(team as Team)
                         }
@@ -56,6 +67,14 @@ struct StartGameView: View {
                     
                     Spacer(minLength: 50)
                     Text("Visiting Team: \(visitingTeam.name)")
+                    TextField("Search Teams", text: $visitorTeamName)
+                        .padding(.leading)
+                        .background(Color.gray.opacity(0.4))
+                        .clipShape(RoundedRectangle(cornerRadius: 10.0, style: .continuous))
+                        
+                    if !visitorTeamName.isEmpty {
+                        PickerView(searchString: visitorTeamName, selection: $visitingTeam)
+                    }
                     Picker("pick team", selection: $visitingTeam){
                         ForEach(teams, id: \.name){team in
                             Text(team.name)
@@ -78,6 +97,8 @@ struct StartGameView: View {
                 newGame?.visitingTeam = visitingTeam
                 //newGame?.name = "\(homeTeam.name) vs. \(visitingTeam.name)"
                 //newGame?.location = gameLocation
+                homeTeam.homeGames!.append(newGame!)
+                visitingTeam.visitingGames!.append(newGame!)
                 try? modelContext.save()
                 startGame.toggle()
             }
@@ -114,4 +135,54 @@ struct StartGameView: View {
         return Text("Failed to create preview: \(error.localizedDescription)")
     }
    // StartGameView()
+}
+
+struct PickerView: View {
+    @Query var teams: [Team]
+    @Binding var selection: Team
+//    @Binding var list: [Team]
+    let searchString: String
+//
+    init(searchString: String, selection: Binding<Team>) {
+        self.searchString = searchString
+        //self.selection = selection
+        _teams = Query(filter: #Predicate<Team> {
+            $0.name.localizedStandardContains(searchString)
+        })
+        self._selection = selection
+    }
+    var body: some View {
+        VStack(alignment: .leading) {
+            
+                       
+                            LazyVStack {
+                                ForEach(teams) { team in
+                                    VStack(alignment: .leading) {
+                                        HStack {
+                                            Button {
+                                                selection = team
+                                                //list.items.sort { $0.ordinal < $1.ordinal }
+                                                //try? modelContext.save()
+                                            } label: {
+                                                HStack {
+                                                    Image(systemName: "circle")
+                                                    Text("\(team.name)")
+                                                    //  .foregroundStyle(.black)
+                                                }
+                                            }
+                                            Spacer()
+                                        }
+                                        .padding(.horizontal, 25)
+                                        .padding(.vertical, 5)
+                                    }
+                                }
+                            }
+                        
+                    
+                
+            //
+            //    func addItem()
+        }
+//
+    }
 }

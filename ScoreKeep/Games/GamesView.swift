@@ -41,13 +41,21 @@ struct GamesView: View {
 //            .onDelete(perform: deleteGame)
 //        }
         List {
-            ForEach(viewModels, id: \.id) { vm in
+            ForEach(viewModels.sorted(by: { $0.game.date < $1.game.date }), id: \.id) { vm in
                 NavigationLink(value: vm) {
                     HStack {
                         VStack(alignment: .leading) {
-                            Text(vm.game.name)
-                                .font(.headline)
-                            Text("\(vm.game.date.formatted(date: .complete, time: .omitted))")
+                            HStack {
+                                Text(vm.game.name)
+                                    .font(.headline)
+                                Spacer()
+                                if vm.game.isComplete {
+                                    Text("X")
+                                } else {
+                                    Text("O")
+                                }
+                            }
+                            Text("\(vm.game.date.formatted(date: .complete, time: .shortened))")
                                 .foregroundStyle(.secondary)
                         }
                     }
@@ -120,7 +128,8 @@ struct GamesView: View {
     }
     func deleteVM(at offsets: IndexSet){
         for offset in offsets {
-            let viewModel = viewModels[offset]
+            let viewModel = viewModels.sorted(by: { $0.game.date < $1.game.date })[offset]
+            
             modelContext.delete(viewModel)
         }
     }

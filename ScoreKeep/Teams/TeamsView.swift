@@ -20,29 +20,41 @@ struct TeamsView: View {
     var body: some View {
             List {
                 ForEach(teams) { team in
-                    NavigationLink(value: team) {
+                    Button {
+                        nav.push(.team(team: team))
+                    } label: {
                         HStack {
                             VStack(alignment: .leading) {
                                 Text(team.name)
                                     .font(.headline)
                                 Text(team.ageGroup)
-                                    .foregroundStyle(.secondary)
+                                    .foregroundStyle(.primary)
                             }
                         }
                     }
+//                    NavigationLink(value: team) {
+//                        HStack {
+//                            VStack(alignment: .leading) {
+//                                Text(team.name)
+//                                    .font(.headline)
+//                                Text(team.ageGroup)
+//                                    .foregroundStyle(.secondary)
+//                            }
+//                        }
+//                    }
                 }
                 .onDelete(perform: deleteTeam)
             }
             .navigationTitle("ScoreKeep Teams")
-            .navigationDestination(for: Team.self) {
-                team in
-                TeamDetailView(team: team)
-                //TeamDetailView(path: $path, team: team)
-            }
+//            .navigationDestination(for: Team.self) {
+//                team in
+//                TeamDetailView(team: team)
+//                //TeamDetailView(path: $path, team: team)
+//            }
             .toolbar{
                 
                 ToolbarItem(placement: .topBarLeading){
-                    EditButton()
+                    EditButton().font(.system(size: 10))
                 }
                 ToolbarItem(placement: .topBarTrailing){
                     Button("Add Team", systemImage: "plus"){

@@ -143,6 +143,7 @@ func placeBaseRunners(basepathNode: SKShapeNode, baseOccupied: Int, plateAppeara
             pathNode = outLine(p1: thirdBase, p2: outPoint(p1: thirdBase, p2: homePlate, scaleFactor: 0.7), plateAppearance: plateAppearance, scene: scene)
             addOutcomes(plateAppearance: plateAppearance, scene: scene)
             //addOutX(base: homePlate2, scene: scene)
+        
         } else {
             path.addLine(to: homePlate)
             path.closeSubpath()
@@ -342,7 +343,7 @@ func placeBaseRunnerNodes(gameVM: GameViewModel, scene: SKScene) {
         
         let node = createBaseRunnerNode(player: player, scene: scene)
         
-        print("\(node.text)\(player.batter.number) - \(player.baseOccupied)")
+        print("\(node.name)-\(node.physicsBody?.categoryBitMask) \(node.physicsBody?.contactTestBitMask) - \(player.baseOccupied)")
         scene.addChild(node)
     }
 }
@@ -363,7 +364,7 @@ func createBaseRunnerNode(player: OffensivePlateAppearance, scene: SKScene) -> S
     node.fontSize = 20
     node.fontColor = SKColor.blue
     node.physicsBody?.isDynamic = true
-    node.physicsBody?.restitution = 1.0
+    node.physicsBody?.restitution = 0.0
     
 
     node.userData = ["player": player]
@@ -371,21 +372,30 @@ func createBaseRunnerNode(player: OffensivePlateAppearance, scene: SKScene) -> S
     case 0:
         node.physicsBody?.categoryBitMask = (1 << 0)
         node.physicsBody?.contactTestBitMask = (1 << 1)
-        node.physicsBody?.collisionBitMask = (1 << 1)
+        node.physicsBody?.collisionBitMask = (1 << 0)
         node.position = homePlate
     case 1:
+//        node.physicsBody?.categoryBitMask = (1 << 1)
+//        node.physicsBody?.contactTestBitMask = (1 << 1)
+//        node.physicsBody?.collisionBitMask = (1 << 1)
         node.physicsBody?.categoryBitMask = (1 << 1)
-        node.physicsBody?.contactTestBitMask = (1 << 1)
-        node.physicsBody?.collisionBitMask = (1 << 1)
+        node.physicsBody?.contactTestBitMask = (1 << 0) | (1 << 1)
+//        node.physicsBody?.collisionBitMask = (1 << 1)
         node.position = firstBase
     case 2:
+//        node.physicsBody?.categoryBitMask = (1 << 1)
+//        node.physicsBody?.contactTestBitMask = (1 << 1)
+//        node.physicsBody?.collisionBitMask = (1 << 1)
         node.physicsBody?.categoryBitMask = (1 << 2)
-        node.physicsBody?.contactTestBitMask = (1 << 2)
-        node.physicsBody?.collisionBitMask = (1 << 2)
+        node.physicsBody?.contactTestBitMask = (1 << 1) | (1 << 0)
+//        node.physicsBody?.collisionBitMask = (1 << 2)
         node.position = secondBase
     case 3:
+//        node.physicsBody?.categoryBitMask = (1 << 1)
+//        node.physicsBody?.contactTestBitMask = (1 << 1)
+//        node.physicsBody?.collisionBitMask = (1 << 1)
         node.physicsBody?.categoryBitMask = (1 << 3)
-        node.physicsBody?.contactTestBitMask = (1 << 3)
+        node.physicsBody?.contactTestBitMask = (1 << 2) | (1 << 1) //| (1 << 0)
         node.physicsBody?.collisionBitMask = (1 << 3)
         node.position = thirdBase
         default :
@@ -394,6 +404,29 @@ func createBaseRunnerNode(player: OffensivePlateAppearance, scene: SKScene) -> S
     node.zPosition = 100
     return node
     
+}
+
+func updateBaseRunnerNode(node: SKNode, player: OffensivePlateAppearance) {
+    switch player.baseOccupied {
+    case 0:
+        node.physicsBody?.categoryBitMask = (1 << 0)
+        node.physicsBody?.contactTestBitMask = (1 << 1)
+        node.physicsBody?.collisionBitMask = (1 << 0)
+    case 1:
+        node.physicsBody?.categoryBitMask = (1 << 1)
+        node.physicsBody?.contactTestBitMask = (1 << 2)
+    case 2:
+        
+        node.physicsBody?.categoryBitMask = (1 << 2)
+        node.physicsBody?.contactTestBitMask = (1 << 3)
+    case 3:
+        
+        node.physicsBody?.categoryBitMask = (1 << 3)
+        node.physicsBody?.contactTestBitMask = (1 << 4)
+        node.physicsBody?.collisionBitMask = (1 << 3)
+    default :
+        break
+    }
 }
 
 func resetCount(scene: SKScene, plateAppearance: OffensivePlateAppearance, gameVM: GameViewModel) {

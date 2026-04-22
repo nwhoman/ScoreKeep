@@ -22,24 +22,24 @@ struct BookView: View {
         GeometryReader { geo in
             ZStack {
                 TabView(selection: $gameViewModel.selectedTab) {
-            
-                        BookPageView(gameViewModel: gameViewModel, lineup: gameViewModel.visitorLineup, selectedTab: gameViewModel.selectedTab)
-                            .tabItem {
-                                Image(systemName: "person.fill")
-                                Text("Visitor - \(gameViewModel.game.visitingTeam!.name)")
-                            }.tag("Visitor")
-                        BookPageView(gameViewModel: gameViewModel, lineup: gameViewModel.homeLineup, selectedTab: gameViewModel.selectedTab)
-                            .tabItem {
-                                Image(systemName: "person.fill")
-                                Text("Home - \(gameViewModel.game.homeTeam!.name)")
-                            }.tag("Home")
                     
-                
+                    BookPageView(gameViewModel: gameViewModel, lineup: gameViewModel.visitorLineup, selectedTab: gameViewModel.selectedTab)
+                        .tabItem {
+                            Image(systemName: "person.fill")
+                            Text("Visitor - \(gameViewModel.game.visitingTeam!.name)")
+                        }.tag("Visitor")
+                    BookPageView(gameViewModel: gameViewModel, lineup: gameViewModel.homeLineup, selectedTab: gameViewModel.selectedTab)
+                        .tabItem {
+                            Image(systemName: "person.fill")
+                            Text("Home - \(gameViewModel.game.homeTeam!.name)")
+                        }.tag("Home")
+                    
+            
                 }
 
                 VStack {
                     HStack {
-                        //Spacer()
+                        //Spacer(
                     
                     }
                     //Spacer()
@@ -82,7 +82,7 @@ struct BookView: View {
                     modelContext.insert(gameViewModel)
                     try? modelContext.save()
                 }
-                
+    
                 
                 nav.path.removeLast()
             } label: {

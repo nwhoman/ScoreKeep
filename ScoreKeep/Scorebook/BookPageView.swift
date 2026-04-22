@@ -59,11 +59,16 @@ struct BookPageView: View {
                         } label: {
                             Text("Box Score")
                         }
-                        Button {
-                            completeGame = true
-                        } label: {
-                            Text("Complete Game")
+                        if !gameViewModel.game.isComplete {
+                            Button {
+                                completeGame = true
+                            } label: {
+                                Text("Complete Game")
+                            }
+                        } else {
+                            Text("Game is complete")
                         }
+                        
                         
                     }
                     ScrollView() {
@@ -83,8 +88,10 @@ struct BookPageView: View {
             }
             .alert("Complete Game?", isPresented: $completeGame) {
                 Button {
-                    try? modelContext.save()
+                    
                     gameViewModel.game.isComplete = true
+                    gameViewModel.checkGameComplete()
+                    try? modelContext.save()
                 } label: {
                     Text("Complete Game")
                 }
@@ -137,7 +144,7 @@ struct InningsView: View {
                         Text("\(inning.number/10)")//--\(inning.number/10)")
                         .frame(width: 75, height: 50, alignment: .center)
                         .border(Color.blue)
-//                        Text("\(gameViewModel.inningNumber[gameViewModel.halfInning])-\(gameViewModel.batterUp[gameViewModel.halfInning])/\(gameViewModel.batterCount[gameViewModel.halfInning])")
+                        Text("\(gameViewModel.inningNumber[gameViewModel.halfInning])-\(gameViewModel.batterUp[gameViewModel.halfInning])/\(gameViewModel.batterCount[gameViewModel.halfInning])")
                         ForEach(inning.plateAppearances.sorted(by: {$0.order < $1.order}), id: \.self) { player in
                             GeometryReader { geo in
                                 
@@ -185,16 +192,18 @@ struct InningsView: View {
                 gameViewModel.outs = 0
                 gameViewModel.balls = 0
                 gameViewModel.strikes = 0
-                
+                if currentPlayer?.outcome["home"] == "" {
+                    gameViewModel.decrementBatterUp()
+                }
                 gameViewModel.baseRunners.removeAll()
                 
                 gameViewModel.inningRuns = 0
                 if gameViewModel.halfInning == 0 {
-                    gameViewModel.inningNumber[0] += 10
+                    gameViewModel.inningNumber[0] = (gameViewModel.inningNumber[0]/10 + 1) * 10
                     gameViewModel.halfInning = 1
                 } else {
                     gameViewModel.halfInning = 0
-                    gameViewModel.inningNumber[1] += 10
+                    gameViewModel.inningNumber[1] = (gameViewModel.inningNumber[1]/10 + 1) * 10
                 }
                 
                 try? modelContext.save()
@@ -202,7 +211,9 @@ struct InningsView: View {
                 if !gameViewModel.game.isComplete {
                     // if dismiss sheet before batter is finished
                     if gameViewModel.batter?.outcome["home"] == "" {
-                        gameViewModel.baseRunners.remove(at: 0)
+                        gameViewModel.baseRunners.removeAll { each in
+                            each.baseOccupied == 0
+                        }
                         gameViewModel.decrementBatterUp()
                     } else {
                         gameViewModel.balls = 0

@@ -9,6 +9,7 @@ import Foundation
 import SwiftUI
 
 struct PlateAppearanceView: View {
+    @Environment(\.modelContext) var modelContext
     @Environment(\.dismiss) var dismiss
 //    @ObservedObject var gameViewModel: GameViewModel
     @State var gameViewModel: GameViewModel

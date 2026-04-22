@@ -9,6 +9,7 @@ import SpriteKit
 import SwiftUI
 
 struct SmallPlateAppearanceView: View {
+    @Environment(\.modelContext) var modelContext
 //    @ObservedObject var gameViewModel: GameViewModel
     @State var gameViewModel: GameViewModel
     @State var player: OffensivePlateAppearance
@@ -148,6 +149,7 @@ struct SmallPlateAppearanceView: View {
 }
 
 class BasePathScene: SKScene, SKPhysicsContactDelegate {
+    @Environment(\.modelContext) var modelContext
 //    @ObservedObject var gameVM: GameViewModel
     @State var gameVM: GameViewModel
     var baseOccupied: Int
