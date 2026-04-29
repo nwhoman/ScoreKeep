@@ -833,6 +833,9 @@ struct ScoreView: View {
             .frame(width: 70, height: 55)
             .border(Color.gray, width: 0.5)
             VStack(alignment: .leading) {
+                let score = gameViewModel.getTotalScore()
+                let hits = gameViewModel.getTeamHits()
+                let errors = gameViewModel.getTeamErrors()
                 HStack {
                     let innings: [Any] = setUpInnings()
                     ForEach(0..<innings.count, id: \.self) {inning in
@@ -849,13 +852,13 @@ struct ScoreView: View {
                             .font(.system(size: 12, weight: .bold))
                             .frame(width: 15.0, height: 15.0)
                     }
-                    Text("\(gameViewModel.getTotalScore(team: "visitor"))")
+                    Text("\(score["visitor"] ?? 0)")
                         .font(.system(size: 12, weight: .bold))
                         .frame(width: 15.0, height: 15.0)
-                    Text("\(gameViewModel.getTeamHits()["visitor"] ?? 1)") // change to hits
+                    Text("\(hits["visitor"] ?? 1)") // change to hits
                         .font(.system(size: 12, weight: .bold))
                         .frame(width: 15.0, height: 15.0)
-                    Text("\(gameViewModel.getTotalScore(team: "visitor"))") // change to errors
+                    Text("\(errors["visitor"] ?? 0)") // change to errors
                         .font(.system(size: 12, weight: .bold))
                         .frame(width: 15.0, height: 15.0)
                 }.padding(.bottom, -5)
@@ -866,13 +869,13 @@ struct ScoreView: View {
                             .font(.system(size: 12, weight: .bold))
                             .frame(width: 15.0, height: 15.0)
                     }
-                    Text("\(gameViewModel.getTotalScore(team: "home"))")
+                    Text("\(score["home"] ?? 0)")
                         .font(.system(size: 12, weight: .bold))
                         .frame(width: 15.0, height: 15.0)
-                    Text("\(gameViewModel.getTeamHits()["home"] ?? 0)") // change to hits
+                    Text("\(hits["home"] ?? 1)") // change to hits
                         .font(.system(size: 12, weight: .bold))
                         .frame(width: 15.0, height: 15.0)
-                    Text("\(gameViewModel.getTotalScore(team: "home"))") // change to errors
+                    Text("\(errors["home"] ?? 0)") // change to errors
                         .font(.system(size: 12, weight: .bold))
                         .frame(width: 15.0, height: 15.0)
                 }.padding(.bottom, -5)

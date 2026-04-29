@@ -154,7 +154,7 @@ struct InningsView: View {
                                             if checkBatter(inning: inning, player: player) {
                                                 if player.outcome["home"] == "" {
                                                     gameViewModel.batter = player
-                                                    currentPlayer = player
+                                                    //gameViewModel.currentPlayer = player
                                                     gameViewModel.baseRunners.insert(player, at: 0)
                                                     gameViewModel.incrementBatterUp()
                                                     showLargeView.toggle()
@@ -187,45 +187,8 @@ struct InningsView: View {
         }
         .sheet(isPresented: $showLargeView, onDismiss: {
             //  update game viewmodel, check outs and switch sides
-            gameViewModel.checkGameComplete()
-            if gameViewModel.checkInningComplete() { // change of sides, reset all game inning variables
-                gameViewModel.outs = 0
-                gameViewModel.balls = 0
-                gameViewModel.strikes = 0
-                if currentPlayer?.outcome["home"] == "" {
-                    gameViewModel.decrementBatterUp()
-                }
-                gameViewModel.baseRunners.removeAll()
-                
-                gameViewModel.inningRuns = 0
-                if gameViewModel.halfInning == 0 {
-                    gameViewModel.inningNumber[0] = (gameViewModel.inningNumber[0]/10 + 1) * 10
-                    gameViewModel.halfInning = 1
-                } else {
-                    gameViewModel.halfInning = 0
-                    gameViewModel.inningNumber[1] = (gameViewModel.inningNumber[1]/10 + 1) * 10
-                }
-                
-                try? modelContext.save()
-            } else {
-                if !gameViewModel.game.isComplete {
-                    // if dismiss sheet before batter is finished
-                    if gameViewModel.batter?.outcome["home"] == "" {
-                        gameViewModel.baseRunners.removeAll { each in
-                            each.baseOccupied == 0
-                        }
-                        gameViewModel.decrementBatterUp()
-                    } else {
-                        gameViewModel.balls = 0
-                        gameViewModel.strikes = 0
-                        //print("\(gameViewModel.undoPlay.count)")
-                        
-                    }
-                    try? modelContext.save()
-                }
-                try? modelContext.save()
-                // check for walk-off win
-            }
+            gameViewModel.checkInningComplete()
+            try? modelContext.save()
             
             if !largeView {
                 largeView.toggle()

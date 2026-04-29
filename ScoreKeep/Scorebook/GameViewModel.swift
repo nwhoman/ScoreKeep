@@ -50,6 +50,7 @@ class GameViewModel: Codable, Identifiable {
     var baserunnerObjectsForBackup: [OffensivePlateAppearance] = []
     var visitorInnings: [Inning] = []
     var homeInnings: [Inning] = []
+    //var currentPlayer: OffensivePlateAppearance?
     
     var sortedVisitorLineup: [[PlayerPos]] {
         visitorLineup.sorted(by: { $0.last!.batting < $1.last!.batting })
@@ -417,8 +418,11 @@ class GameViewModel: Codable, Identifiable {
         }
     }
     
-    func getTotalScore(team: String) -> Int {
-        return score[team]!.reduce(0, +)
+    func getTotalScore() -> [String: Int] {
+        return [
+            "visitor": score["visitor"]!.reduce(0, +),
+            "home": score["home"]!.reduce(0, +)
+        ]
     }
     
     func getTeamHits() -> [String: Int] { // 0 for visitor 1 for home
@@ -433,6 +437,21 @@ class GameViewModel: Codable, Identifiable {
         return [
             "visitor": vHits,
             "home": hHits
+        ]
+    }
+    func getTeamErrors() -> [String: Int] {
+        var vErrors = 0
+        var hErrors = 0
+        
+        for inning in self.visitorInnings {
+            hErrors += inning.plateAppearances.count(where: {$0.re > 0})
+        }
+        for inning in self.homeInnings {
+            vErrors += inning.plateAppearances.count(where: {$0.re > 0})
+        }
+        return [
+            "visitor": vErrors,
+            "home": hErrors
         ]
     }
     
@@ -609,23 +628,23 @@ class GameViewModel: Codable, Identifiable {
     }
     
     func checkGameComplete() {
-        
-        if self.inningNumber[0]/10 == self.totalInnings {
+        let score = self.getTotalScore()
+        if self.inningNumber[0]/10 > self.totalInnings {
             if self.halfInning == 1 {
                 if self.outs < 3 {
-                    if self.getTotalScore(team: "home") > self.getTotalScore(team: "visitor") {
+                    if score["home"] ?? 0 > score["visitor"] ?? 0 {
                         print("walk off home wins")
                         self.game.isComplete = true
                     }
                 } else {
-                    if self.getTotalScore(team: "home") < self.getTotalScore(team: "visitor") {
+                    if score["home"] ?? 0 < score["visitor"] ?? 0 {
                         print("visitor wins")
                         self.game.isComplete = true
                     }
                 }
             } else {
-                if self.outs == 3 {
-                    if self.getTotalScore(team: "home") > self.getTotalScore(team: "visitor") {
+                if self.outs >= 3 {
+                    if score["home"] ?? 0 > score["visitor"] ?? 0 {
                         print("home wins")
                         self.game.isComplete = true
                     }
@@ -644,20 +663,43 @@ class GameViewModel: Codable, Identifiable {
             }
         }
     }
-    func checkInningComplete() -> Bool {
+    func checkInningComplete() {
         print("outs: \(self.outs)")
-        if self.inningRunRule != 0 {
-            if self.inningRuns == self.inningRunRule {
-                print("run rule")
-                return true
+        self.checkGameComplete()
+        if self.inningRunRule != 0 && self.inningRuns == self.inningRunRule || self.outs >= 3 {
+            self.outs = 0
+            self.balls = 0
+            self.strikes = 0
+            self.inningRuns = 0
+            if self.batter?.outcome["home"] == "" { // if 3rd out made on bases while batter is up
+                self.decrementBatterUp()
             }
+            self.baseRunners.removeAll()
+            
+            
+            if self.halfInning == 0 {
+                self.inningNumber[0] = (self.inningNumber[0]/10 + 1) * 10
+                self.halfInning = 1
+            } else {
+                self.halfInning = 0
+                self.inningNumber[1] = (self.inningNumber[1]/10 + 1) * 10
+            }
+            
+        } else {
+            if !self.game.isComplete {
+                // if dismiss sheet before batter is finished
+                if self.batter?.outcome["home"] == "" {
+                    self.baseRunners.removeAll { each in
+                        each.baseOccupied == 0
+                    }
+                    self.decrementBatterUp()
+                } else {
+                    self.balls = 0
+                    self.strikes = 0
+                }
+            }
+            print("continue inning")
         }
-        if self.outs >= 3 {
-            print("3 outs")
-            return true
-        }
-        print("continue inning")
-        return false
     }
     
     func saveViewModelAsJSON() -> String {

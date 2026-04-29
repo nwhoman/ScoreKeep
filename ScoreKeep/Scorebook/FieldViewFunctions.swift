@@ -10,7 +10,23 @@ import SpriteKit
 import SwiftData
 import SwiftUI
 
+var baseNode = "Pitch"
+var pitchNodes = ["Strike", "Ball", "In-Play"]
+var strikeNodes = ["Looking", "Swinging", "Foul"]
+var inplayNodes = ["EHit", "Hit", "GO", "FO", "HBP", "SAC"]
+var hitNodes = ["1B", "2B", "3B", "HR"]
+var baseRunnningOptionNodes = ["E", "SB", "XB", "WP", "PB", "TO"]
+var strikeoutNodes = ["WP", "PB", "E"]
+var sacNodes = ["B", "FO", "EHit"]
 
+func toggleNodes(nodes: [String], bool: Bool, in scene: SKScene) {
+    for each in nodes {
+        scene.enumerateChildNodes(withName: each) { node, _ in
+            node.isHidden = bool
+        }
+    }
+    
+}
 func placeField(scene: SKScene) {
     var field = SKSpriteNode()
     

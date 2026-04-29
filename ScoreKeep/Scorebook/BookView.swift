@@ -33,8 +33,6 @@ struct BookView: View {
                             Image(systemName: "person.fill")
                             Text("Home - \(gameViewModel.game.homeTeam!.name)")
                         }.tag("Home")
-                    
-            
                 }
 
                 VStack {
