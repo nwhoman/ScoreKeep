@@ -11,7 +11,7 @@ import SwiftUI
 struct LineupView: View {
     @Environment(\.modelContext) var modelContext
     @Environment(\.dismiss) var dismiss
-//    @ObservedObject var gameVM: GameViewModel
+    @EnvironmentObject var nav: NavigationStateManager
     @State var gameVM: GameViewModel
     @State var game: Game
 
@@ -22,7 +22,8 @@ struct LineupView: View {
     @Binding var showTeamAlert: Bool
     @Binding var editPlayers: Bool
     @State var selectedTab: String
-
+    @State var invalidLineup: (Bool, LineupErrors) = (false, .none)
+    
     var team: Team {
         if selectedTab == "Home" {
             return game.homeTeam!
@@ -48,7 +49,8 @@ struct LineupView: View {
                     Spacer()
                     
                     Button("Save Lineup"){
-                        if validateLineup(lineup: lineup) {
+                        invalidLineup = validateLineup(lineup: lineup, team: selectedTab.lowercased())
+                        if !invalidLineup.0 {
                             
                             for batter in lineup.sorted(by: { $0.batting < $1.batting }) {
                                 print("\(batter.batting) \(batter.player.lastName)")
@@ -71,24 +73,30 @@ struct LineupView: View {
 //                                //game.visitingTeam!.lineup.removeAll()
 //                                gameVM.visitorCurrentLineup = lineup.sorted(by: { $0.batting < $1.batting })
 //                            }
-                            do {
-                                try modelContext.save()
-                            } catch {
-                                print("\(error)")
-                            }
-                        } else {
-                            showAlert = true
-                            showTeamAlert = true
+//                            do {
+//                                try modelContext.save()
+//                            } catch {
+//                                print("\(error)")
+//                            }
                         }
+//                        else {
+//                            showAlert = true
+//                            showTeamAlert = true
+//                        }
                     }
                 }
                 
                 .padding(10)
-                RosterView(gameVM: gameVM, team: team, selectedTab: $selectedTab, lineup: $lineup, editPlayers: $editPlayers)
+                
+                RosterView(gameVM: gameVM, team: team, selectedTab: $selectedTab, lineup: $lineup, editPlayers: $editPlayers, selectedPlayer: lineup.first ?? PlayerPos.defaultPos)
                 
             }
             .background(Color.clear)
-            
+            .alert(isPresented: $invalidLineup.0) {
+                
+                return getAlertForLineup(error: (invalidLineup.1), team: selectedTab.lowercased(), test: $invalidLineup.0)
+                
+            }
         
     }
 }
@@ -119,13 +127,15 @@ func playerUsed(player: Player, lineup: [PlayerPos]) -> Bool {
 struct RosterView: View {
     @Environment(\.modelContext) var modelContext
     @Environment(\.dismiss) var dismiss
-//    @ObservedObject var gameVM: GameViewModel
+    @EnvironmentObject var nav: NavigationStateManager
     @State var gameVM: GameViewModel
     @State private var positions: [String] = ["P", "C", "1B", "2B", "3B", "SS", "LF", "CF", "RF", "DP", "F", "EP"]
     @State var team: Team
     @Binding var selectedTab: String
     @Binding var lineup: [PlayerPos]
     @Binding var editPlayers: Bool
+    @State var showSubs: Bool = false
+    @State var selectedPlayer: PlayerPos
     
     private var unusedPositions: [String] {
         var possiblePositions = positions
@@ -158,15 +168,18 @@ struct RosterView: View {
             VStack {
                 HStack {
                     GroupBox(label:
-                        HStack{Text("Roster")
-                        Spacer()
-                        Button {
-                            editPlayers.toggle()
-                        } label: {
-                            Image(systemName: "pencil")
-                                .fontWeight(.bold)
-                                .font(.system(size: 12))
-                        }}
+                        HStack {
+                            Text("Roster")
+                            Spacer()
+                            Button {
+                                nav.push(.teamPlayers(teamID: team.id))
+                                //editPlayers.toggle()
+                            } label: {
+                                Image(systemName: "pencil")
+                                    .fontWeight(.bold)
+                                    .font(.system(size: 12))
+                            }
+                        }
                     ) {
                         VStack {
                             
@@ -202,13 +215,14 @@ struct RosterView: View {
                                         .padding(.horizontal, -5)
                                         .font(.caption)
                                         .onTapGesture {
-                                            
-                                            lineup = popPlayerFromLineup(lineup: lineup, player: player)
-                                            
-                                            for i in 0..<lineup.count {
-                                                lineup[i].batting = i+1
-                                            }
-                                            modelContext.delete(player)
+                                            selectedPlayer = player
+                                            showSubs.toggle()
+//                                            lineup = popPlayerFromLineup(lineup: lineup, player: player)
+//                                            
+//                                            for i in 0..<lineup.count {
+//                                                lineup[i].batting = i+1
+//                                            }
+//                                            modelContext.delete(player)
                                             //try? modelContext.save()
                                         }
                                     }
@@ -223,6 +237,10 @@ struct RosterView: View {
                 .padding(10)
             }
             .background(Color.clear)
+        }
+        .sheet(isPresented: $showSubs) {
+            SwapPlayerView(lineup: $lineup, selectedPlayer: $selectedPlayer, gameVM: $gameVM, unusedPlayers: unusedPlayers, positions: unusedPositions)
+              
         }
     }
 }
@@ -274,8 +292,12 @@ struct RosterItemView: View {
                 let order: Int = lineup.count + 1
                 let newPlayer: PlayerPos = PlayerPos(player: player, position: position, batting: order)
                 modelContext.insert(newPlayer)
-                lineup.append(newPlayer)
+                if position == "F" {
+                    newPlayer.flex = true
+                }
+                
                 do {
+                    lineup.append(newPlayer)
                     try modelContext.save()
                 } catch {
                     print("error inserting PlayerPos \(error)")

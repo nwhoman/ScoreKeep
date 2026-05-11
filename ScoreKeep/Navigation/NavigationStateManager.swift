@@ -30,4 +30,10 @@ enum AppRoute: Hashable {
     case team(team: Team)
     case teams
     case games
+    case innings
+    case players
+    case teamPlayers(teamID: UUID)
+    case player(player: Player)
+    case startGame(gameViewModel: GameViewModel)
+    case bookView(gameViewModel: GameViewModel)
 }

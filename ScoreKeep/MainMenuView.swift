@@ -20,6 +20,15 @@ struct MainMenuView: View {
         //NavigationStack { //path: $path.animation(.bouncy)) {
             List {
                 Button {
+                    nav.push(.players)
+                    //PlayersView(team: nil)
+                } label: {
+                    Image(systemName: "pencil")
+                        .fontWeight(.bold)
+                        .font(.system(size: 12))
+                    Text("Players")
+                }
+                Button {
                     nav.push(.teams)
                 } label: {
                     Image(systemName: "pencil")
@@ -35,21 +44,18 @@ struct MainMenuView: View {
                         .font(.system(size: 12))
                     Text("Games")
                 }
-//                NavigationLink("Teams", value: "Teams")
-//                NavigationLink("Play Game", value: "Play Game")
+                Button {
+                    nav.push(.innings)
+                } label: {
+                    Image(systemName: "pencil")
+                        .fontWeight(.bold)
+                        .font(.system(size: 12))
+                    Text("Innings")
+                }
+                
             }
             .navigationTitle("ScoreKeep")
-//            .navigationDestination(for: String.self) {
-//                name in
-//                if name == "Teams" {
-//                    TeamsView()
-//                    //TeamsView(path: $path)
-//                } else if name == "Play Game" {
-//                    GamesView()
-//                    //StartGameView(path: $path)
-//                    //GamesView(path: $path)
-//                }
-//            }
+            
             Button {
                 
                 preview.addSampleLineups(game: game)
@@ -58,8 +64,6 @@ struct MainMenuView: View {
             } label: {
                 Text("Add Default Data")
             }
-        //}
-//        .navigationBarBackButtonHidden()
         
     }
         

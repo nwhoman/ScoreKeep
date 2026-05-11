@@ -109,10 +109,15 @@ extension PlayerPos {
     }
     
 }
+extension Inning {
+    static var defaultInning: Inning {
+        return Inning(number: 1, game: Game.defaultGame, half: 0)
+    }
+}
 
 extension OffensivePlateAppearance {
     static var defaultPlateAppearance: OffensivePlateAppearance {
-        var appearance: OffensivePlateAppearance = OffensivePlateAppearance(order: 1, batter: Player(firstName: Player.firstNames, lastName: Player.lastNames, number: Player.numbers), pitcher: Player(firstName: Player.firstNames, lastName: Player.lastNames, number: Player.numbers),inning: 1)
+        var appearance: OffensivePlateAppearance = OffensivePlateAppearance(order: 1, batter: Player(firstName: Player.firstNames, lastName: Player.lastNames, number: Player.numbers), pitcher: Player(firstName: Player.firstNames, lastName: Player.lastNames, number: Player.numbers),inning: Inning.defaultInning)
         appearance.hit = 2
         appearance.outcome = ["home" : "E7", "first" : "", "second" : "Stole 3B", "third" : ""]
         appearance.run = true

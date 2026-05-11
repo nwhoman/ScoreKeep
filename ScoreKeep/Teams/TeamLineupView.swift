@@ -13,7 +13,7 @@ struct TeamLineupView: View {
 //    @ObservedObject var gameVM: GameViewModel
 //    @State var gameVM: GameViewModel
     @State private var positions: [String] = ["P", "C", "1B", "2B", "3B", "SS", "LF", "CF", "RF", "DP", "F", "EP"]
-    @State var team: Team
+    @Binding var team: Team
     
     @Binding var lineup: [PlayerPos]
     
@@ -43,7 +43,7 @@ struct TeamLineupView: View {
                             
                             List {
                                 ForEach(unusedPlayers.sorted(by: { Int($0.number)! < Int($1.number)! }), id: \.id) { player in
-                                    RosterItemView(player: player, lineup: $lineup, unusedPositions: unusedPositions, position: "")
+                                    RosterItemView2(player: player, lineup: $team.lineup, unusedPositions: unusedPositions, position: "")
                                 
                                 }
                                 
@@ -58,7 +58,7 @@ struct TeamLineupView: View {
                     GroupBox(label: Text("Lineup")) {
                         VStack {
                             List {
-                                ForEach(lineup.sorted(by: { $0.batting < $1.batting }), id: \.id) { player in
+                                ForEach(team.lineup.sorted(by: { $0.batting < $1.batting }), id: \.id) { player in
                                     HStack {
                                         Text("\(player.batting))")
                                             .font(.caption)
@@ -99,55 +99,65 @@ struct TeamLineupView: View {
 }
 
 
-//struct RosterItemView: View {
-//    @Environment(\.modelContext) var modelContext
-//    @Environment(\.dismiss) var dismiss
-//    
-//    @State var player: Player
-//    @Binding var lineup: [PlayerPos]
-//    var unusedPositions: [String]
-//    @State var position: String
-//    //var lineup: [PlayerPos]
-//    
-//    var body: some View {
-//        GeometryReader { geo in
-//            HStack(alignment: .center) {
-//                VStack(alignment: .leading) {
-//                    Text("#\(player.number)")
-//                    Text("\(player.lastName), \(player.firstName)")
-//                }
-//                .font(.caption)
-//                Spacer()
-//                VStack {
-//                    Picker("", selection: $position){
-//                        ForEach(unusedPositions, id: \.self){ position in
-//                            Text(position)
-//                                .tag(position as String)
-//                        }
-//                    }
-//                    .frame(width: 5, height: geo.size.height)
-//                    Spacer()
-//                }
-//                
-//            }
-//            .padding(.horizontal, -5)
-//            .border(Color(.secondarySystemBackground), width: 1)
-//            .onChange(of: position) {
-//                if (position == "") { return }
-//                let order: Int = lineup.count + 1
-//                let newPlayer: PlayerPos = PlayerPos(player: player, position: position, batting: order)
-//                modelContext.insert(newPlayer)
-//                lineup.append(newPlayer)
-//                do {
-//                    try modelContext.save()
-//                } catch {
-//                    print("error inserting PlayerPos \(error)")
-//                }
-//                position = ""
-//            }
-//        }
-//    }
-//}
+struct RosterItemView2: View {
+    @Environment(\.modelContext) var modelContext
+    @Environment(\.dismiss) var dismiss
+    
+    @State var player: Player
+    @Binding var lineup: [PlayerPos]
+    var unusedPositions: [String]
+    @State var position: String
+    @State var selectFlexPos: Bool = false
+    //var lineup: [PlayerPos]
+    
+    var body: some View {
+        GeometryReader { geo in
+            HStack(alignment: .center) {
+                VStack(alignment: .leading) {
+                    Text("#\(player.number)")
+                    Text("\(player.lastName), \(player.firstName)")
+                }
+                .font(.caption)
+                Spacer()
+                VStack {
+                    Picker("", selection: $position){
+                        ForEach(unusedPositions, id: \.self){ position in
+                            Text(position)
+                                .tag(position as String)
+                        }
+                    }
+                    .frame(width: 5, height: geo.size.height)
+                    Spacer()
+                }
+                
+            }
+            .padding(.horizontal, -5)
+            .border(Color(.secondarySystemBackground), width: 1)
+            .onChange(of: position) {
+                if (position == "") { return }
+                
+                let order: Int = lineup.count + 1
+                let newPlayer: PlayerPos = PlayerPos(player: player, position: position, batting: order)
+                modelContext.insert(newPlayer)
+                
+                if position == "F" {
+                    newPlayer.flex = true
+                }
+                do {
+                    try modelContext.save()
+                    lineup.append(newPlayer)
+                    print("\(player.number) added to lineup at \(position)")
+                } catch {
+                    print("error inserting PlayerPos \(error)")
+                }
+                position = ""
+                
+                
+            }
+        }
+        
+    }
+}
 
 //#Preview {
 //    @Previewable@Binding var team = Team.defaultTeam

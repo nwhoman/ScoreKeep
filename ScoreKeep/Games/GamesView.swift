@@ -19,44 +19,53 @@ struct GamesView: View {
     //@Binding var path: NavigationPath
     @State var JSONString: String = ""
     @State var showJSON: Bool = false
-    @State var isLoading: Bool = false
-    
+    @State var isLoading: Bool = false    
     
     var body: some View {
-        //NavigationStack {
+        GeometryReader { geo in
         
-//        List {
-//            ForEach(games, id: \.id) { game in
-//                NavigationLink(value: game) {
-//                    HStack {
-//                        VStack(alignment: .leading) {
-//                            Text(game.name)
-//                                .font(.headline)
-//                            Text("\(game.date.formatted(date: .complete, time: .shortened))")
-//                                .foregroundStyle(.secondary)
-//                        }
-//                    }
-//                }
-//            }
-//            .onDelete(perform: deleteGame)
-//        }
         List {
-            ForEach(viewModels.sorted(by: { $0.game.date < $1.game.date }), id: \.id) { vm in
+            ForEach(games, id: \.id) { game in
+                NavigationLink(value: game) {
+                    HStack {
+                        VStack(alignment: .leading) {
+                            HStack {
+                                Text(game.name)
+                                    .font(.headline)
+                                if game.isComplete {
+                                    Text("X g")
+                                } else {
+                                    Text("O g")
+                                }
+                            }
+                            Text("\(game.date.formatted(date: .complete, time: .shortened))")
+                                .foregroundStyle(.secondary)
+                            
+                        }
+                    }
+                }
+            }
+            .onDelete(perform: deleteGame)
+        }
+        List {
+            ForEach(viewModels, id: \.id) { vm in //.sorted(by: { $0.game.date < $1.game.date })
+                
                 NavigationLink(value: vm) {
                     HStack {
                         VStack(alignment: .leading) {
                             HStack {
-                                Text(vm.game.name)
+                                Text("\(vm.id)")
                                     .font(.headline)
+                                
                                 Spacer()
-                                if vm.game.isComplete {
-                                    Text("X")
-                                } else {
-                                    Text("O")
-                                }
+//                                if vm.game.isComplete {
+//                                    Text("X")
+//                                } else {
+//                                    Text("O")
+//                                }
                             }
-                            Text("\(vm.game.date.formatted(date: .complete, time: .shortened))")
-                                .foregroundStyle(.secondary)
+//                            Text("\(vm.game.date.formatted(date: .complete, time: .shortened))")
+//                                .foregroundStyle(.secondary)
                         }
                     }
                 }
@@ -91,7 +100,7 @@ struct GamesView: View {
                 if !vm.game.isComplete{
                     BookView(gameViewModel: vm)
                 } else {
-                    BoxScoreView(gameViewModel: vm)
+                    BoxScoreView(gameViewModel: vm, geo: geo)
                 }
                 
                 
@@ -112,7 +121,7 @@ struct GamesView: View {
                 StartGameView()
                 //StartGameView(path: $path)
             }
-        //}
+        }
             .sheet(isPresented: $showJSON) {
                 ScrollView {
                     Text(JSONString)
@@ -120,17 +129,27 @@ struct GamesView: View {
             }
     }
     
+    
     func deleteGame(at offsets: IndexSet){
         for offset in offsets {
             let game = games[offset]
+            for inning in game.innings {
+                modelContext.delete(inning)
+            }
             modelContext.delete(game)
         }
     }
     func deleteVM(at offsets: IndexSet){
         for offset in offsets {
+            //let viewModel = viewModels[offset]
             let viewModel = viewModels.sorted(by: { $0.game.date < $1.game.date })[offset]
-            
+            modelContext.delete(viewModel.game)
             modelContext.delete(viewModel)
+        }
+        do {
+            try modelContext.save()
+        } catch {
+            print("error \(error)")
         }
     }
     

@@ -22,8 +22,18 @@ struct GameLineupsView: View {
     @State var showVisitorAlert = false
     @State var startGame: Bool = false
     @State var editPlayers: Bool = false
+    @State var homeCheck: (Bool, LineupErrors) = (false, .none)
+    @State var visitorCheck: (Bool, LineupErrors) = (false, .none)
     
-
+    var teamsCheck: Binding<Bool> {
+        Binding(
+            get: { self.homeCheck.0 || self.visitorCheck.0 },
+            set: { newValue in
+                self.homeCheck.0 = newValue
+                self.visitorCheck.0 = newValue }
+        )
+    }
+    
     var body: some View {
         ZStack {
             VStack {
@@ -36,9 +46,14 @@ struct GameLineupsView: View {
                         .tabItem { Text("\(gameViewModel.game.visitingTeam!.name)") }.tag("Visitor")
                     
                 }
-                .alert(isPresented: $showAlert) {
-                    showHomeAlert ? Alert(title: Text("Home Team Lineup Error"), message: Text("Please check that all the positions are filled"), dismissButton: .default(Text("OK"))) : Alert(title: Text("Visiting Team Lineup Error"), message: Text("Please check that all the positions are filled"), dismissButton: .default(Text("OK")))
+                .alert(isPresented: teamsCheck) {
+                    if homeCheck.0 {
+                         return getAlertForLineup(error: (homeCheck.1), team: "home", test: $homeCheck.0)
+                    } else  {
+                        return getAlertForLineup(error: (visitorCheck.1), team: "visitor", test: $visitorCheck.0)
+                    }
                 }
+                
             }
             VStack{
                 HStack {
@@ -53,14 +68,19 @@ struct GameLineupsView: View {
                     Spacer()
                     Button {
                         // Verify both teams' lineups
-                        if validateLineup(lineup: gameViewModel.homeCurrentLineup) {
-                            if validateLineup(lineup: gameViewModel.visitorCurrentLineup) {
-                               // destination Start Game
-                                startGame.toggle()
-                            } else {
-                                showVisitorAlert.toggle()
-                                showAlert.toggle()
+                        homeCheck = validateLineup(lineup: gameViewModel.homeCurrentLineup, team: "home")
+                        visitorCheck = validateLineup(lineup: gameViewModel.homeCurrentLineup, team: "visitor")
+                        if !homeCheck.0 && !visitorCheck.0 {
+                            do {
+                                //modelContext.insert(gameViewModel)
+                                
+                                try modelContext.save()
+                            } catch {
+                                print("error saving game: \(error)")
                             }
+                            nav.push(.bookView(gameViewModel: gameViewModel))
+                            //startGame.toggle()
+                        
                         } else {
                             showHomeAlert.toggle()
                             showAlert.toggle()
@@ -111,49 +131,110 @@ struct GameLineupsView: View {
             }
         
         }
-        .sheet(isPresented: $editPlayers, content: {
-            AddPlayerView(team: selectedTab == "Home" ? gameViewModel.game.homeTeam! : gameViewModel.game.visitingTeam!)
-        })
-        .navigationDestination(isPresented: $startGame) {
-            BookView(gameViewModel: gameViewModel)
-        }
+//        .sheet(isPresented: $editPlayers, content: {
+//            let homeTeam = $gameViewModel.game.homeTeam
+//            if selectedTab == "Home" {
+//                AddPlayerView(team: homeTeam)
+//            } else {
+//                AddPlayerView(team: $gameViewModel.game.visitingTeam)
+//            }
+//        })
+//        .navigationDestination(isPresented: $startGame) {
+//            BookView(gameViewModel: gameViewModel)
+//        }
     }
 }
-func validateLineup(lineup: [PlayerPos]) -> Bool {
-    let positions: [String] = ["P", "C", "1B", "2B", "3B", "SS", "LF", "CF", "RF"]
-    let order = lineup.sorted { $0.batting < $1.batting }
-    if order.count < 9 {
-        print("<9 \(order.count)")
-        return false
+enum LineupErrors: Error {
+    case invalidLineup
+    case fNotLast
+    case noDPwithF
+    case noFwithDP
+    case tooFewWithF
+    case tooFewWithEP
+    case none
+    
+}
+
+func getAlertForLineup(error: LineupErrors, team: String, test: Binding<Bool>) -> Alert {
+    switch error {
+    case .invalidLineup:
+        return  Alert(title: Text("\(team) Team Lineup Error"), message: Text("Not all the positions are filled, do you want to proceed?"), primaryButton: .default(Text("Proceed")) { test.wrappedValue = true }, secondaryButton: .cancel())
+    case .fNotLast:
+        return Alert(title: Text("\(team) Team Lineup Error"), message: Text("The Flex is not last in the order"), dismissButton: .default(Text("OK")))
+    case .noDPwithF:
+        return Alert(title: Text("\(team) Team Lineup Error"), message: Text("There is no DP designated for the Flex"), dismissButton: .default(Text("OK")))
+    case .noFwithDP:
+        return Alert(title: Text("\(team) Team Lineup Error"), message: Text("There is no F designated for the DP"), dismissButton: .default(Text("OK")))
+    case .tooFewWithF:
+        return Alert(title: Text("\(team) Team Lineup Error"), message: Text("Not all the positions are filled with a designated Flex"), dismissButton: .default(Text("OK")))
+    case .tooFewWithEP:
+        return Alert(title: Text("\(team) Team Lineup Error"), message: Text("Not all the positions are filled with designated EP players"), dismissButton: .default(Text("OK")))
+    default:
+        return Alert(title: Text("No Error"), message: Text("\(team) Lineup Looks Good"), dismissButton: .default(Text("OK")))
     }
-    if order.contains(where: { $0.position == "F" }) {
-        if order.last?.position != "F" {
+    
+}
+
+func validateLineup(lineup: [PlayerPos], team: String) -> (Bool, LineupErrors) {
+    var positions: [String] = ["P", "C", "1B", "2B", "3B", "SS", "LF", "CF", "RF"]
+    var errorType: LineupErrors = .none
+    var invalidLineup: Bool = false
+    let order = lineup.sorted { $0.batting < $1.batting }
+    
+    // filter all used positions out of lineup
+    for each in order {
+        positions.removeAll { $0 == each.position }
+    }
+    
+    // add the unfilled position to the Flex player
+    if let pos = positions.first {
+        for each in order {
+            if each.flex {
+                if !each.position.contains("/") {
+                    each.position += "/" + pos
+                }
+            }
+        }
+    }
+    if order.contains(where: { $0.flex }) {
+        if let lastInOrder = order.last, !lastInOrder.flex {
             print("last not F")
-            return false
+            errorType = .fNotLast
+            invalidLineup = true
         } else if !order.contains(where: { $0.position == "DP" }) {
             print("no DP")
-            return false
+            errorType = .noDPwithF
+            invalidLineup = true
         }
-        let newLineup = order.filter { $0.position != "F" && $0.position != "DP" && $0.position != "EP"}
+        
+        let newLineup = order.filter { !$0.flex && $0.position != "DP" && $0.position != "EP"}
         
         if newLineup.count != 8 {
             print("not 8")
-            return false
+            errorType = .tooFewWithF
+            invalidLineup = true
         }
         print("all good with F")
-        return true
+        //return true
+    } else {
+        if order.contains(where: { $0.position == "DP" }) {
+            print("contains DP")
+            errorType = .noFwithDP
+            invalidLineup = true
+        }
     }
-    if order.contains(where: { $0.position == "DP" }) {
-        print("contains DP")
-        return false
-    }
+    
     let newLineup = order.filter { $0.position != "EP"}
     if newLineup.count < 9 {
         print("no flex <9")
-        return false
+        errorType = .invalidLineup
+        invalidLineup = true
     }
-    print("all good")
-    return true
+    if !invalidLineup {
+        print("all good")
+    }
+    return (invalidLineup, errorType)
+    
 }
 
 func checkFlex(lineup: [PlayerPos]) -> Bool {

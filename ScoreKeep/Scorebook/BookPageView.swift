@@ -55,7 +55,7 @@ struct BookPageView: View {
                     }
                     HStack {
                         NavigationLink {
-                            BoxScoreView(gameViewModel: gameViewModel)
+                            BoxScoreView(gameViewModel: gameViewModel, geo: geo)
                         } label: {
                             Text("Box Score")
                         }
@@ -137,17 +137,17 @@ struct InningsView: View {
         }
     }
     var body: some View {
-        HStack {
-            ForEach(innings.sorted(by: {$0.number < $1.number}), id: \.self) { inning in
-                HStack(alignment: .top) {
-                    VStack(alignment: .leading) {
-                        Text("\(inning.number/10)")//--\(inning.number/10)")
-                        .frame(width: 75, height: 50, alignment: .center)
-                        .border(Color.blue)
-                        Text("\(gameViewModel.inningNumber[gameViewModel.halfInning])-\(gameViewModel.batterUp[gameViewModel.halfInning])/\(gameViewModel.batterCount[gameViewModel.halfInning])")
-                        ForEach(inning.plateAppearances.sorted(by: {$0.order < $1.order}), id: \.self) { player in
-                            GeometryReader { geo in
-                                
+        GeometryReader { geo in
+            HStack {
+                ForEach(innings.sorted(by: {$0.number < $1.number}), id: \.self) { inning in
+                    HStack(alignment: .top) {
+                        VStack(alignment: .leading) {
+                            Text("\(inning.number/10)")//--\(inning.number/10)")
+                                .frame(width: 75, height: 50, alignment: .center)
+                                .border(Color.blue)
+//                            Text("\(gameViewModel.inningNumber[gameViewModel.halfInning])-\(gameViewModel.batterUp[gameViewModel.halfInning])/\(gameViewModel.batterCount[gameViewModel.halfInning])")
+//                                .border(Color.blue)
+                            ForEach(inning.plateAppearances.sorted(by: {$0.order < $1.order}), id: \.self) { player in
                                 SmallPlateAppearanceView(gameViewModel: gameViewModel, player: player, scale: 0.15)
                                     .onTapGesture {
                                         if !gameViewModel.game.isComplete {
@@ -177,10 +177,12 @@ struct InningsView: View {
                                             
                                         }
                                     }
+                                
                             }
+                            .frame(width: 75, height: 75, alignment: .topLeading)
+                            //.border(Color.black)
+                            Spacer()
                         }
-                        .frame(width: 75, height: 75, alignment: .topLeading)
-                        //.border(Color.black)
                     }
                 }
             }

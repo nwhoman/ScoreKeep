@@ -14,7 +14,7 @@ struct TeamStatsView: View {
     @Query(sort: \Game.date, order: .reverse ) var games: [Game]
     @Query var innings: [Inning]
     var plateAppearances: [OffensivePlateAppearance]?
-    let geo: GeometryProxy
+    @State var geo: GeometryProxy
     
     let team: Team
     
@@ -36,13 +36,14 @@ struct TeamStatsView: View {
     }
     
     var body: some View {
-        GeometryReader { geo in
+        //GeometryReader { geo in
             VStack(alignment: .leading) {
                     Text("\(team.name) Stats")
                     
                 ScrollView(.horizontal) {
                     var totalPA: [OffensivePlateAppearance] = []
                     StatLabelView(geo: geo)
+                        
                     HStack {
                         VStack(alignment: .leading) {
                             
@@ -53,17 +54,20 @@ struct TeamStatsView: View {
                                 }
                                 
                                 StatLineView(geo: geo, player: player, plateAppearances: player.plateAppearances ?? [])
-                                
+                                    
                             }
                         }
                         .font(.caption2)
+                        
                     }
                     Divider()
                     StatLineView(geo: geo, plateAppearances: totalPA)
+                        
                 }
+                
             }
-            .frame(height: geo.size.height)
-        }
+            .frame(width: geo.size.width, height: geo.size.height, alignment: .leading)
+        //}
     }
 }
 

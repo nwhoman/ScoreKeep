@@ -15,14 +15,20 @@ struct ContentView: View {
         NavigationStack(path: $nav.path) {
             //PlateAppearanceView()
             MainMenuView()
-                .navigationDestination(for: AppRoute.self) { route in
-                    switch route {
-                    case .home: ContentView()
-                    case .team(let team): TeamDetailView(team: team)
-                    case .teams: TeamsView()
-                    case .games: GamesView()
-                    }
+            .navigationDestination(for: AppRoute.self) { route in
+                switch route {
+                case .home: ContentView()
+                case .team(let team): TeamDetailView(team: team)
+                case .teams: TeamsView()
+                case .games: GamesView()
+                case .innings: InningsListView()
+                case .players: PlayersView(teamId: nil)
+                case .player(let player): PlayerDetailView(player: player)
+                case .teamPlayers(let id): PlayersView(teamId: id)
+                case .startGame(let gameViewModel): GameLineupsView(gameViewModel: gameViewModel)
+                case .bookView(let gameViewModel): BookView(gameViewModel: gameViewModel)
                 }
+            }
         }
         .environmentObject(nav)
     }

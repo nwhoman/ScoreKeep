@@ -71,7 +71,7 @@ struct TeamsView: View {
         }
     func deleteTeam(at offsets: IndexSet){
         for offset in offsets {
-            let team = teams[offset]
+            let team = teams.sorted { $0.name < $1.name }[offset]
             modelContext.delete(team)
         }
     }

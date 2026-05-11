@@ -269,7 +269,7 @@ class Inning: Codable {
     var game: Game
     var half: Int
     
-    var plateAppearances: [OffensivePlateAppearance] = []
+    @Relationship(deleteRule: .cascade, inverse: \OffensivePlateAppearance.inning) var plateAppearances: [OffensivePlateAppearance] = []
     
    
     init(number: Int, game: Game, half: Int) {
@@ -306,7 +306,7 @@ class OffensivePlateAppearance: Codable {
     var order: Int
     var batter: Player
     var pitcher: Player
-    var inning: Int
+    var inning: Inning
     var pitches: [Pitch]
     var outs: Int
     var hit: Int
@@ -337,7 +337,7 @@ class OffensivePlateAppearance: Codable {
         }
     }
     
-    init(order: Int, batter: Player, pitcher: Player, inning: Int) {
+    init(order: Int, batter: Player, pitcher: Player, inning: Inning) {
         self.id = UUID()
         self.order = order
         self.batter = batter
@@ -368,7 +368,7 @@ class OffensivePlateAppearance: Codable {
         self.order = try values.decode(Int.self, forKey: .order)
         self.batter = try values.decode(Player.self, forKey: .batter)
         self.pitcher = try values.decode(Player.self, forKey: .pitcher)
-        self.inning = try values.decode(Int.self, forKey: .inning)
+        self.inning = try values.decode(Inning.self, forKey: .inning)
         self.pitches = try values.decode([Pitch].self, forKey: .pitches)
         self.outs = try values.decode(Int.self, forKey: .outs)
         self.hit = try values.decode(Int.self, forKey: .hit )
@@ -501,6 +501,7 @@ class PlayerPos: Identifiable, Hashable, Codable {
     var assists: Int = 0
     var putOuts: Int = 0
     var errors: Int = 0
+    var flex: Bool = false
     
     init(player: Player, position: String, batting: Int = 0) {
         self.id = UUID()
@@ -596,7 +597,7 @@ struct PitcherStats: Identifiable, Hashable, Codable {
         if self.inningsPitched != 0 {
              return Double(self.er) * 7.0 / Double(self.inningsPitched)
         } else {
-            return 999.0
+            return 0.0
         }
         
     }
@@ -715,8 +716,7 @@ enum PitchingStatLabels: String, Codable, CaseIterable {
 }
 
 struct BattingLineupView: View {
-    
-//    @ObservedObject var gameVM: GameViewModel
+    @EnvironmentObject var nav: NavigationStateManager
     @State var gameVM: GameViewModel
     @State var showSubPages: Bool = false
     @State var showAlert: Bool = false
@@ -745,7 +745,7 @@ struct BattingLineupView: View {
                         VStack(spacing: 0) {
                             ForEach(orderSlot, id: \.self) { player in
                                 HStack {
-                                    Text("\(player.player.number) - \(player.player.lastName), \(player.player.firstName.first!)")
+                                    Text("\(player.player.number) - \(player.player.lastName), \(String(player.player.firstName.first ?? " "))")
                                     Spacer(minLength: 10)
                                     Text("\(player.position)")
                                     Text("\(player.inning)").font(.system(size: 6).italic())
@@ -1169,4 +1169,18 @@ struct FieldView: View {
     }
 }
 
-
+extension Binding {
+    // Converts Binding<T> to Binding<T?>
+    func wrapped() -> Binding<Value?> {
+            Binding<Value?>(
+                get: { self.wrappedValue },
+                set: { newValue in
+                    // Only update if the new value is not nil
+                    if let newValue = newValue {
+                        self.wrappedValue = newValue
+                    }
+                }
+            )
+        }
+}
+// Usage: $team.wrapped()

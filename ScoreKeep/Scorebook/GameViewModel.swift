@@ -162,7 +162,9 @@ class GameViewModel: Codable, Identifiable {
     func setUpGame() {
         self.visitorLineup = setInitialLineup(halfInning: 0)
         self.homeLineup = setInitialLineup(halfInning: 1)
-        self.batterCount = [visitorCurrentLineup.filter({$0.position != "F"}).count, homeCurrentLineup.filter({$0.position != "F"}).count]
+        
+        self.batterCount = [visitorCurrentLineup.filter({!$0.flex}).count, homeCurrentLineup.filter({!$0.flex}).count]
+        print("batter count: \(self.batterCount[0]) \(self.batterCount[1])")
         for i in 1...self.totalInnings {
             let vInning = Inning(number: i*10, game: game, half: 0)
             let hInning = Inning(number: i*10, game: game, half: 1)
@@ -191,32 +193,33 @@ class GameViewModel: Codable, Identifiable {
         return score
     }
     func getCurrentPitcher(i: Int) -> PlayerPos {
-        var pitcher: PlayerPos!
+        var pitcher: PlayerPos
         if i == 0 {
-            if self.visitorCurrentLineup.filter({$0.position == "P"}).first != nil {
-                pitcher = self.visitorCurrentLineup.filter({$0.position == "P"}).first
+            if self.visitorCurrentLineup.contains(where: { $0.position == "P" }) {
+                pitcher = self.visitorCurrentLineup.filter({$0.position == "P"}).first!
             } else {
-                pitcher = self.visitorCurrentLineup.filter({$0.position == "F"}).first
+                pitcher = self.visitorCurrentLineup.filter({$0.flex}).first!
             }
         } else {
-            if self.homeCurrentLineup.filter({$0.position == "P"}).first != nil {
-                pitcher = self.homeCurrentLineup.filter({$0.position == "P"}).first
+            if self.homeCurrentLineup.contains(where: { $0.position == "P" }) {
+                pitcher = self.homeCurrentLineup.filter({$0.position == "P"}).first!
             } else {
-                pitcher = self.homeCurrentLineup.filter({$0.position == "F"}).first
+                pitcher = self.homeCurrentLineup.filter({$0.flex}).first!
             }
         }
         return pitcher
     }
     func addInning(inning: Inning, lineup: [PlayerPos], halfInning: Int) {
-        var visitorPitcher = getCurrentPitcher(i: 0)
-        var homePitcher = getCurrentPitcher(i: 1)
+        let visitorPitcher = getCurrentPitcher(i: 0)
+        let homePitcher = getCurrentPitcher(i: 1)
         
         var order = 1
         
             if halfInning == 0 {
                 inning.half = halfInning
-                for batter in self.visitorCurrentLineup.sorted(by: { $0.batting < $1.batting }) {
-                    let plateAppearance = OffensivePlateAppearance(order: order, batter: batter.player, pitcher: homePitcher.player, inning: inning.number)
+                let temp = visitorCurrentLineup.filter({!$0.flex})
+                for batter in temp.sorted(by: { $0.batting < $1.batting }) {
+                    let plateAppearance = OffensivePlateAppearance(order: order, batter: batter.player, pitcher: homePitcher.player, inning: inning)
                     modelContext?.insert(plateAppearance)
                     do {
                         try modelContext?.save()
@@ -232,8 +235,9 @@ class GameViewModel: Codable, Identifiable {
                 
             } else {
                 inning.half = halfInning
-                for batter in self.homeCurrentLineup.sorted(by: { $0.batting < $1.batting }) {
-                    let plateAppearance = OffensivePlateAppearance(order: order, batter: batter.player, pitcher: visitorPitcher.player, inning: inning.number)
+                let temp = homeCurrentLineup.filter({!$0.flex})
+                for batter in temp.sorted(by: { $0.batting < $1.batting }) {
+                    let plateAppearance = OffensivePlateAppearance(order: order, batter: batter.player, pitcher: visitorPitcher.player, inning: inning)
                     modelContext?.insert(plateAppearance)
                     do {
                         try modelContext?.save()
@@ -310,8 +314,8 @@ class GameViewModel: Codable, Identifiable {
             self.homeLineup = temp2
         }
         // replace batter in plate appearances and pitcher if the pither was changed
-        for each in game.innings {
-            for app in each.plateAppearances {
+        for inning in game.innings {
+            for app in inning.plateAppearances {
                 
                 if !app.active {
                     if app.batter == selectedPlayer.player {
@@ -492,7 +496,14 @@ class GameViewModel: Codable, Identifiable {
         }
         return plateAppearances
     }
-    
+    func getTeamPA(innings: [Inning], players: [Player]) -> [OffensivePlateAppearance] {
+        var plateAppearances: [OffensivePlateAppearance] = []
+        
+        for player in players {
+            plateAppearances.append(contentsOf: getPlayerPA(innings: innings, player: player))
+        }
+        return plateAppearances
+    }
     func getPlayerStats(plateAppearances: [OffensivePlateAppearance]) -> PlayerStats {
         var playerStats = PlayerStats()
         
@@ -547,10 +558,10 @@ class GameViewModel: Codable, Identifiable {
         print("pa: \(plateAppearances.count)")
         for appearance in plateAppearances {
             if appearance.active {
-                if appearance.inning < minInning {
-                    minInning = appearance.inning
-                } else if appearance.inning > maxInning {
-                    maxInning = appearance.inning
+                if appearance.inning.number < minInning {
+                    minInning = appearance.inning.number
+                } else if appearance.inning.number > maxInning {
+                    maxInning = appearance.inning.number
                 }
                 print("min: \(minInning) max: \(maxInning)")
                 for pitch in appearance.pitches {

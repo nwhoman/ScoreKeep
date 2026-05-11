@@ -18,6 +18,7 @@ struct GameSummaryView: View {
 
     @State var game: Game
     @State var goHome: Bool = false
+    let geo: GeometryProxy
     
     var teams:[Team] {
         [game.visitingTeam!, game.homeTeam!]
@@ -28,7 +29,7 @@ struct GameSummaryView: View {
     
     var body: some View {
         VStack{
-            BoxScoreView(gameViewModel: gameViewModel)
+            BoxScoreView(gameViewModel: gameViewModel, geo: geo)
         }
         .toolbar {
             Button {
@@ -147,6 +148,9 @@ struct GameSummaryView: View {
     preview.addSampleLineups(game: game)
     //setUpGame(game: game)
     
-    return GameSummaryView(gameViewModel: GameViewModel(game: game, totalInnings: 3, inningRunRule: 0), game: game)
-        .modelContainer(preview.modelContainer)
+    return GeometryReader { geo in
+        GameSummaryView(gameViewModel: GameViewModel(game: game, totalInnings: 3, inningRunRule: 0), game: game, geo: geo)
+            .modelContainer(preview.modelContainer)
     }
+    
+}

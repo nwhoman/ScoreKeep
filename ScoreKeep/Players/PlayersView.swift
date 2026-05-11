@@ -13,59 +13,65 @@ struct PlayersView: View {
     @EnvironmentObject var nav: NavigationStateManager
     @Environment(\.dismiss) var dismiss
 
-    let team: Team
+     //var team: Team?
+    var teamId: UUID?
 
-    //@Query(sort: [SortDescriptor(\Player.lastName), SortDescriptor(\Player.firstName)]) //var players: [Player]
-    @Query(sort: (\Player.number)) var players: [Player]
-    @State private var path = [Player]()
+    @Query(sort: (\Player.lastName)) var players: [Player]
+    @Query var teams: [Team]
     @State private var showAddPlayerScreen = false
     
-    init(for team: Team){
-        let id = team.id
-        self._players = Query(filter: #Predicate {
-            $0.team?.id == id
-        }, sort: \Player.lastName)
-        self.team = team
+    
+    init(teamId: UUID?){
+        self.teamId = teamId
+        if let id = teamId {
+            self._players = Query(filter: #Predicate {
+                $0.team?.id == id
+            }, sort: \Player.lastName)
+            self._teams = Query(filter: #Predicate {
+                $0.id == id
+            })
+        }
     }
 
     var body: some View {
-        NavigationStack{
             List {
-                ForEach(sortedPlayers(players: players)) { player in
-                    NavigationLink(value: player){
+                ForEach(players) { player in
+                    Button {
+                        nav.push(.player(player: player))
+                    } label: {
                         HStack {
                             Text("# \(player.number)")
                             Text("\(player.firstName)")
-                                .font(.system(size: 14))
+                                
                             Text("\(player.lastName)")
-                                .font(.system(size: 14))
+                                
+                            Spacer()
+                            Text("\(player.team?.name ?? "Unknown Team")")
                         }
-                    }
-                }
-                .onDelete(perform: deletePlayer)
-            }
-            .navigationDestination(for: Player.self) {
-                player in
-                PlayerDetailView(player: player)
-            }
-            .toolbar{
-                
-                ToolbarItem(placement: .topBarLeading){
-                    Button("back", systemImage: "arrowshape.turn.up.backward"){
-                        dismiss()
+                        .font(.system(size: 14))
+                        .minimumScaleFactor(0.5)
                     }
                     
                 }
+                .onDelete(perform: deletePlayer)
+            }
+            
+            .toolbar{
+                
                 ToolbarItem(placement: .topBarTrailing){
                     Button("Add Player", systemImage: "plus"){
                         showAddPlayerScreen.toggle()
                     }
                 }
             }
-        }
-        .sheet(isPresented: $showAddPlayerScreen) {
-            AddPlayerView(team: team)
-        }
+            .sheet(isPresented: $showAddPlayerScreen) {
+                if let teamId {
+                    AddPlayerView(teamId: teamId)
+                } else {
+                    AddPlayerView(teamId: nil)
+                }
+                
+            }
     }
     func deletePlayer(at offsets: IndexSet){
         for offset in offsets {
@@ -79,12 +85,14 @@ struct PlayersView: View {
 }
 
 #Preview {
+    @Previewable @State var team = Team(name: "", ageGroup: "")
     let preview = Preview()
     let game = Game.defaultGame
     preview.addSampleGames([game])
 
     return NavigationStack {
-        PlayersView(for: game.homeTeam!)
+        PlayersView(teamId: team.id)
             .modelContainer(preview.modelContainer)
+            .environmentObject(NavigationStateManager())
     }
 }

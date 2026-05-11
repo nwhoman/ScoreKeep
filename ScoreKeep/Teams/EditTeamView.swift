@@ -13,7 +13,7 @@ struct EditTeamView: View {
     @Environment(\.dismiss) var dismiss
     @EnvironmentObject var nav: NavigationStateManager
 
-    @Bindable var team: Team
+    @Binding var team: Team
     
     @State private var name: String = ""
     @State private var ageGroup: String = ""
@@ -94,7 +94,7 @@ struct EditTeamView: View {
                     AddCoachView(team: team)
                 }
                 .sheet(isPresented: $showAddPlayerScreen, content: {
-                    AddPlayerView(team: team)
+                    AddPlayerView(teamId: team.id)
                 })
             }
             
@@ -105,12 +105,13 @@ struct EditTeamView: View {
 }
 
 #Preview {
+    @Previewable @State var team = Team(name: "", ageGroup: "")
     let preview = Preview()
     let game = Game.defaultGame
     preview.addSampleGames([game])
 
     return NavigationStack {
-        EditTeamView(team: game.homeTeam!)
+        EditTeamView(team: $team)
             .modelContainer(preview.modelContainer)
     }
     

@@ -24,7 +24,7 @@ struct QuickEntryView: View {
     @State var numberArray: [String] = []
     @State var playerInfoArray: [Player] = []
     @State var playerInfo: [String: String] = [ "firstName": "", "lastName": "", "number": ""]
-    @Binding var newTeam: Team
+    @Binding var newTeam: Team?
     @FocusState var isFocused: Bool
     
     var body: some View {
@@ -51,6 +51,7 @@ struct QuickEntryView: View {
                     .padding(5)
                     Text("Enter player names here, one per line")
                     Text("First name last name number")
+                    Text("or one name and number or number only")
                     TextEditor(text: $players)
                         .focused($isFocused)
                         .autocorrectionDisabled()
@@ -105,9 +106,9 @@ struct QuickEntryView: View {
         let splitLine = coachName.split(separator: " ") // split refers to the number of parts, not how many spaces
         print("splitCoach: ",splitLine.count)
         if splitLine.count == 2 {                               //first and last
-            newTeam.coaches?.append(Coach(firstName: String(splitLine[0]), lastName: String(splitLine[1])))
+            newTeam?.coaches?.append(Coach(firstName: String(splitLine[0]), lastName: String(splitLine[1])))
         } else if splitLine.count == 1 {                        //Last only
-            newTeam.coaches?.append(Coach(firstName: " ", lastName: String(splitLine[0])))
+            newTeam?.coaches?.append(Coach(firstName: " ", lastName: String(splitLine[0])))
         }
         if playerArray.count > 8 {
             for each in playerArray {
@@ -125,6 +126,10 @@ struct QuickEntryView: View {
                         firstName = " "
                         lastName = String(splitLine[0])
                         number = String(splitLine[1])
+                    } else if splitLine.count == 1 {            //number only
+                        firstName = " "
+                        lastName = " "
+                        number = String(splitLine[1])
                     } else {
                         return
                     }
@@ -132,27 +137,27 @@ struct QuickEntryView: View {
                     
                     let player = Player(firstName: firstName, lastName: lastName, number: number)
                     print("player #- ",player.number)
-                    newTeam.players?.append(player)
+                    newTeam!.players?.append(player)
                 }
             }
         }
-        modelContext.insert(newTeam)
+        modelContext.insert(newTeam!)
         try? modelContext.save()
         dismiss()
     }
 }
 
-#Preview {
-    @Previewable @State var team = Team(name: "", ageGroup: "")
-    let preview = Preview()
-    let game = Game.defaultGame
-    preview.addSampleGames([game])
-    preview.addSampleLineups(game: game)
-    
-    return GeometryReader { _ in
-        QuickEntryView(newTeam: $team)
-            .modelContainer(preview.modelContainer)
-    }
+//#Preview {
+//    @Previewable @State var team = Team(name: "", ageGroup: "")
+//    let preview = Preview()
+//    let game = Game.defaultGame
+//    preview.addSampleGames([game])
+//    preview.addSampleLineups(game: game)
+//    
+//    return GeometryReader { _ in
+//        QuickEntryView(newTeam: $team)
+//            .modelContainer(preview.modelContainer)
+//    }
 //    do {
 //        let config = ModelConfiguration(isStoredInMemoryOnly: true)
 //        let container = try ModelContainer(for: Team.self, configurations: config)
@@ -165,4 +170,4 @@ struct QuickEntryView: View {
 //        return Text("Failed to create preview: \(error.localizedDescription)")
 //    }
     
-}
+//}

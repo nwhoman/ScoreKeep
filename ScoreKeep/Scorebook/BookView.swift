@@ -34,16 +34,15 @@ struct BookView: View {
                             Text("Home - \(gameViewModel.game.homeTeam!.name)")
                         }.tag("Home")
                 }
-
                 VStack {
                     HStack {
-                        //Spacer(
+                        //Space
                     
                     }
                     //Spacer()
                 }
                 .navigationDestination(isPresented: $gameViewModel.game.isComplete) {
-                    GameSummaryView(gameViewModel: gameViewModel, game: gameViewModel.game)
+                    GameSummaryView(gameViewModel: gameViewModel, game: gameViewModel.game, geo: geo)
                 }
             }
         }
@@ -81,7 +80,7 @@ struct BookView: View {
                     try? modelContext.save()
                 }
     
-                
+            
                 nav.path.removeLast()
             } label: {
                 Image(systemName: "backward.fill")

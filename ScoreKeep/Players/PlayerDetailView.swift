@@ -12,8 +12,21 @@ struct PlayerDetailView: View {
     @Environment(\.modelContext) var modelContext
     @Environment(\.dismiss) var dismiss
     @EnvironmentObject var nav: NavigationStateManager
-
+    @Query(sort: \OffensivePlateAppearance.batter.lastName) private var plateAppearances: [OffensivePlateAppearance]
     @Bindable var player: Player
+    @State private var teamName: String = ""
+    @State private var team: Team?
+    
+    var playerPA: [OffensivePlateAppearance] {
+        return plateAppearances.filter({$0.batter.id == player.id})
+    }
+    
+    init(player: Player){
+        self.player = player
+        self._plateAppearances = Query(filter: #Predicate {
+            $0.id == player.id
+        })
+    }
 
     var body: some View {
         GeometryReader { geo in
@@ -42,8 +55,38 @@ struct PlayerDetailView: View {
                 //                }
                 //            }
                 Section {
+                    HStack {
+                        Text("Team:")
+                        Text("\(player.team?.name ?? "No Team Set")")
+                    }
+                    if player.team != nil {
+                        Button {
+                            var team = player.team!
+                            team.players?.removeAll(where: { $0.id == player.id })
+                        
+                            try? modelContext.save()
+                            
+                        } label: {
+                            if player.team != nil {
+                                Text("Leave Team")
+                            }
+                        }
+                    } else {
+                        TextField("Search Teams", text: $teamName)
+                            .padding(.leading)
+                            .background(Color.gray.opacity(0.4))
+                            .clipShape(RoundedRectangle(cornerRadius: 10.0, style: .continuous))
+                        if !teamName.isEmpty {
+                            PickerView(searchString: $teamName, selection: $team, player: player)
+                            
+                        }
+                        
+                    }
+                }
+                Section {
                     Button("Save Player"){
-                        //add coach
+                        player.team = team
+                        team?.players?.append(player)
                         try? modelContext.save()
                         dismiss()
                     }
@@ -61,6 +104,31 @@ struct PlayerDetailView: View {
                 Section {
                     let data = displayJSON(player: player)
                     Text(data)
+                }
+                Section {
+                    Text("Active PA")
+                    ForEach(playerPA, id: \.self) { pa in
+                        if pa.active {
+                            Text("\(pa.batter.lastName), \(pa.batter.firstName)")
+                        }
+                    }
+                }
+                Section {
+                    Text("Inactive PA")
+                    ForEach(playerPA, id: \.self) { pa in
+                        if !pa.active {
+                            Text("\(pa.batter.lastName), \(pa.batter.firstName)")
+                        }
+                    }
+                    Button {
+                        for each in playerPA {
+                            if !each.active {
+                                modelContext.delete(each)
+                            }
+                        }
+                    } label: {
+                        Text("Delete PA")
+                    }
                 }
             }
             .toolbar{

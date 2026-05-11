@@ -15,8 +15,8 @@ struct StartGameView: View {
     @Query(sort: \Team.name) var teams: [Team]
     //@Binding var path: NavigationPath
 
-    @State var homeTeam: Team = Team(name: "", ageGroup: "")
-    @State var visitingTeam: Team = Team(name: "", ageGroup: "")
+    @State var homeTeam: Team? // = Team(name: "", ageGroup: "")
+    @State var visitingTeam: Team? // = Team(name: "", ageGroup: "")
     @State var gameName: String = ""
     @State var gameLocation: String = ""
     @State var gameInnings: Int = 7
@@ -49,13 +49,13 @@ struct StartGameView: View {
                         }
                     }
                     Spacer(minLength: 20)
-                    Text("Home Team: \(homeTeam.name)")
+                    Text("Home Team: \(homeTeam?.name ?? "")")
                     TextField("Search Teams", text: $homeTeamName)
                         .padding(.leading)
                         .background(Color.gray.opacity(0.4))
                         .clipShape(RoundedRectangle(cornerRadius: 10.0, style: .continuous))
                     if !homeTeamName.isEmpty {
-                        PickerView(searchString: homeTeamName, selection: $homeTeam)
+                        PickerView(searchString: $homeTeamName, selection: $homeTeam, player: nil)
                     }
                     Picker("pick team", selection: $homeTeam){
                         ForEach(teams.sorted {$0.name < $1.name}, id: \.name){team in
@@ -66,14 +66,14 @@ struct StartGameView: View {
                     NavigationLink("Create Quick Entry Team", destination: QuickEntryView(newTeam: $homeTeam))
                     
                     Spacer(minLength: 50)
-                    Text("Visiting Team: \(visitingTeam.name)")
+                    Text("Visiting Team: \(visitingTeam?.name ?? "")")
                     TextField("Search Teams", text: $visitorTeamName)
                         .padding(.leading)
                         .background(Color.gray.opacity(0.4))
                         .clipShape(RoundedRectangle(cornerRadius: 10.0, style: .continuous))
                         
                     if !visitorTeamName.isEmpty {
-                        PickerView(searchString: visitorTeamName, selection: $visitingTeam)
+                        PickerView(searchString: $visitorTeamName, selection: $visitingTeam, player: nil)
                     }
                     Picker("pick team", selection: $visitingTeam){
                         ForEach(teams, id: \.name){team in
@@ -87,9 +87,9 @@ struct StartGameView: View {
             }
         //}
         Button("Create Game"){
-            if homeTeam.players?.count ?? 0 > 8 && visitingTeam.players?.count ?? 0 > 8 {
+            if homeTeam?.players?.count ?? 0 > 8 && visitingTeam?.players?.count ?? 0 > 8 {
                 if newGame == nil {
-                    newGame = Game(name: "\(visitingTeam.name) at \(homeTeam.name)", location: gameLocation)
+                    newGame = Game(name: "\(visitingTeam?.name ?? "") at \(homeTeam?.name ?? "")", location: gameLocation)
                     modelContext.insert(newGame!)
                     
                 }
@@ -97,19 +97,31 @@ struct StartGameView: View {
                 newGame?.visitingTeam = visitingTeam
                 //newGame?.name = "\(homeTeam.name) vs. \(visitingTeam.name)"
                 //newGame?.location = gameLocation
-                homeTeam.homeGames!.append(newGame!)
-                visitingTeam.visitingGames!.append(newGame!)
-                try? modelContext.save()
-                startGame.toggle()
+                homeTeam?.homeGames!.append(newGame!)
+                visitingTeam?.visitingGames!.append(newGame!)
+                
+                let newGameViewModel = GameViewModel(game: newGame ?? Game.defaultGame, totalInnings: gameInnings, inningRunRule: inningRR)
+                
+                do {
+                    modelContext.insert(newGameViewModel)
+                    try modelContext.save()
+                    nav.push(.startGame(gameViewModel: newGameViewModel))
+                } catch {
+                    print(error)
+                }
+//                startGame.toggle()
+                
+            } else {
+                showAlert.toggle()
             }
             
         }
-        .disabled(homeTeam.name == "" || visitingTeam.name == "")
-        .navigationDestination(isPresented: $startGame) {
-            let newGameViewModel = GameViewModel(game: newGame ?? Game.defaultGame, totalInnings: gameInnings, inningRunRule: inningRR)
-            GameLineupsView(gameViewModel: newGameViewModel)
-            //GameLineupsView(path: $path, game: newGame)
-        }
+        .disabled(homeTeam?.name == "" || visitingTeam?.name == "")
+//        .navigationDestination(isPresented: $startGame) {
+//            let newGameViewModel = GameViewModel(game: newGame ?? Game.defaultGame, totalInnings: gameInnings, inningRunRule: inningRR)
+//            GameLineupsView(gameViewModel: newGameViewModel)
+//            //GameLineupsView(path: $path, game: newGame)
+//        }
         .navigationTitle("Create Game")
         .alert(isPresented: $showAlert) {
             Alert(title: Text("Lineup Check"), message: Text("One or both teams have less than 9 players."), dismissButton: .default(Text("OK")))
@@ -139,17 +151,22 @@ struct StartGameView: View {
 
 struct PickerView: View {
     @Query var teams: [Team]
-    @Binding var selection: Team
+    @Binding var selection: Team?
 //    @Binding var list: [Team]
-    let searchString: String
+    @Binding var searchString: String
+    var player: Player?
 //
-    init(searchString: String, selection: Binding<Team>) {
-        self.searchString = searchString
+    init(searchString: Binding<String>, selection: Binding<Team?>, player: Player?) {
+        self._searchString = searchString
         //self.selection = selection
+        let search = searchString.wrappedValue
         _teams = Query(filter: #Predicate<Team> {
-            $0.name.localizedStandardContains(searchString)
-        })
+            $0.name.localizedStandardContains(search)
+        }, sort: [SortDescriptor(\.name)])
         self._selection = selection
+        
+        self.player = player
+        
     }
     var body: some View {
         VStack(alignment: .leading) {
@@ -159,17 +176,29 @@ struct PickerView: View {
                                 ForEach(teams) { team in
                                     VStack(alignment: .leading) {
                                         HStack {
-                                            Button {
-                                                selection = team
-                                                //list.items.sort { $0.ordinal < $1.ordinal }
-                                                //try? modelContext.save()
-                                            } label: {
-                                                HStack {
-                                                    Image(systemName: "circle")
-                                                    Text("\(team.name)")
-                                                    //  .foregroundStyle(.black)
-                                                }
+                                            HStack {
+                                                Image(systemName: "circle")
+                                                Text("\(team.name)")
+                                                //  .foregroundStyle(.black)
                                             }
+                                            .onTapGesture {
+                                                selection = team
+                                                player?.team = team
+                                                if player != nil {
+                                                    team.players?.append(player!)
+                                                }
+                                                
+                                                searchString = ""
+                                            }
+//                                            Button {
+//                                                selection = team
+//                                                searchString = ""
+//                                                print(teams)
+//                                                print(team.name)
+//                                                print(selection?.name ?? "no selection")
+//                                            } label: {
+//                                                
+//                                            }
                                             Spacer()
                                         }
                                         .padding(.horizontal, 25)

@@ -11,74 +11,88 @@ struct BoxScoreView: View {
     @Environment(\.modelContext) var modelContext
     @Environment(\.dismiss) var dismiss
     @State var gameViewModel: GameViewModel
+    var totalPA: [OffensivePlateAppearance] = []
     
     var teams:[Team] {
         [gameViewModel.game.visitingTeam!, gameViewModel.game.homeTeam!]
     }
+    let geo: GeometryProxy
+    
     
     var body: some View {
         //NavigationStack {
-            GeometryReader { geo in
+            //GeometryReader { geo in
                 VStack(alignment: .leading) {
                     HStack {
                         ScoreView(gameViewModel: gameViewModel)
                             .padding(.horizontal)
                     }
-                    
-                    ForEach(teams, id: \.self) { team in
-                        var index = teams.firstIndex(of: team)!
-                        var totalPA: [OffensivePlateAppearance] = []
-                        var teamStats: PlayerStats {
-                            return gameViewModel.getTeamStats(team: index)
-                        }
-                        var pitcher: PlayerPos {
-                            gameViewModel.getCurrentPitcher(i: index)
-                        }
+                    ScrollView {
                         
-                            ScrollView {
-                                Text("\(team.name)")
-                                ScrollView(.horizontal) {
-                                    VStack(alignment: .leading) {
-                                        StatLabelView(geo: geo)
-                                    
+                        ForEach(teams, id: \.self) { team in
+                            let index = teams.firstIndex(of: team)!
+                            
+                            var teamStats: PlayerStats {
+                                return gameViewModel.getTeamStats(team: index)
+                            }
+                            var pitcher: PlayerPos {
+                                gameViewModel.getCurrentPitcher(i: index)
+                            }
+                            
+                            Text("\(team.name)")
+                            ScrollView(.horizontal) {
+                                VStack(alignment: .leading) {
+                                    StatLabelView(geo: geo)
+                                        .padding(.horizontal)
                                     ForEach(selectTeam(index: index), id: \.self) { player in
                                         
                                         var plateAppearances: [OffensivePlateAppearance] {
                                             let innings = index == 0 ? gameViewModel.visitorInnings : gameViewModel.homeInnings
                                             let pa = gameViewModel.getPlayerPA(innings: innings, player: player.player)
-                                            totalPA.append(contentsOf: pa)
+                                            
                                             return pa
                                         }
                                         
                                         StatLineView(geo: geo, player: player.player, plateAppearances: plateAppearances)
-                                        
+                                            .padding(.horizontal)
                                     }
                                     Divider()
                                     HStack {
                                         
-                                        StatLineView(geo: geo, plateAppearances: totalPA)
-
+                                        StatLineView(geo: geo, plateAppearances: getTeamStats(index: index))
+                                            .padding(.horizontal)
                                         Spacer()
                                     }
                                     .font(.caption2)
                                     Divider()
                                     PitchersBoxScoreView(gameViewModel: gameViewModel, geo: geo, index: index)
-                                        .padding(0)
+                                        .padding(.horizontal)
                                     //Divider()
                                 }
                             }
+                            
                         }
+                    }
+                    //.frame(width: geo.size.width, height: geo.size.height, alignment: .leading)
                 }
-            }
-                .frame(width: geo.size.width, height: geo.size.height, alignment: .leading)
-            
-        }
+                .padding(.horizontal)
+                .frame(maxWidth: .infinity)
+        //}
         
     }
     func selectTeam(index: Int) -> [PlayerPos] {
         return index == 0 ? decomposeLineup(lineup: gameViewModel.visitorLineup) : decomposeLineup(lineup: gameViewModel.homeLineup)
     }
-    
+    func getTeamStats(index: Int) -> [OffensivePlateAppearance] {
+        let players = index == 0 ? decomposeLineup(lineup: gameViewModel.visitorLineup) : decomposeLineup(lineup: gameViewModel.homeLineup)
+        let innings = index == 0 ? gameViewModel.visitorInnings : gameViewModel.homeInnings
+        var plateAppearances: [OffensivePlateAppearance] = []
+        
+        for player in players {
+            plateAppearances.append(contentsOf: gameViewModel.getPlayerPA(innings: innings, player: player.player))
+        }
+        return plateAppearances
+    }
 }
 
 #Preview {
@@ -88,10 +102,11 @@ struct BoxScoreView: View {
     preview.addSampleLineups(game: game)
     //setUpGame(game: game)
     
-    return BoxScoreView(gameViewModel: GameViewModel(game: game, totalInnings: 3, inningRunRule: 0))
-        .modelContainer(preview.modelContainer)
+    return GeometryReader { geo in
+        BoxScoreView(gameViewModel: GameViewModel(game: game, totalInnings: 3, inningRunRule: 0), geo: geo)
+            .modelContainer(preview.modelContainer)
     }
-
+}
 struct PitchersBoxScoreView: View {
     @Environment(\.modelContext) var modelContext
     @Environment(\.dismiss) var dismiss
@@ -104,6 +119,7 @@ struct PitchersBoxScoreView: View {
         [gameViewModel.getCurrentPitcher(i: 0), gameViewModel.getCurrentPitcher(i: 1)]
     }
     let index: Int
+    let spacing: CGFloat = CGFloat(PitchingStatLabels.allCases.count)
     
     var body: some View {
         
@@ -111,32 +127,36 @@ struct PitchersBoxScoreView: View {
         VStack(alignment: .leading) {
 //                var pitcherStats: PitcherStats = getPitcherStats(index: index)
                 
-                HStack {
-                    Text("Pitcher")
-                        .frame(width: geo.size.width * 0.2, alignment: .init(horizontal: .leading, vertical: .center))
-                    ForEach(PitchingStatLabels.allCases, id: \.self) { stat in
-                        Text("\(stat.rawValue)")
-                            .frame(width: geo.size.width / CGFloat(PitchingStatLabels.allCases.count))
-                    }
-                    //Spacer()
+            HStack {
+                Text("Pitcher")
+                    .frame(width: geo.size.width * 0.2, alignment: .init(horizontal: .leading, vertical: .center))
+                Spacer()
+                ForEach(PitchingStatLabels.allCases, id: \.self) { stat in
+                    Text("\(stat.rawValue)")
+                        .frame(width: geo.size.width / spacing)
                 }
-                .font(.caption2)
-                HStack {
-                    Text("\(pitcher[index].player.lastName), \(pitcher[index].player.firstName.prefix(1))")
-                        .frame(width: geo.size.width * 0.2, alignment: .init(horizontal: .leading, vertical: .center))
-                    Text("\(pitcherStats[index].inningsPitched, specifier: "%.2f")")
-                        .frame(width: geo.size.width / CGFloat(PitchingStatLabels.allCases.count))
-                    ForEach(pitcherStats[index].statSummary, id: \.self) { stat in
-                        Text("\(stat)")
-                            .frame(width: geo.size.width / CGFloat(PitchingStatLabels.allCases.count))
-                    }
-                    Text("\(pitcherStats[index].era, specifier: "%.2f")")
-                        .frame(width: geo.size.width / CGFloat(PitchingStatLabels.allCases.count))
-                    //Spacer()
-                }
-                
+                Spacer()
             }
-        //.frame(width: geo.size.width)
+            .font(.caption2)
+            HStack {
+                Text("\(pitcher[index].player.lastName), \(pitcher[index].player.firstName.prefix(1))")
+                    .frame(width: geo.size.width * 0.2, alignment: .init(horizontal: .leading, vertical: .center))
+                Spacer()
+                Text("\(pitcherStats[index].inningsPitched, specifier: "%.2f")")
+                    .frame(width: geo.size.width / spacing)
+                
+                ForEach(pitcherStats[index].statSummary, id: \.self) { stat in
+                    Text("\(stat)")
+                        .frame(width: geo.size.width / spacing)
+                }
+                Text("\(pitcherStats[index].era, specifier: "%.2f")")
+                    .frame(width: geo.size.width / spacing)
+                Spacer()
+            }
+                
+        }
+        .frame(maxWidth: .infinity)
+        .border(Color(.gray).opacity(0.3), width: 0.5)
         .font(.caption2)
         
         
@@ -155,21 +175,25 @@ struct StatLabelView: View {
     @Environment(\.modelContext) var modelContext
     @Environment(\.dismiss) var dismiss
     @State var geo: GeometryProxy
+    let spacing: CGFloat = CGFloat(StatLabels.allCases.count)
     
     var body: some View {
-        HStack {
-            Text("Player")
-                .frame(width: geo.size.width * 0.3, alignment: .init(horizontal: .leading, vertical: .center))
+        VStack(alignment: .leading) {
             HStack {
-                ForEach(StatLabels.allCases, id: \.self) { stat in
-                    Text("\(stat.rawValue)")
-                        .frame(width: geo.size.width / CGFloat(StatLabels.allCases.count))
+                Text("Player")
+                    .frame(width: geo.size.width * 0.3, alignment: .init(horizontal: .leading, vertical: .center))
+                HStack {
+                    ForEach(StatLabels.allCases, id: \.self) { stat in
+                        Text("\(stat.rawValue)")
+                            .frame(width: geo.size.width / spacing)
+                    }
                 }
+                
+                Spacer()
             }
-            .frame(width: geo.size.width)
-            Spacer()
+            .frame(maxWidth: .infinity)
+            .font(.caption2)
         }
-        .font(.caption2)
     }
 }
 
@@ -177,6 +201,7 @@ struct StatLineView: View {
     @Environment(\.modelContext) var modelContext
     @Environment(\.dismiss) var dismiss
     @State var geo: GeometryProxy
+    let spacing: CGFloat = CGFloat(StatLabels.allCases.count)
     var player: Player? = nil
     var plateAppearances: [OffensivePlateAppearance]
     //var playerStats: PlayerStats = PlayerStats()
@@ -191,25 +216,28 @@ struct StatLineView: View {
 //    }
     
     var body: some View {
-        HStack {
-            if let player = player {
-                Text("\(player.lastName), \(player.firstName.prefix(1))")
-                    .frame(width: geo.size.width * 0.3, alignment: .init(horizontal: .leading, vertical: .center))
-                    .font(.caption2)
-            } else {
-                Text("Totals")
-                    .frame(width: geo.size.width * 0.3, alignment: .init(horizontal: .leading, vertical: .center))
-            }
-                
-            
+        VStack(alignment: .leading) {
             HStack {
-                ForEach(playerStats.statSummary, id: \.self) { stat in
-                    Text("\(stat)")
-                        .frame(width: geo.size.width / CGFloat(StatLabels.allCases.count))
+                if let player = player {
+                    Text("\(player.lastName), \(player.firstName.prefix(1))")
+                        .frame(width: geo.size.width * 0.3, alignment: .init(horizontal: .leading, vertical: .center))
+                        .font(.caption2)
+                } else {
+                    Text("Totals")
+                        .frame(width: geo.size.width * 0.3, alignment: .init(horizontal: .leading, vertical: .center))
                 }
-                Spacer()
+                
+                
+                HStack {
+                    ForEach(playerStats.statSummary, id: \.self) { stat in
+                        Text("\(stat)")
+                            .frame(width: geo.size.width / spacing)
+                    }
+                    Spacer()
+                }
+                
             }
-            .frame(width: geo.size.width)
         }
+        .frame(maxWidth: .infinity)
     }
 }

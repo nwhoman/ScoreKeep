@@ -13,7 +13,8 @@ struct TeamDetailView: View {
     @Environment(\.dismiss) var dismiss
     @EnvironmentObject var nav: NavigationStateManager
     @Query(sort: \GameViewModel.id) private var viewModels: [GameViewModel]
-    
+    @Query(sort: \Game.id) private var games: [Game]
+    @Query(sort: \Team.name) var teams: [Team]
     @State private var showDeleteAlert = false
     //@Binding var path: NavigationPath
     @State private var showEditScreen = false
@@ -24,6 +25,7 @@ struct TeamDetailView: View {
     @State private var editPlayers: Bool = false
     
     @State var team: Team
+    
     var completeGames: [Game] {
         (team.homeGames?.filter { game in
             game.isComplete
@@ -33,6 +35,13 @@ struct TeamDetailView: View {
     }
     var teamViewModels: [GameViewModel] {
         return viewModels.filter { completeGames.contains( $0.game)}
+    }
+    var teamGames: [Game] {
+        return games.filter { $0.homeTeam == team || $0.visitingTeam == team }
+    }
+    init(team: Team) {
+        self.team = team
+        self._games = Query(filter: #Predicate { $0.homeTeam == team || $0.visitingTeam == team}, sort: \.date, order: .reverse)
     }
     
     var body: some View {
@@ -92,7 +101,7 @@ struct TeamDetailView: View {
                             Text("no players").font(.system(size: 20))
                         } else {
                             List {
-                                ForEach(team.players!.sorted(by: { Int($0.number)! < Int($1.number)! } ), id: \.id) { player in
+                                ForEach(team.players!.sorted(by: { Int($0.number) ?? 0 < Int($1.number) ?? 1 } ), id: \.id) { player in
                                     NavigationLink(value: player) {
                                         HStack {
                                             Text("# \(player.number) - \(player.firstName) \(player.lastName)")
@@ -115,7 +124,7 @@ struct TeamDetailView: View {
                                 .fontWeight(.bold)
                             Spacer()
                             Button("Edit Players"){
-                                showPlayersScreen.toggle()
+                                nav.push(.teamPlayers(teamID: team.id))
                             }
                             Spacer()
                         }
@@ -123,8 +132,11 @@ struct TeamDetailView: View {
                     }
                     //Spacer()
                     Section {
+                        
                         TeamStatsView(geo: geo, for: team)
-                            .frame(width: geo.size.width, height: geo.size.height / 2)
+                            .frame(height: geo.size.height / 2)
+                            //.frame(width: geo.size.width, height: geo.size.height / 2)
+                    
                     } header: {
                         HStack {
                             Spacer()
@@ -137,7 +149,7 @@ struct TeamDetailView: View {
                     }
                     .navigationDestination(for: GameViewModel.self) { vm in
                         //GameLineupsView(game: game)
-                        GameSummaryView(gameViewModel: vm, game: vm.game)
+                        GameSummaryView(gameViewModel: vm, game: vm.game, geo: geo)
                     }
                     
                     .alert("Delete Team", isPresented: $showDeleteAlert) {
@@ -157,13 +169,22 @@ struct TeamDetailView: View {
                             }
                         }
                         ToolbarItem(placement: .bottomBar) {
-                            Button {
-                                showLineupView.toggle()
+                            NavigationLink {
+                                TeamLineupView(team: $team, lineup: $team.lineup)
                             } label: {
                                 Text("Default Lineup")
                                     .fontWeight(.bold)
                                     .font(.system(size: 15))
                             }
+//                            Button {
+//                                
+//
+//                                showLineupView.toggle()
+//                            } label: {
+//                                Text("Default Lineup")
+//                                    .fontWeight(.bold)
+//                                    .font(.system(size: 15))
+//                            }
                         }
                         ToolbarItem(placement: .topBarTrailing){
                             Button {
@@ -187,30 +208,31 @@ struct TeamDetailView: View {
                 }
                 //.frame(height: geo.size.height*3.0)
             }
-            .sheet(isPresented: $showLineupView, onDismiss: {
-                
-            }) {
-                TeamLineupView(team: team, lineup: $team.lineup)
-            }
+            .frame(maxWidth: .infinity)
+//            .sheet(isPresented: $showLineupView, onDismiss: {
+//        
+//            }) {
+//                TeamLineupView(team: $team, lineup: team.lineup)
+//            }
             .sheet(isPresented: $showEditScreen){
-                EditTeamView(team: team)
+                EditTeamView(team: $team)
             }
             .sheet(isPresented: $showCoachesScreen){
                 CoachesView(for: team)
             }
             .sheet(isPresented: $showPlayersScreen){
-                PlayersView(for: team)
+                PlayersView(teamId: team.id)
             }
             .sheet(isPresented: $showGamesScreen){
                 ScrollView {
                     Text("Visiting Games")
                     List {
-                        ForEach(team.visitingGames ?? [], id: \.self) { vm in
-                            NavigationLink(value: vm) {
+                        ForEach(teamGames, id: \.self) { game in
+                            NavigationLink(value: game) {
                                 VStack(alignment: .leading) {
-                                    Text("\(vm.name) - \(vm.location)")
-                                    Text("\(vm.date.formatted(date: .complete, time: .omitted))")
-                                    Text("\(vm.date.formatted(date: .omitted, time: .shortened))")
+                                    Text("\(game.name) - \(game.location)")
+                                    Text("\(game.date.formatted(date: .complete, time: .omitted))")
+                                    Text("\(game.date.formatted(date: .omitted, time: .shortened))")
                                 }
                                 .font(.system(size: 8))
                             }
@@ -248,7 +270,7 @@ struct TeamDetailView: View {
     preview.addSampleGames([game])
 
     return NavigationStack {
-        TeamDetailView(team: game.homeTeam!)
+        TeamDetailView(team: game.homeTeam!) //
             .modelContainer(preview.modelContainer)
     }
 }

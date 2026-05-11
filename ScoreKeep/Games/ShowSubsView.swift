@@ -17,7 +17,7 @@ import SwiftUI
 struct ShowSubsView: View {
     @Environment(\.modelContext) var modelContext
     @Environment(\.dismiss) var dismiss
-//    @ObservedObject var gameVM: GameViewModel
+    @EnvironmentObject var nav: NavigationStateManager
     @State var gameVM: GameViewModel
     @State var team: Team
        
@@ -144,7 +144,7 @@ func validateSubs(lineup: [PlayerPos]) -> Bool {
 struct RosterSubsView: View {
     @Environment(\.modelContext) var modelContext
     @Environment(\.dismiss) var dismiss
-//    @ObservedObject var gameVM: GameViewModel
+    @EnvironmentObject var nav: NavigationStateManager
     @State var gameVM: GameViewModel
     @State private var positions: [String] = ["P", "C", "1B", "2B", "3B", "SS", "LF", "CF", "RF", "DP", "F", "EP"]
     @State var team: Team
@@ -228,42 +228,8 @@ struct RosterSubsView: View {
             .background(Color.clear)
         }
         .navigationDestination(isPresented: $showSubs) {
-                HStack {
-                    GroupBox(label: Text("Available Players")) {
-                        VStack {
-                            ForEach(unusedPlayers, id: \.id) { player in
-                                HStack(alignment: .bottom) {
-                                    VStack(alignment: .leading) {
-                                        Text("#\(player.number)")
-                                        Text("\(player.lastName), \(player.firstName)")
-                                    }
-                                    .font(.caption)
-                                    Spacer()
-                                    
-                                    
-                                }
-                                .padding(.top, 15)
-                                .padding(.horizontal, 15)
-                                .onTapGesture {
-                                    print("home: \(lineup)")
-                                    selectedPlayer = createNewLineupSlot(player: player, selectedPlayer: selectedPlayer, lineup: &lineup, gameVM: gameVM)
-                                    
-                                    print("newhome: \(lineup)")
-                                }
-                            }
-                            
-                            
-                            
-                        }
-                    }
-                    GroupBox(label: Text("Selected Player")) {
-                        VStack(alignment: .leading) {
-                            RosterSubsItemView(gameVM: $gameVM, player: selectedPlayer, lineup: $lineup, unusedPositions: positions, position: "")
-                                .padding(15)
-
-                        }
-                    }
-                }
+            SwapPlayerView(lineup: $lineup, selectedPlayer: $selectedPlayer, gameVM: $gameVM, unusedPlayers: unusedPlayers, positions: unusedPositions)
+                
             
         }
     }
@@ -293,25 +259,121 @@ func positionChangeOnly(player: Player, position: String, batting: Int, lineup: 
 
     return newPlayerPos
 }
+func deleteOrderSlot(lineup: inout [PlayerPos], player: PlayerPos) {
+    lineup = popPlayerFromLineup(lineup: lineup, player: player)
+    
+    for i in 0..<lineup.count {
+        lineup[i].batting = i+1
+    }
+    
+}
+struct SwapPlayerView: View {
+    @Environment(\.modelContext) var modelContext
+    @Environment(\.dismiss) var dismiss
+    @EnvironmentObject var nav: NavigationStateManager
+    @Binding var lineup: [PlayerPos]
+    @Binding var selectedPlayer: PlayerPos
+    @Binding var gameVM: GameViewModel
+    var unusedPlayers: [Player]
+    var positions: [String]
+    
+    var body: some View {
+        HStack {
+            GroupBox(label: Text("Available Players")) {
+                VStack {
+                    ForEach(unusedPlayers, id: \.id) { player in
+                        HStack(alignment: .bottom) {
+                            VStack(alignment: .leading) {
+                                Text("#\(player.number)")
+                                Text("\(player.lastName), \(player.firstName)")
+                            }
+                            .font(.caption)
+                            Spacer()
+                        }
+                        .padding(.top, 15)
+                        .padding(.horizontal, 15)
+                        .onTapGesture {
+                            print("home: \(lineup)")
+                            selectedPlayer = createNewLineupSlot(player: player, selectedPlayer: selectedPlayer, lineup: &lineup, gameVM: gameVM)
+                            
+                            print("newhome: \(lineup)")
+                        }
+                    }
+                }
+            }
+            GroupBox(label:
+                HStack {
+                    Text("Selected Player")
+                    Spacer()
+                if !gameVM.game.isStarted {
+                    Button {
+                        deleteOrderSlot(lineup: &lineup, player: selectedPlayer)
+                        modelContext.delete(selectedPlayer)
+                        //nav.path.removeLast()
+                        dismiss()
+                    } label: {
+                        Image(systemName: "x.circle")
+                            .fontWeight(.bold)
+                            .font(.system(size: 12))
+                    }
+                }
+            }){
+                
+                VStack(alignment: .leading) {
+                    HStack {
+                        Text("Batting:")
+                            .font(.caption)
+                        TextField("batting", value: $selectedPlayer.batting, format: .number)
+                            
+                    }
+                    RosterSubsItemView(gameVM: $gameVM, player: selectedPlayer, lineup: $lineup, unusedPositions: positions, position: "")
+                        .padding(.leading, -15)
+                }
+            }
+        }
+        .onDisappear {
+            print("reorder lineup")
+            var order = 1
+            lineup = lineup.sorted(by: { $0.batting < $1.batting })
+            for i in 0..<lineup.count {
+                lineup[i].batting = order
+                order += 1
+            }
+        }
+    }
+}
 
 struct RosterSubsItemView: View {
     @Environment(\.modelContext) var modelContext
     @Environment(\.dismiss) var dismiss
+    @Query private var players: [Player]
     @Binding var gameVM: GameViewModel
-
+    
     //@Binding var player: PlayerPos
     var player: PlayerPos
     @Binding var lineup: [PlayerPos]
     var unusedPositions: [String]
     @State var position: String
 
+    init(gameVM: Binding<GameViewModel>, player: PlayerPos, lineup: Binding<[PlayerPos]>, unusedPositions: [String], position: String) {
+        _gameVM = gameVM
+        self.player = player
+        _lineup = lineup
+        self.unusedPositions = unusedPositions
+        self.position = position
+        let id = player.player.id
+        print("\(id)")
+        //_players = Query(filter: #Predicate<Player> {$0.id == id})
+        print("\(players.count)")
+    }
+    
     var body: some View {
+        ZStack {
+            LineupDetailView(player: player.player)
+            
             HStack(alignment: .top) {
-                VStack(alignment: .leading) {
-                    Text("#\(player.player.number)")
-                    Text("\(player.player.lastName), \(player.player.firstName) - \(player.position)")
-                }
-                .font(.caption)
+                
+                
                 Spacer()
                 VStack {
                     Picker(player.position, selection: $position){
@@ -321,17 +383,18 @@ struct RosterSubsItemView: View {
                         }
                     }
                     
-              
+                    
                 }
-                
+                .frame(width: 15)
             }
+        }
             //.frame(width: 5, height: 200)
             .padding(.horizontal, -5)
             .onChange(of: position) {
-                //player.position = position
+                player.position = position
                 
                 //lineup = lineup.sorted(by: { $0.batting < $1.batting })
-                let newPlayer = positionChangeOnly(player: player.player, position: position, batting: player.batting, lineup: &lineup, gameVM: gameVM, selectedPlayer: player)
+//                let newPlayer = positionChangeOnly(player: player.player, position: position, batting: player.batting, lineup: &lineup, gameVM: gameVM, selectedPlayer: player)
             }
         
     }
@@ -349,3 +412,54 @@ struct RosterSubsItemView: View {
 //    
 //    
 //}
+
+struct LineupDetailView: View {
+    @Environment(\.modelContext) var modelContext
+    @Environment(\.dismiss) var dismiss
+    @Bindable var player: Player
+    @State private var editPlayer: Bool = false
+    
+    
+    var body: some View {
+        VStack(alignment: .leading) {
+            Text("#\(player.number) \(player.lastName), \(player.firstName)")
+            if editPlayer {
+                GroupBox(label: Text("Edit Player")
+                    .fontWeight(.bold)
+                    .font(.system(size: 12))) {
+                    VStack(alignment: .leading) {
+                        
+                        Divider()
+                            .frame(height: 20)
+                        TextField("#\(player.number)", text: $player.number)
+                        TextField("\(player.firstName)", text: $player.firstName)
+                        TextField("\(player.lastName)", text: $player.lastName)
+                        Spacer()
+                            .frame(height: 20)
+                        Button {
+                            editPlayer.toggle()
+                        } label: {
+                            Image(systemName: "xmark")
+                                .fontWeight(.bold)
+                                .font(.system(size: 12))
+                        }
+                    }
+                }
+            } else {
+                VStack(alignment: .leading) {
+                    Divider()
+                        .frame(height: 20)
+                    Button {
+                        editPlayer.toggle()
+                    } label: {
+                        Image(systemName: "pencil")
+                            .fontWeight(.bold)
+                            .font(.system(size: 12))
+                    }
+                }
+            }
+        }
+        .font(.caption)
+        .frame(width: 140)
+    }
+}
