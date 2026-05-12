@@ -16,6 +16,7 @@
 		6A41C9B92FA6718300915418 /* InningsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6A41C9B82FA6718300915418 /* InningsView.swift */; };
 		6A4E03CA2F99396D00EF3A33 /* TeamLineupView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6A4E03C92F99396D00EF3A33 /* TeamLineupView.swift */; };
 		6A52C89B2F6C883200C45547 /* ShowSubsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6A52C89A2F6C883200C45547 /* ShowSubsView.swift */; };
+		6A5813822FB38675005A95C2 /* SideMenuView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6A5813812FB38675005A95C2 /* SideMenuView.swift */; };
 		6A648C1A2D862298001000A3 /* ScoreKeepSamples.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6A648C192D862298001000A3 /* ScoreKeepSamples.swift */; };
 		6A648C1C2D8623D1001000A3 /* Preview.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6A648C1B2D8623D1001000A3 /* Preview.swift */; };
 		6A64E4CD2DAEF20000E0018F /* SmallPlateAppearanceView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6A64E4CC2DAEF20000E0018F /* SmallPlateAppearanceView.swift */; };
@@ -62,6 +63,7 @@
 		6A41C9B82FA6718300915418 /* InningsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InningsView.swift; sourceTree = "<group>"; };
 		6A4E03C92F99396D00EF3A33 /* TeamLineupView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TeamLineupView.swift; sourceTree = "<group>"; };
 		6A52C89A2F6C883200C45547 /* ShowSubsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShowSubsView.swift; sourceTree = "<group>"; };
+		6A5813812FB38675005A95C2 /* SideMenuView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SideMenuView.swift; sourceTree = "<group>"; };
 		6A648C192D862298001000A3 /* ScoreKeepSamples.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScoreKeepSamples.swift; sourceTree = "<group>"; };
 		6A648C1B2D8623D1001000A3 /* Preview.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Preview.swift; sourceTree = "<group>"; };
 		6A64E4CC2DAEF20000E0018F /* SmallPlateAppearanceView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SmallPlateAppearanceView.swift; sourceTree = "<group>"; };
@@ -225,6 +227,7 @@
 				6A07B06F2D9C84F5005B7AEE /* FieldViewScene.swift */,
 				6A64E4CC2DAEF20000E0018F /* SmallPlateAppearanceView.swift */,
 				6A8A3D8D2BB2378A00BC7E32 /* PlateAppearanceView.swift */,
+				6A5813812FB38675005A95C2 /* SideMenuView.swift */,
 			);
 			path = Scorebook;
 			sourceTree = "<group>";
@@ -341,6 +344,7 @@
 				6A8A3DB82BD8277B00BC7E32 /* VisitorLineupView.swift in Sources */,
 				6ACEF64B2F64BFD900B1C803 /* GameSummaryView.swift in Sources */,
 				6ACEF6492F64907200B1C803 /* FieldViewFunctions.swift in Sources */,
+				6A5813822FB38675005A95C2 /* SideMenuView.swift in Sources */,
 				6A1CDFAA2D8B3FC300183224 /* PracticeView.swift in Sources */,
 				6A8A3DA62BBB80DA00BC7E32 /* CoachDetailView.swift in Sources */,
 			);
