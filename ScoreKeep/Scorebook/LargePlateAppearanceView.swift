@@ -32,6 +32,9 @@ struct LargePlateAppearanceView: View {
                     VStack {
                         ScoreView(gameViewModel: gameViewModel)
                         HStack(alignment: .top) {
+                            let innings = gameViewModel.halfInning == 0 ? gameViewModel.visitorInnings : gameViewModel.homeInnings
+                            let playerStats = gameViewModel.getPlayerStats(plateAppearances: gameViewModel.getPlayerPA(innings: innings, player: gameViewModel.batter!.batter))
+                            let pitcherStats = gameViewModel.getPitcherStats(plateAppearances: gameViewModel.getPitcherPA(innings: innings, pitcher: gameViewModel.batter!.pitcher))
                             VStack(alignment: .leading) {
                                 Text("#\(gameViewModel.batter!.batter.number) - \(gameViewModel.batter!.batter.lastName), \(gameViewModel.batter!.batter.firstName)")
                                 Text("\(playerStats.hits)/\(playerStats.atBats) \(playerStats.doubles > 0 ? String(playerStats.doubles) + " 2B" : "")")
@@ -43,6 +46,7 @@ struct LargePlateAppearanceView: View {
                             }
                             Spacer()
                             VStack(alignment: .trailing) {
+                                
                                 Text("#\(gameViewModel.batter!.pitcher.number) - \(gameViewModel.batter!.pitcher.lastName), \(gameViewModel.batter!.pitcher.firstName)")
                                 Text("\(pitcherStats.inningsPitched, specifier: "%.2f")-\(gameViewModel.outs)/3")
                                 HStack {

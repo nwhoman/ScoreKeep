@@ -27,7 +27,7 @@ struct StartGameView: View {
     @State var showAlert: Bool = false
     @State var homeTeamName: String = ""
     @State var visitorTeamName: String = ""
-    
+    @State var inningRRBool: Bool = false
     
     
     var body: some View {
@@ -47,6 +47,9 @@ struct StartGameView: View {
                         ForEach(0...10, id: \.self){num in
                             Text("\(num)")
                         }
+                    }
+                    HStack {
+                        Toggle("Five run rule", systemImage: "", isOn: $inningRRBool)
                     }
                     Spacer(minLength: 20)
                     Text("Home Team: \(homeTeam?.name ?? "")")
@@ -89,6 +92,9 @@ struct StartGameView: View {
         Button("Create Game"){
             if homeTeam?.players?.count ?? 0 > 8 && visitingTeam?.players?.count ?? 0 > 8 {
                 if newGame == nil {
+                    if inningRRBool {
+                        inningRR = 5
+                    }
                     newGame = GameViewModel(name: "\(visitingTeam?.name ?? "") at \(homeTeam?.name ?? "")", totalInnings: gameInnings, inningRunRule: inningRR, visitingTeam: visitingTeam!, homeTeam: homeTeam!)
                     
                     do {
