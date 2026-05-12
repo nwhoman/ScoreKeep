@@ -11,7 +11,7 @@ import SwiftUI
 struct TeamStatsView: View {
     @Environment(\.modelContext) var modelContext
     @EnvironmentObject var nav: NavigationStateManager
-    @Query(sort: \Game.date, order: .reverse ) var games: [Game]
+    @Query(sort: \GameViewModel.date, order: .reverse ) var games: [GameViewModel]
     @Query var innings: [Inning]
     var plateAppearances: [OffensivePlateAppearance]?
     @State var geo: GeometryProxy
@@ -22,8 +22,8 @@ struct TeamStatsView: View {
         self.geo = geo
         self.team = team
         self._games = Query(filter: #Predicate { $0.homeTeam == team || $0.visitingTeam == team}, sort: \.date, order: .reverse)
-        let homeInnings = #Predicate<Inning> { $0.game.homeTeam == team && $0.half == 1 }
-        let visitorInnings = #Predicate<Inning> { $0.game.visitingTeam == team && $0.half == 0 }
+        let homeInnings = #Predicate<Inning> { $0.game.homeTeam.id == team.id && $0.half == 1 }
+        let visitorInnings = #Predicate<Inning> { $0.game.visitingTeam.id == team.id && $0.half == 0 }
         let filter = #Predicate<Inning> {
             homeInnings.evaluate($0) || visitorInnings.evaluate($0)
         }
@@ -75,13 +75,13 @@ struct TeamStatsView: View {
 //    let config = ModelConfiguration(isStoredInMemoryOnly: true)
 //    let container = try! ModelContainer(for: Game.self, configurations: config)
     let preview = Preview()
-    let game = Game.defaultGame
+    let game = GameViewModel.defaultGame
     preview.addSampleGames([game])
     //container.mainContext.insert(game)
     
     return GeometryReader { geo in
         NavigationStack {
-            TeamStatsView(geo: geo, for: game.homeTeam!)
+            TeamStatsView(geo: geo, for: game.homeTeam)
                .modelContainer(preview.modelContainer)
                .environmentObject(NavigationStateManager())
        }

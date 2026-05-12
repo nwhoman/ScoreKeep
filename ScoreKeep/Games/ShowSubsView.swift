@@ -76,12 +76,12 @@ struct ShowSubsView: View {
 }
 
 #Preview {
-    var game = Game.defaultGame
+    var game = GameViewModel.defaultGame
     let preview = Preview()
     
     preview.addSampleGames([game])
 
-    return ShowSubsView(gameVM: GameViewModel(game: game, totalInnings: 3, inningRunRule: 0), team: game.homeTeam!, lineup: game.createLineup(players: game.homeTeam!.players!), showAlert: false, showSubs: false)
+    return ShowSubsView(gameVM: game, team: game.homeTeam, lineup: game.createLineup(players: game.homeTeam.players!), showAlert: false, showSubs: false)
             .modelContainer(preview.modelContainer)
     
 }
@@ -236,7 +236,7 @@ struct RosterSubsView: View {
 }
 func createNewLineupSlot(player: Player, selectedPlayer: PlayerPos, lineup: inout [PlayerPos], gameVM: GameViewModel) -> PlayerPos {
     // create PlayerPos for inserted player
-    var newPlayerPos = PlayerPos(player: player, position: selectedPlayer.position, batting: selectedPlayer.batting)
+    let newPlayerPos = PlayerPos(player: player, position: selectedPlayer.position, batting: selectedPlayer.batting)
     // insert PlayerPos into lineup
     newPlayerPos.inning = gameVM.inningNumber[gameVM.halfInning] / 10
     lineup.removeAll { $0.id == selectedPlayer.id }
@@ -249,7 +249,7 @@ func createNewLineupSlot(player: Player, selectedPlayer: PlayerPos, lineup: inou
 
 func positionChangeOnly(player: Player, position: String, batting: Int, lineup: inout [PlayerPos], gameVM: GameViewModel, selectedPlayer: PlayerPos) -> PlayerPos {
     // create PlayerPos for inserted player
-    var newPlayerPos = PlayerPos(player: player, position: position, batting: batting)
+    let newPlayerPos = PlayerPos(player: player, position: position, batting: batting)
     // insert PlayerPos into lineup
     newPlayerPos.inning = gameVM.inningNumber[gameVM.halfInning] / 10
     lineup.removeAll { $0.player.id == player.id }
@@ -305,7 +305,7 @@ struct SwapPlayerView: View {
                 HStack {
                     Text("Selected Player")
                     Spacer()
-                if !gameVM.game.isStarted {
+                if !gameVM.isStarted {
                     Button {
                         deleteOrderSlot(lineup: &lineup, player: selectedPlayer)
                         modelContext.delete(selectedPlayer)

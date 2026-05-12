@@ -16,15 +16,14 @@ struct GameSummaryView: View {
     @State var gameViewModel: GameViewModel
     //@Binding var navPath: NavigationPath
 
-    @State var game: Game
     @State var goHome: Bool = false
     let geo: GeometryProxy
     
     var teams:[Team] {
-        [game.visitingTeam!, game.homeTeam!]
+        [gameViewModel.visitingTeam, gameViewModel.homeTeam]
     }
     var lineups: [[PlayerPos]] {
-        [game.visitingLineup, game.homeLineup]
+        [gameViewModel.visitorCurrentLineup, gameViewModel.homeCurrentLineup]
     }
     
     var body: some View {
@@ -142,14 +141,13 @@ struct GameSummaryView: View {
 #Preview {
     //@Previewable @State var navPath = NavigationPath()
 
-    var game = Game.defaultGame
     let preview = Preview()
+    let game = GameViewModel.defaultGame
     preview.addSampleGames([game])
     preview.addSampleLineups(game: game)
-    //setUpGame(game: game)
     
     return GeometryReader { geo in
-        GameSummaryView(gameViewModel: GameViewModel(game: game, totalInnings: 3, inningRunRule: 0), game: game, geo: geo)
+        GameSummaryView(gameViewModel: game, geo: geo)
             .modelContainer(preview.modelContainer)
     }
     

@@ -144,11 +144,11 @@ struct PlayerDetailView: View {
 
 #Preview {
     let preview = Preview()
-    let game = Game.defaultGame
+    let game = GameViewModel.defaultGame
     preview.addSampleGames([game])
 
     return NavigationStack {
-        PlayerDetailView(player: game.homeTeam!.players![0])
+        PlayerDetailView(player: game.homeTeam.players![0])
             .modelContainer(preview.modelContainer)
     }
 }

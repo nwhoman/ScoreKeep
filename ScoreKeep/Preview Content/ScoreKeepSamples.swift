@@ -70,15 +70,16 @@ extension Team {
     
     
 }
-extension Game {
-    static var defaultGame: Game {
+extension GameViewModel {
+    static var defaultGame: GameViewModel {
         
         let home: Team = Team.defaultTeam
         let visitor: Team = Team.defaultTeam
         let location: String = home.name.components(separatedBy: " ").first ?? ("\(home.name)")
-        let game = Game(name: "\(visitor.name) v \(home.name)", location: "\(location) Stadium", homeTeam: home, visitingTeam: visitor)
-        game.homeTeam!.lineup = game.createLineup(players: home.players!)
-        game.visitingTeam!.lineup = game.createLineup(players: visitor.players!)
+        let game = GameViewModel(name: "\(visitor.name) v \(home.name)", totalInnings: 3, inningRunRule: 0, visitingTeam: visitor, homeTeam: home)
+        game.location = "\(location) Stadium"
+        game.homeTeam.lineup = game.createLineup(players: home.players!)
+        game.visitingTeam.lineup = game.createLineup(players: visitor.players!)
         return game
     }
     
@@ -111,7 +112,7 @@ extension PlayerPos {
 }
 extension Inning {
     static var defaultInning: Inning {
-        return Inning(number: 1, game: Game.defaultGame, half: 0)
+        return Inning(number: 1, game: GameViewModel.defaultGame, half: 0)
     }
 }
 

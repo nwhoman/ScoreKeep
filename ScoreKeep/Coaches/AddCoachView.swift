@@ -46,11 +46,11 @@ struct AddCoachView: View {
 
 #Preview {
     let preview = Preview()
-    let game = Game.defaultGame
+    let game = GameViewModel.defaultGame
     preview.addSampleGames([game])
     
     return NavigationStack {
-        AddCoachView(team: game.homeTeam!)
+        AddCoachView(team: game.homeTeam)
             .modelContainer(preview.modelContainer)
     }
 }

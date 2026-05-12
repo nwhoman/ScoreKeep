@@ -13,7 +13,7 @@ struct TeamDetailView: View {
     @Environment(\.dismiss) var dismiss
     @EnvironmentObject var nav: NavigationStateManager
     @Query(sort: \GameViewModel.id) private var viewModels: [GameViewModel]
-    @Query(sort: \Game.id) private var games: [Game]
+    
     @Query(sort: \Team.name) var teams: [Team]
     @State private var showDeleteAlert = false
     //@Binding var path: NavigationPath
@@ -26,22 +26,14 @@ struct TeamDetailView: View {
     
     @State var team: Team
     
-    var completeGames: [Game] {
-        (team.homeGames?.filter { game in
-            game.isComplete
-        })! + (team.visitingGames?.filter { game in
-            game.isComplete
-        })!
+    var completeGames: [GameViewModel] {
+        return viewModels.filter( { $0.isComplete })
     }
-    var teamViewModels: [GameViewModel] {
-        return viewModels.filter { completeGames.contains( $0.game)}
-    }
-    var teamGames: [Game] {
-        return games.filter { $0.homeTeam == team || $0.visitingTeam == team }
-    }
+    
     init(team: Team) {
         self.team = team
-        self._games = Query(filter: #Predicate { $0.homeTeam == team || $0.visitingTeam == team}, sort: \.date, order: .reverse)
+        self._viewModels = Query(filter: #Predicate { $0.homeTeam.id == team.id || $0.visitingTeam.id == team.id }, sort: \.date, order: .reverse)
+        
     }
     
     var body: some View {
@@ -149,7 +141,7 @@ struct TeamDetailView: View {
                     }
                     .navigationDestination(for: GameViewModel.self) { vm in
                         //GameLineupsView(game: game)
-                        GameSummaryView(gameViewModel: vm, game: vm.game, geo: geo)
+                        GameSummaryView(gameViewModel: vm, geo: geo)
                     }
                     
                     .alert("Delete Team", isPresented: $showDeleteAlert) {
@@ -227,7 +219,7 @@ struct TeamDetailView: View {
                 ScrollView {
                     Text("Visiting Games")
                     List {
-                        ForEach(teamGames, id: \.self) { game in
+                        ForEach(completeGames, id: \.self) { game in
                             NavigationLink(value: game) {
                                 VStack(alignment: .leading) {
                                     Text("\(game.name) - \(game.location)")
@@ -240,7 +232,7 @@ struct TeamDetailView: View {
                     }
                     Text("Home Games")
                     List {
-                        ForEach(team.homeGames ?? [], id: \.self) { vm in
+                        ForEach(team.homeGames, id: \.self) { vm in
                             NavigationLink(value: vm) {
                                 VStack(alignment: .leading) {
                                     Text("\(vm.name) - \(vm.location)")
@@ -266,11 +258,11 @@ struct TeamDetailView: View {
 
 #Preview {
     let preview = Preview()
-    let game = Game.defaultGame
+    let game = GameViewModel.defaultGame
     preview.addSampleGames([game])
 
     return NavigationStack {
-        TeamDetailView(team: game.homeTeam!) //
+        TeamDetailView(team: game.homeTeam) //
             .modelContainer(preview.modelContainer)
     }
 }

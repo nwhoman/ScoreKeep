@@ -14,7 +14,7 @@ struct MainMenuView: View {
     
     @State private var showAddTeamScreen: Bool = false
     let preview = Preview()
-    let game = Game.defaultGame
+    let game = GameViewModel.defaultGame
     
     var body: some View {
         //NavigationStack { //path: $path.animation(.bouncy)) {
@@ -59,7 +59,7 @@ struct MainMenuView: View {
             Button {
                 
                 preview.addSampleLineups(game: game)
-                addSampleData([Game.defaultGame])
+                addSampleData([game])
                 try? modelContext.save()
             } label: {
                 Text("Add Default Data")
@@ -67,7 +67,7 @@ struct MainMenuView: View {
         
     }
         
-    func addSampleData(_ examples: [Game]) {
+    func addSampleData(_ examples: [GameViewModel]) {
         
         Task {
             examples.forEach { example in
@@ -81,7 +81,7 @@ struct MainMenuView: View {
 
 #Preview {
     let preview = Preview()
-    let game = Game.defaultGame
+    let game = GameViewModel.defaultGame
     preview.addSampleGames([game])
     preview.addSampleLineups(game: game)
     

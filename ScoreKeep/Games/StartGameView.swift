@@ -21,7 +21,7 @@ struct StartGameView: View {
     @State var gameLocation: String = ""
     @State var gameInnings: Int = 7
     @State var inningRR: Int = 0
-    @State var newGame: Game?// = Game(name: "", date: Date(), location: "")
+    @State var newGame: GameViewModel?// = Game(name: "", date: Date(), location: "")
     @State var gameDate: Date = Date()
     @State var startGame: Bool = false
     @State var showAlert: Bool = false
@@ -89,27 +89,18 @@ struct StartGameView: View {
         Button("Create Game"){
             if homeTeam?.players?.count ?? 0 > 8 && visitingTeam?.players?.count ?? 0 > 8 {
                 if newGame == nil {
-                    newGame = Game(name: "\(visitingTeam?.name ?? "") at \(homeTeam?.name ?? "")", location: gameLocation)
-                    modelContext.insert(newGame!)
+                    newGame = GameViewModel(name: "\(visitingTeam?.name ?? "") at \(homeTeam?.name ?? "")", totalInnings: gameInnings, inningRunRule: inningRR, visitingTeam: visitingTeam!, homeTeam: homeTeam!)
                     
+                    do {
+                        modelContext.insert(newGame!)
+                        try modelContext.save()
+                        nav.push(.startGame(gameViewModel: newGame!))
+                    } catch {
+                        print(error)
+                    }
+                    homeTeam?.homeGames.append(newGame!)
+                    visitingTeam?.visitingGames.append(newGame!)
                 }
-                newGame?.homeTeam = homeTeam
-                newGame?.visitingTeam = visitingTeam
-                //newGame?.name = "\(homeTeam.name) vs. \(visitingTeam.name)"
-                //newGame?.location = gameLocation
-                homeTeam?.homeGames!.append(newGame!)
-                visitingTeam?.visitingGames!.append(newGame!)
-                
-                let newGameViewModel = GameViewModel(game: newGame ?? Game.defaultGame, totalInnings: gameInnings, inningRunRule: inningRR)
-                
-                do {
-                    modelContext.insert(newGameViewModel)
-                    try modelContext.save()
-                    nav.push(.startGame(gameViewModel: newGameViewModel))
-                } catch {
-                    print(error)
-                }
-//                startGame.toggle()
                 
             } else {
                 showAlert.toggle()
@@ -132,7 +123,7 @@ struct StartGameView: View {
 
 #Preview {
     let preview = Preview()
-    let game = Game.defaultGame
+    let game = GameViewModel.defaultGame
     preview.addSampleGames([game])
     preview.addSampleLineups(game: game)
     do {

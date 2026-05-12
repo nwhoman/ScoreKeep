@@ -36,7 +36,7 @@ struct ContentView: View {
 
 #Preview {
     let preview = Preview()
-    let game = Game.defaultGame
+    let game = GameViewModel.defaultGame
     preview.addSampleGames([game])
     preview.addSampleLineups(game: game)
     return ContentView()

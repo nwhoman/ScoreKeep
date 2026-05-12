@@ -107,7 +107,7 @@ struct EditTeamView: View {
 #Preview {
     @Previewable @State var team = Team(name: "", ageGroup: "")
     let preview = Preview()
-    let game = Game.defaultGame
+    let game = GameViewModel.defaultGame
     preview.addSampleGames([game])
 
     return NavigationStack {

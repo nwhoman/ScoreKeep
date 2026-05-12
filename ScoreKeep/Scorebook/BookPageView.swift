@@ -32,9 +32,9 @@ struct BookPageView: View {
     
     var team: Team {
         if gameViewModel.selectedTab == "Visitor" {
-            return gameViewModel.game.visitingTeam!
+            return gameViewModel.visitingTeam
         } else {
-            return gameViewModel.game.homeTeam!
+            return gameViewModel.homeTeam
         }
     }
     
@@ -59,7 +59,7 @@ struct BookPageView: View {
                         } label: {
                             Text("Box Score")
                         }
-                        if !gameViewModel.game.isComplete {
+                        if !gameViewModel.isComplete {
                             Button {
                                 completeGame = true
                             } label: {
@@ -89,7 +89,7 @@ struct BookPageView: View {
             .alert("Complete Game?", isPresented: $completeGame) {
                 Button {
                     
-                    gameViewModel.game.isComplete = true
+                    gameViewModel.isComplete = true
                     gameViewModel.checkGameComplete()
                     try? modelContext.save()
                 } label: {
@@ -101,14 +101,13 @@ struct BookPageView: View {
 }
 
 #Preview {
-    var game = Game.defaultGame
-    let gameVM = GameViewModel(game: game, totalInnings: 3, inningRunRule: 0)
+    let gameVM = GameViewModel.defaultGame
     let preview = Preview()
-    preview.addSampleGames([game])
-    preview.addSampleLineups(game: game)
+    preview.addSampleGames([gameVM])
+    preview.addSampleLineups(game: gameVM)
     //gameVM.setUpGame()
     
-    return BookPageView(gameViewModel: gameVM, lineup: gameVM.homeLineup, selectedTab: "Home - \(game.homeTeam!.name)")
+    return BookPageView(gameViewModel: gameVM, lineup: gameVM.homeLineup, selectedTab: "Home - \(gameVM.homeTeam.name)")
         .modelContainer(preview.modelContainer)
 }
 
@@ -116,13 +115,11 @@ struct InningsView: View {
     @Environment(\.modelContext) var modelContext
     @EnvironmentObject var nav: NavigationStateManager
 
-    //@ObservedObject var gameViewModel: GameViewModel
     @Binding var showLargeView: Bool
     @Binding var showPlayerPA: Bool
     @Binding var largeView: Bool
     @State var gameViewModel: GameViewModel
-    //@Binding var orderNumber: Int
-    //@Binding var inningNumber: Int
+    
     @State var currentPlayer: OffensivePlateAppearance?
     @State var currentPitcher: DefensivePlateAppearance?
     var team: Team
@@ -150,7 +147,7 @@ struct InningsView: View {
                             ForEach(inning.plateAppearances.sorted(by: {$0.order < $1.order}), id: \.self) { player in
                                 SmallPlateAppearanceView(gameViewModel: gameViewModel, player: player, scale: 0.15)
                                     .onTapGesture {
-                                        if !gameViewModel.game.isComplete {
+                                        if !gameViewModel.isComplete {
                                             if checkBatter(inning: inning, player: player) {
                                                 if player.outcome["home"] == "" {
                                                     gameViewModel.batter = player

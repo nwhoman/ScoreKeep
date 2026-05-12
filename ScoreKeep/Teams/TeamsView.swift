@@ -79,7 +79,7 @@ struct TeamsView: View {
 
 #Preview {
     let preview = Preview()
-    let game = Game.defaultGame
+    let game = GameViewModel.defaultGame
     preview.addSampleGames([game])
 
     return NavigationStack {

@@ -13,7 +13,6 @@ struct LineupView: View {
     @Environment(\.dismiss) var dismiss
     @EnvironmentObject var nav: NavigationStateManager
     @State var gameVM: GameViewModel
-    @State var game: Game
 
     @State var selected: Player?
        
@@ -26,9 +25,9 @@ struct LineupView: View {
     
     var team: Team {
         if selectedTab == "Home" {
-            return game.homeTeam!
+            return gameVM.homeTeam
         } else {
-            return game.visitingTeam!
+            return gameVM.visitingTeam
         }
     }
     
@@ -309,13 +308,13 @@ struct RosterItemView: View {
 }
 
 #Preview {
-    var game = Game.defaultGame
-    let gameVM = GameViewModel(game: game, totalInnings: 3, inningRunRule: 0)
+    var game = GameViewModel.defaultGame
+    let gameVM = GameViewModel.defaultGame
     let preview = Preview()
     preview.addSampleGames([game])
 
     return NavigationStack {
-         LineupView(gameVM: gameVM, game: game, lineup: gameVM.homeCurrentLineup, showAlert: .constant(false), showTeamAlert: .constant(false), editPlayers: .constant(false), selectedTab: "Home")
+         LineupView(gameVM: gameVM, lineup: gameVM.homeCurrentLineup, showAlert: .constant(false), showTeamAlert: .constant(false), editPlayers: .constant(false), selectedTab: "Home")
             .modelContainer(preview.modelContainer)
     }
 }

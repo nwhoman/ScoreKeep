@@ -66,11 +66,11 @@ func drawFieldShape(from path: CGPath) -> SKShapeNode {
 }
 
 #Preview {
-    var game = Game.defaultGame
+    let gameVM = GameViewModel.defaultGame
     let preview = Preview()
-    preview.addSampleGames([game])
-    preview.addSampleLineups(game: game)
-    let gameVM = GameViewModel(game: game, totalInnings: 3, inningRunRule: 0)
+    preview.addSampleGames([gameVM])
+    preview.addSampleLineups(game: gameVM)
+    
     gameVM.setUpGame()
     gameVM.getBatter()
     //gameVM.getPitcher()
@@ -327,7 +327,7 @@ class FieldScene: SKScene, SKPhysicsContactDelegate {
         gameVM.balls += 1
         print("B: \(gameVM.balls)")
         if gameVM.balls == 4 {
-            var batterNode = getGenericNode(name: gameVM.batter!.batter.number)
+            let batterNode = getGenericNode(name: gameVM.batter!.batter.number)
             self.moveNode(brNode: batterNode, player: self.gameVM.batter!, bases: 1)
 //            var node = enumerateChildNodes(withName: gameVM.batter!.batter.number) {
 //            node, stop in

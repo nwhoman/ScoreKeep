@@ -13,12 +13,12 @@ struct Preview {
     init() {
         let config = ModelConfiguration(isStoredInMemoryOnly: true)
         do {
-            self.modelContainer = try ModelContainer(for: Game.self, configurations: config)
+            self.modelContainer = try ModelContainer(for: GameViewModel.self, configurations: config)
         } catch {
             fatalError("Could not initialize container: \(error)")
         }
     }
-    func addSampleGames(_ examples: [Game]) {
+    func addSampleGames(_ examples: [GameViewModel]) {
         
         Task { @MainActor in
             examples.forEach { example in
@@ -27,10 +27,10 @@ struct Preview {
             }
         }
     }
-    func addSampleLineups(game: Game) {
-        game.homeLineup = game.createLineup(players: game.homeTeam!.players!)
-        game.homeTeam!.lineup = game.homeLineup
-        game.visitingLineup = game.createLineup(players: game.visitingTeam!.players!)
-        game.visitingTeam!.lineup = game.visitingLineup
+    func addSampleLineups(game: GameViewModel) {
+        game.homeCurrentLineup = game.createLineup(players: game.homeTeam.players!)
+        game.homeTeam.lineup = game.homeCurrentLineup
+        game.visitorCurrentLineup = game.createLineup(players: game.visitingTeam.players!)
+        game.visitingTeam.lineup = game.visitorCurrentLineup
     }
 }

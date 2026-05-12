@@ -39,11 +39,11 @@ struct GameLineupsView: View {
             VStack {
                 Spacer(minLength: 70)
                 TabView(selection: $selectedTab) {
-                    LineupView(gameVM: gameViewModel, game: gameViewModel.game, lineup: gameViewModel.homeCurrentLineup, showAlert: $showAlert, showTeamAlert: $showHomeAlert, editPlayers: $editPlayers, selectedTab: selectedTab)
-                        .tabItem { Text("\(gameViewModel.game.homeTeam!.name)") }.tag("Home")
+                    LineupView(gameVM: gameViewModel, lineup: gameViewModel.homeCurrentLineup, showAlert: $showAlert, showTeamAlert: $showHomeAlert, editPlayers: $editPlayers, selectedTab: selectedTab)
+                        .tabItem { Text("\(gameViewModel.homeTeam.name)") }.tag("Home")
                     
-                    LineupView(gameVM: gameViewModel, game: gameViewModel.game, lineup: gameViewModel.visitorCurrentLineup, showAlert: $showAlert, showTeamAlert: $showVisitorAlert, editPlayers: $editPlayers, selectedTab: selectedTab)
-                        .tabItem { Text("\(gameViewModel.game.visitingTeam!.name)") }.tag("Visitor")
+                    LineupView(gameVM: gameViewModel, lineup: gameViewModel.visitorCurrentLineup, showAlert: $showAlert, showTeamAlert: $showVisitorAlert, editPlayers: $editPlayers, selectedTab: selectedTab)
+                        .tabItem { Text("\(gameViewModel.visitingTeam.name)") }.tag("Visitor")
                     
                 }
                 .alert(isPresented: teamsCheck) {
@@ -58,10 +58,10 @@ struct GameLineupsView: View {
             VStack{
                 HStack {
                     VStack(alignment: .leading) {
-                        Text(gameViewModel.game.name)
-                        Text("\(gameViewModel.game.date.formatted(date: .complete, time: .omitted))")
-                        Text("\(gameViewModel.game.date.formatted(date: .omitted, time: .complete))")
-                        Text("At: \(gameViewModel.game.location)")
+                        Text(gameViewModel.name)
+                        Text("\(gameViewModel.date.formatted(date: .complete, time: .omitted))")
+                        Text("\(gameViewModel.date.formatted(date: .omitted, time: .complete))")
+                        Text("At: \(gameViewModel.location)")
                     }
                     .font(.system(size: 14))
                     .padding(.leading)
@@ -112,9 +112,9 @@ struct GameLineupsView: View {
                         modelContext.delete(gameViewModel)
                         //nav.push(.teams)
 //                        nav.pop()
-                        nav.push(.team(team: selectedTab == "Home" ? gameViewModel.game.homeTeam! : gameViewModel.game.visitingTeam!))
+                        nav.push(.team(team: selectedTab == "Home" ? gameViewModel.homeTeam : gameViewModel.visitingTeam))
                     } label: {
-                        Text(selectedTab == "Home" ? gameViewModel.game.homeTeam!.name : gameViewModel.game.visitingTeam!.name)
+                        Text(selectedTab == "Home" ? gameViewModel.homeTeam.name : gameViewModel.visitingTeam.name)
                     }
 //                    NavigationLink(value: selectedTab == "Home" ? gameViewModel.game.homeTeam! : gameViewModel.game.visitingTeam!) {
 //                        Text(selectedTab == "Home" ? gameViewModel.game.homeTeam!.name : gameViewModel.game.visitingTeam!.name)
@@ -248,13 +248,13 @@ func checkFlex(lineup: [PlayerPos]) -> Bool {
 #Preview {
     @Previewable @State var navPath = NavigationPath()
     let preview = Preview()
-    let game = Game.defaultGame
+    let game = GameViewModel.defaultGame
     preview.addSampleGames([game])
     preview.addSampleLineups(game: game)
     
     
     return NavigationStack {
-         GameLineupsView(gameViewModel: GameViewModel(game: game, totalInnings: 3, inningRunRule: 0))
+         GameLineupsView(gameViewModel: game)
             .modelContainer(preview.modelContainer)
     }
 }

@@ -12,16 +12,23 @@ import SwiftUI
 @Model
 class GameViewModel: Codable, Identifiable {
     enum CodingKeys: CodingKey {
-        case game, visitors, home, visitorLineup, homeLineup, visitorCurrentLineup, homeCurrentLineup, selectedTab, totalInnings, score, inningNumber, halfInning, outs, balls, strikes, pitches, batterUp, batterCount, batter, pitcherStats, baserunnerObjectsForBackup, visitorInnings, homeInnings
+        case date, name, location, isStarted, isComplete, visitors, home, visitorLineup, homeLineup, visitorCurrentLineup, homeCurrentLineup, selectedTab, totalInnings, score, inningNumber, halfInning, outs, balls, strikes, pitches, batterUp, batterCount, batter, pitcherStats, innings, visitingTeam, homeTeam
     }
     var id: UUID = UUID()
-    var game: Game
+    var date: Date = Date.now
+    var name: String
+    var location: String = ""
+    var isStarted: Bool = false
+    var isComplete: Bool = false
+
     var visitors: [Player]
     var home: [Player]
     var visitorLineup: [[PlayerPos]] = []                // book lineup
     var homeLineup: [[PlayerPos]] = []
     var visitorCurrentLineup: [PlayerPos] = []           // lineup changing lineup
     var homeCurrentLineup: [PlayerPos] = []
+    var visitorDecomposedLineup: [PlayerPos] = []
+    var homeDecomposedLineup: [PlayerPos] = []
     var selectedTab: String = "Visitor"
     var totalInnings: Int
     var inningRunRule: Int = 0
@@ -48,9 +55,11 @@ class GameViewModel: Codable, Identifiable {
     var baseRunners: [OffensivePlateAppearance] = []
     var pitcherStats: [PitcherStats] = []
     var baserunnerObjectsForBackup: [OffensivePlateAppearance] = []
-    var visitorInnings: [Inning] = []
-    var homeInnings: [Inning] = []
-    //var currentPlayer: OffensivePlateAppearance?
+
+    
+    @Relationship(deleteRule: .nullify, inverse: \Team.visitingGames) var visitingTeam: Team
+    @Relationship(deleteRule: .nullify, inverse: \Team.homeGames) var homeTeam: Team
+    @Relationship(deleteRule: .cascade, inverse: \Inning.game) var innings: [Inning] = []
     
     var sortedVisitorLineup: [[PlayerPos]] {
         visitorLineup.sorted(by: { $0.last!.batting < $1.last!.batting })
@@ -59,35 +68,38 @@ class GameViewModel: Codable, Identifiable {
     var sortedHomeLineup: [[PlayerPos]] {
         homeLineup.sorted(by: { $0.last!.batting < $1.last!.batting })
     }
+    var visitorInnings: [Inning] {
+        return innings.filter( { $0.half == 0 })
+    }
+    var homeInnings: [Inning] {
+        return innings.filter( { $0.half == 1 })
+    }
     
-    
-    init(game: Game, totalInnings: Int, inningRunRule: Int) {
-        self.game = game
-        self.visitors = game.visitingTeam!.players!
-        self.home = game.homeTeam!.players!
-        
-        self.visitorCurrentLineup = game.visitingTeam?.lineup ?? []
-        self.homeCurrentLineup = game.homeTeam?.lineup ?? []
+    init(name: String, totalInnings: Int, inningRunRule: Int, visitingTeam: Team, homeTeam: Team) {
+        self.name = name
         self.totalInnings = totalInnings
         self.inningRunRule = inningRunRule
+        
+        self.visitingTeam = visitingTeam
+        self.homeTeam = homeTeam
+        
+        self.visitors = visitingTeam.players!
+        self.home = homeTeam.players!
+        
+        self.visitorCurrentLineup = visitingTeam.lineup
+        self.homeCurrentLineup = homeTeam.lineup
+        
         self.score = setScoreTable()
         print("V: \(self.visitorCurrentLineup.count) H: \(self.homeCurrentLineup.count) on game init")
     }
     
-    init(gameViewModel: GameViewModel) {
-        self.game = gameViewModel.game
-        self.visitors = gameViewModel.game.visitingTeam!.players!
-        self.home = gameViewModel.game.homeTeam!.players!
-        
-        self.visitorCurrentLineup = gameViewModel.game.visitingTeam?.lineup ?? []
-        self.homeCurrentLineup = gameViewModel.game.homeTeam?.lineup ?? []
-        self.totalInnings = gameViewModel.totalInnings
-        print("V: \(self.visitorCurrentLineup.count) H: \(self.homeCurrentLineup.count) on GVM init")
-    }
-    
     required init(from decoder: Decoder) throws {
         let values = try decoder.container(keyedBy: CodingKeys.self)
-        self.game = try values.decode(Game.self, forKey: .game)
+        self.date = try values.decode(Date.self, forKey: .date)
+        self.name = try values.decode(String.self, forKey: .name)
+        self.location = try values.decode(String.self, forKey: .location)
+        self.isStarted = try values.decode(Bool.self, forKey: .isStarted)
+        self.isComplete = try values.decode(Bool.self, forKey: .isComplete)
         self.visitors = try values.decode([Player].self, forKey: .visitors)
         self.home = try values.decode([Player].self, forKey: .home)
         
@@ -119,15 +131,12 @@ class GameViewModel: Codable, Identifiable {
         self.batterCount = try values.decode([Int].self, forKey: .batterCount)
         self.batter = try values.decode(OffensivePlateAppearance.self, forKey: .batter)
         self.pitcherStats = try values.decode([PitcherStats].self, forKey: .pitcherStats)
-        self.baserunnerObjectsForBackup = try values.decode([OffensivePlateAppearance].self, forKey: .baserunnerObjectsForBackup)
-        self.visitorInnings = try values.decode([Inning].self, forKey: .visitorInnings)
-        self.homeInnings = try values.decode([Inning].self, forKey: .homeInnings)
-
+        self.visitingTeam = try values.decode(Team.self, forKey: .visitingTeam)
+        self.homeTeam = try values.decode(Team.self, forKey: .homeTeam)
     }
     
     func encode(to encoder: Encoder) throws {
         var values = encoder.container(keyedBy: CodingKeys.self)
-        try values.encode(game, forKey: .game)
         try values.encode(visitors, forKey: .visitors)
         try values.encode(home, forKey: .home)
         try values.encode(visitorLineup, forKey: .visitorLineup)
@@ -147,9 +156,9 @@ class GameViewModel: Codable, Identifiable {
         try values.encode(batterCount, forKey: .batterCount)
         try values.encode(batter, forKey: .batter)
         try values.encode(pitcherStats, forKey: .pitcherStats)
-        try values.encode(baserunnerObjectsForBackup, forKey: .baserunnerObjectsForBackup)
-        try values.encode(visitorInnings, forKey: .visitorInnings)
-        try values.encode(homeInnings, forKey: .homeInnings)
+        try values.encode(innings, forKey: .innings)
+        try values.encode(visitingTeam, forKey: .visitingTeam)
+        try values.encode(homeTeam, forKey: .homeTeam)
 }
     
     func popPlayerFromLineup(lineup: [PlayerPos], player: PlayerPos) -> [PlayerPos] {
@@ -166,8 +175,8 @@ class GameViewModel: Codable, Identifiable {
         self.batterCount = [visitorCurrentLineup.filter({!$0.flex}).count, homeCurrentLineup.filter({!$0.flex}).count]
         print("batter count: \(self.batterCount[0]) \(self.batterCount[1])")
         for i in 1...self.totalInnings {
-            let vInning = Inning(number: i*10, game: game, half: 0)
-            let hInning = Inning(number: i*10, game: game, half: 1)
+            let vInning = Inning(number: i*10, game: self, half: 0)
+            let hInning = Inning(number: i*10, game: self, half: 1)
             modelContext?.insert(vInning)
             modelContext?.insert(hInning)
             do {
@@ -194,7 +203,7 @@ class GameViewModel: Codable, Identifiable {
     }
     func getCurrentPitcher(i: Int) -> PlayerPos {
         var pitcher: PlayerPos
-        if i == 0 {
+        if i == 1 {
             if self.visitorCurrentLineup.contains(where: { $0.position == "P" }) {
                 pitcher = self.visitorCurrentLineup.filter({$0.position == "P"}).first!
             } else {
@@ -210,47 +219,34 @@ class GameViewModel: Codable, Identifiable {
         return pitcher
     }
     func addInning(inning: Inning, lineup: [PlayerPos], halfInning: Int) {
-        let visitorPitcher = getCurrentPitcher(i: 0)
-        let homePitcher = getCurrentPitcher(i: 1)
-        
+        let pitcher = getCurrentPitcher(i: halfInning)
+        var temp: [PlayerPos] = []
         var order = 1
         
             if halfInning == 0 {
-                inning.half = halfInning
-                let temp = visitorCurrentLineup.filter({!$0.flex})
-                for batter in temp.sorted(by: { $0.batting < $1.batting }) {
-                    let plateAppearance = OffensivePlateAppearance(order: order, batter: batter.player, pitcher: homePitcher.player, inning: inning)
-                    modelContext?.insert(plateAppearance)
-                    do {
-                        try modelContext?.save()
-                    } catch {
-                        print("save VOPA error \(error), \(error._domain)")
-                    }
-                    
-                    inning.plateAppearances.append(plateAppearance)
-                    order += 1
-                }
-                print("save VOPA count \(inning.half), \(inning.plateAppearances)")
-                self.visitorInnings.append(inning)
-                
+                temp = visitorCurrentLineup.filter({!$0.flex})
             } else {
-                inning.half = halfInning
-                let temp = homeCurrentLineup.filter({!$0.flex})
-                for batter in temp.sorted(by: { $0.batting < $1.batting }) {
-                    let plateAppearance = OffensivePlateAppearance(order: order, batter: batter.player, pitcher: visitorPitcher.player, inning: inning)
-                    modelContext?.insert(plateAppearance)
-                    do {
-                        try modelContext?.save()
-                    } catch {
-                        print("save HOPA error \(error), \(error._domain)")
-                    }
-                    inning.plateAppearances.append(plateAppearance
-                    )
-                    order += 1
-                }
-                print("save HOPA count \(inning.half), \(inning.plateAppearances)")
-                self.homeInnings.append(inning)
+                temp = homeCurrentLineup.filter({!$0.flex})
             }
+        inning.half = halfInning
+        for batter in temp.sorted(by: { $0.batting < $1.batting }) {
+            let plateAppearance = OffensivePlateAppearance(order: order, batter: batter.player, pitcher: pitcher.player, inning: inning)
+            modelContext?.insert(plateAppearance)
+            do {
+                try modelContext?.save()
+            } catch {
+                if halfInning == 0 {
+                    print("save VOPA error \(error), \(error._domain)")
+                } else {
+                    print("save HOPA error \(error), \(error._domain)")
+                }
+            }
+            
+            inning.plateAppearances.append(plateAppearance)
+            order += 1
+        }
+        
+        self.innings.append(inning)
     }
 
     func setInitialLineup(halfInning: Int) -> [[PlayerPos]]{
@@ -314,7 +310,7 @@ class GameViewModel: Codable, Identifiable {
             self.homeLineup = temp2
         }
         // replace batter in plate appearances and pitcher if the pither was changed
-        for inning in game.innings {
+        for inning in self.innings {
             for app in inning.plateAppearances {
                 
                 if !app.active {
@@ -645,29 +641,29 @@ class GameViewModel: Codable, Identifiable {
                 if self.outs < 3 {
                     if score["home"] ?? 0 > score["visitor"] ?? 0 {
                         print("walk off home wins")
-                        self.game.isComplete = true
+                        self.isComplete = true
                     }
                 } else {
                     if score["home"] ?? 0 < score["visitor"] ?? 0 {
                         print("visitor wins")
-                        self.game.isComplete = true
+                        self.isComplete = true
                     }
                 }
             } else {
                 if self.outs >= 3 {
                     if score["home"] ?? 0 > score["visitor"] ?? 0 {
                         print("home wins")
-                        self.game.isComplete = true
+                        self.isComplete = true
                     }
                 }
             }
         }
-        if self.game.isComplete {
-            self.game.visitingLineup = decomposeLineup(lineup: self.visitorLineup)
-            self.game.homeLineup = decomposeLineup(lineup: self.homeLineup)
-            self.game.homeTeam?.lineup = self.homeCurrentLineup
-            self.game.visitingTeam?.lineup = self.visitorCurrentLineup
-            for inning in game.innings {
+        if self.isComplete {
+            self.visitorDecomposedLineup = decomposeLineup(lineup: self.visitorLineup)
+            self.homeDecomposedLineup = decomposeLineup(lineup: self.homeLineup)
+            self.homeTeam.lineup = self.homeCurrentLineup
+            self.visitingTeam.lineup = self.visitorCurrentLineup
+            for inning in innings {
                 for _ in inning.plateAppearances {
                     inning.plateAppearances.removeAll(where: { !$0.active })
                 }
@@ -697,7 +693,7 @@ class GameViewModel: Codable, Identifiable {
             }
             
         } else {
-            if !self.game.isComplete {
+            if !self.isComplete {
                 // if dismiss sheet before batter is finished
                 if self.batter?.outcome["home"] == "" {
                     self.baseRunners.removeAll { each in
@@ -713,25 +709,25 @@ class GameViewModel: Codable, Identifiable {
         }
     }
     
-    func saveViewModelAsJSON() -> String {
-        game.visitingFullLineup = self.visitorLineup
-        game.homeFullLineup = self.homeLineup
-        game.visitingLineup = self.visitorCurrentLineup
-        game.homeLineup = self.homeCurrentLineup
-        game.innings.append(contentsOf: self.visitorInnings)
-        game.innings.append(contentsOf: self.homeInnings)
-        
-//        let encoder = JSONEncoder()
-//        encoder.outputFormatting = [.prettyPrinted]
-//        if let jsonData = try? encoder.encode(self),
-//           let jsonString = String(data: jsonData, encoding: .utf8) {
-//            game.viewModel.append(jsonData)
-//            print("saved view model")
-//            return jsonString
-//        }
-        
-        return "failed to encode view model"
-    }
+//    func saveViewModelAsJSON() -> String {
+//        game.visitingFullLineup = self.visitorLineup
+//        game.homeFullLineup = self.homeLineup
+//        game.visitingLineup = self.visitorCurrentLineup
+//        game.homeLineup = self.homeCurrentLineup
+//        game.innings.append(contentsOf: self.visitorInnings)
+//        game.innings.append(contentsOf: self.homeInnings)
+//        
+////        let encoder = JSONEncoder()
+////        encoder.outputFormatting = [.prettyPrinted]
+////        if let jsonData = try? encoder.encode(self),
+////           let jsonString = String(data: jsonData, encoding: .utf8) {
+////            game.viewModel.append(jsonData)
+////            print("saved view model")
+////            return jsonString
+////        }
+//        
+//        return "failed to encode view model"
+//    }
     
     
 }

@@ -14,7 +14,7 @@ struct BoxScoreView: View {
     var totalPA: [OffensivePlateAppearance] = []
     
     var teams:[Team] {
-        [gameViewModel.game.visitingTeam!, gameViewModel.game.homeTeam!]
+        [gameViewModel.visitingTeam, gameViewModel.homeTeam]
     }
     let geo: GeometryProxy
     
@@ -35,9 +35,13 @@ struct BoxScoreView: View {
                             var teamStats: PlayerStats {
                                 return gameViewModel.getTeamStats(team: index)
                             }
-                            var pitcher: PlayerPos {
-                                gameViewModel.getCurrentPitcher(i: index)
-                            }
+//                            var pitcher: PlayerPos {
+//                                if index == 0 {
+//                                    gameViewModel.getCurrentPitcher(i: 1)
+//                                } else {
+//                                    gameViewModel.getCurrentPitcher(i: 0)
+//                                }
+//                            }
                             
                             Text("\(team.name)")
                             ScrollView(.horizontal) {
@@ -96,14 +100,14 @@ struct BoxScoreView: View {
 }
 
 #Preview {
-    var game = Game.defaultGame
+    var game = GameViewModel.defaultGame
     let preview = Preview()
     preview.addSampleGames([game])
     preview.addSampleLineups(game: game)
     //setUpGame(game: game)
     
     return GeometryReader { geo in
-        BoxScoreView(gameViewModel: GameViewModel(game: game, totalInnings: 3, inningRunRule: 0), geo: geo)
+        BoxScoreView(gameViewModel: game, geo: geo)
             .modelContainer(preview.modelContainer)
     }
 }
@@ -113,10 +117,10 @@ struct PitchersBoxScoreView: View {
     @State var gameViewModel: GameViewModel
     @State var geo: GeometryProxy
     var pitcherStats: [PitcherStats] {
-        [getPitcherStats(index: 0), getPitcherStats(index: 1)]
+        [getPitcherStats(index: 1), getPitcherStats(index: 0)]
     }
     var pitcher: [PlayerPos] {
-        [gameViewModel.getCurrentPitcher(i: 0), gameViewModel.getCurrentPitcher(i: 1)]
+        [gameViewModel.getCurrentPitcher(i: 1), gameViewModel.getCurrentPitcher(i: 0)]
     }
     let index: Int
     let spacing: CGFloat = CGFloat(PitchingStatLabels.allCases.count)
@@ -166,7 +170,7 @@ struct PitchersBoxScoreView: View {
     }
     func getPitcherStats(index: Int) -> PitcherStats {
         let pitcher = gameViewModel.getCurrentPitcher(i: index)
-        let innings = index == 1 ? gameViewModel.visitorInnings : gameViewModel.homeInnings
+        let innings = index == 0 ? gameViewModel.visitorInnings : gameViewModel.homeInnings
         return gameViewModel.getPitcherStats(plateAppearances: gameViewModel.getPitcherPA(innings: innings, pitcher: pitcher.player))
     }
 }

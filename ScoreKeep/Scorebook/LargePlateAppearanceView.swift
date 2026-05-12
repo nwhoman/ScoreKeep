@@ -98,7 +98,7 @@ struct LargePlateAppearanceView: View {
     }
     func getStats(player: OffensivePlateAppearance) -> PlayerStats {
         var stats = PlayerStats()
-        let plateAppearances = gameViewModel.getPlayerPA(innings: gameViewModel.game.innings, player: player.batter)
+        let plateAppearances = gameViewModel.getPlayerPA(innings: gameViewModel.innings, player: player.batter)
         stats = gameViewModel.getPlayerStats(plateAppearances: plateAppearances)
         
         return stats

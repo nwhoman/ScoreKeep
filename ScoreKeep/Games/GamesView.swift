@@ -11,7 +11,6 @@ import SwiftUI
 struct GamesView: View {
     @Environment(\.modelContext) var modelContext
     @EnvironmentObject var nav: NavigationStateManager
-    @Query(sort: \Game.date) private var games: [Game]
     @Query(sort: \GameViewModel.id) private var viewModels: [GameViewModel]
     
     @State private var showAddGameScreen = false
@@ -24,29 +23,7 @@ struct GamesView: View {
     var body: some View {
         GeometryReader { geo in
         
-        List {
-            ForEach(games, id: \.id) { game in
-                NavigationLink(value: game) {
-                    HStack {
-                        VStack(alignment: .leading) {
-                            HStack {
-                                Text(game.name)
-                                    .font(.headline)
-                                if game.isComplete {
-                                    Text("X g")
-                                } else {
-                                    Text("O g")
-                                }
-                            }
-                            Text("\(game.date.formatted(date: .complete, time: .shortened))")
-                                .foregroundStyle(.secondary)
-                            
-                        }
-                    }
-                }
-            }
-            .onDelete(perform: deleteGame)
-        }
+        
         List {
             ForEach(viewModels, id: \.id) { vm in //.sorted(by: { $0.game.date < $1.game.date })
                 
@@ -74,30 +51,11 @@ struct GamesView: View {
             .onDelete(perform: deleteVM)
         }
             
-        
-   
-        Button {
-            for each in games {
-                
-                    JSONString += displayJSON(game: each) + "\n"
-                
-                
-                //resetViewModel(game: games.last!)
-            }
-            showJSON.toggle()
-        } label: {
-            Text("JSON")
-        }
+            
             .navigationTitle("ScoreKeep Games")
-            .navigationDestination(for: Game.self) { game in
-                
-//                BookView(gameViewModel: newGameViewModel!)
-                
-                
-                //GameLineupsView(path: $path, game: game)
-            }
+            
             .navigationDestination(for: GameViewModel.self) { vm in
-                if !vm.game.isComplete{
+                if !vm.isComplete{
                     BookView(gameViewModel: vm)
                 } else {
                     BoxScoreView(gameViewModel: vm, geo: geo)
@@ -130,20 +88,11 @@ struct GamesView: View {
     }
     
     
-    func deleteGame(at offsets: IndexSet){
-        for offset in offsets {
-            let game = games[offset]
-            for inning in game.innings {
-                modelContext.delete(inning)
-            }
-            modelContext.delete(game)
-        }
-    }
+    
     func deleteVM(at offsets: IndexSet){
         for offset in offsets {
             //let viewModel = viewModels[offset]
-            let viewModel = viewModels.sorted(by: { $0.game.date < $1.game.date })[offset]
-            modelContext.delete(viewModel.game)
+            let viewModel = viewModels.sorted(by: { $0.date < $1.date })[offset]
             modelContext.delete(viewModel)
         }
         do {
@@ -157,7 +106,7 @@ struct GamesView: View {
 
 #Preview {
     let preview = Preview()
-    let game = Game.defaultGame
+    let game = GameViewModel.defaultGame
     preview.addSampleGames([game])
     preview.addSampleLineups(game: game)
         
@@ -166,7 +115,7 @@ struct GamesView: View {
     }
 }
 
-func displayJSON(game: Game) -> String {
+//func displayJSON(game: Game) -> String {
 //    var newGameViewModel: GameViewModel
 //    let decoder = JSONDecoder()
 //    guard let newGVM: GameViewModel = try? decoder.decode(GameViewModel.self, from: game.viewModel.last!) else {
@@ -180,8 +129,8 @@ func displayJSON(game: Game) -> String {
 //        print("saved game: \(game.viewModel.count) \n \(jsonString)")
 //        return jsonString
 //    }
-    return "failed to encode game"
-}
+    //return "failed to encode game"
+//}
 
 //class DataLoader: ObservableObject {
 //    @Environment(\.modelContext) var modelContext

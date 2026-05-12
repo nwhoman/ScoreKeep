@@ -11,7 +11,6 @@ import SwiftUI
 struct PlateAppearanceView: View {
     @Environment(\.modelContext) var modelContext
     @Environment(\.dismiss) var dismiss
-//    @ObservedObject var gameViewModel: GameViewModel
     @State var gameViewModel: GameViewModel
     @State var player: OffensivePlateAppearance
     let bases: [String] = ["home", "first", "second", "third"]
@@ -136,11 +135,11 @@ struct PlateAppearanceView: View {
 //var active: Bool
 
 #Preview {
-    var game = Game.defaultGame
+    let gameVM = GameViewModel.defaultGame
     let preview = Preview()
-    preview.addSampleGames([game])
-    preview.addSampleLineups(game: game)
-    let gameVM = GameViewModel(game: game, totalInnings: 3, inningRunRule: 0)
+    preview.addSampleGames([gameVM])
+    preview.addSampleLineups(game: gameVM)
+    
     let player = OffensivePlateAppearance.defaultPlateAppearance
     
     return PlateAppearanceView(gameViewModel: gameVM, player: player)
