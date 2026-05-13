@@ -18,6 +18,7 @@ struct BookPageView: View {
     @State var showPlayerPA: Bool = false
     @State var largeView: Bool = true
     @State var completeGame: Bool = false
+    let geo: GeometryProxy
     
     var selectedTab: String
     var innings: [Inning] {
@@ -39,7 +40,7 @@ struct BookPageView: View {
     }
     
     var body: some View {
-            GeometryReader { geo in
+            //GeometryReader { geo in
                 VStack {
 //                    HStack {
 //                        Text("Batting: \(gameViewModel.batterUp[gameViewModel.halfInning])")
@@ -77,25 +78,27 @@ struct BookPageView: View {
                             //.padding(.leading)
                                 .border(Color.blue)
                             ScrollView(Axis.Set.horizontal) {
-                                InningsView(showLargeView: $showLargeView, showPlayerPA: $showPlayerPA, largeView: $largeView, gameViewModel: gameViewModel, team: team, innings: innings, selectedTab: selectedTab)
+                                InningsView(showLargeView: $showLargeView, showPlayerPA: $showPlayerPA, largeView: $largeView, gameViewModel: gameViewModel, team: team, innings: innings, selectedTab: selectedTab, geo: geo)
                                 
                             }
                             
                             Spacer()
                         }
                     }
+                    .frame(maxWidth: .infinity)
                 }
+                .alert("Complete Game?", isPresented: $completeGame) {
+                    Button {
+                        
+                        gameViewModel.game.isComplete = true
+                        gameViewModel.checkGameComplete()
+                        try? modelContext.save()
+                    } label: {
+                        Text("Complete Game")
+                    }
             }
-            .alert("Complete Game?", isPresented: $completeGame) {
-                Button {
-                    
-                    gameViewModel.game.isComplete = true
-                    gameViewModel.checkGameComplete()
-                    try? modelContext.save()
-                } label: {
-                    Text("Complete Game")
-                }
-    }
+            
+    //}
         
     }
 }
@@ -108,8 +111,10 @@ struct BookPageView: View {
     preview.addSampleLineups(game: game)
     //gameVM.setUpGame()
     
-    return BookPageView(gameViewModel: gameVM, lineup: gameVM.homeLineup, selectedTab: "Home - \(game.homeTeam!.name)")
-        .modelContainer(preview.modelContainer)
+    return GeometryReader { geo in
+        BookPageView(gameViewModel: gameVM, lineup: gameVM.homeLineup, geo: geo, selectedTab: "Home - \(game.homeTeam!.name)")
+            .modelContainer(preview.modelContainer)
+    }
 }
 
 struct InningsView: View {
@@ -128,6 +133,7 @@ struct InningsView: View {
     var team: Team
     var innings: [Inning]
     var selectedTab: String?
+    let geo: GeometryProxy
     
     var teamBatting: Bool {
         if selectedTab == "Visitor" {
@@ -137,7 +143,7 @@ struct InningsView: View {
         }
     }
     var body: some View {
-        GeometryReader { geo in
+        //GeometryReader { geo in
             HStack {
                 ForEach(innings.sorted(by: {$0.number < $1.number}), id: \.self) { inning in
                     HStack(alignment: .top) {
@@ -186,29 +192,31 @@ struct InningsView: View {
                     }
                 }
             }
-        }
-        .sheet(isPresented: $showLargeView, onDismiss: {
-            //  update game viewmodel, check outs and switch sides
-            gameViewModel.checkInningComplete()
-            try? modelContext.save()
-            
-            if !largeView {
-                largeView.toggle()
-            }
-        })
-        {
-            LargePlateAppearanceView(gameViewModel: gameViewModel, player: gameViewModel.batter!, largeView: $largeView)
-                .presentationBackground(alignment: .top) {
-                    LinearGradient(colors: [Color.gray, Color.green], startPoint: .bottomLeading, endPoint: .topTrailing)
+            .sheet(isPresented: $showLargeView, onDismiss: {
+                //  update game viewmodel, check outs and switch sides
+                gameViewModel.checkInningComplete()
+                try? modelContext.save()
+                
+                if !largeView {
+                    largeView.toggle()
                 }
-                .presentationCornerRadius(50)
+            })
+            {
+                LargePlateAppearanceView(gameViewModel: gameViewModel, player: gameViewModel.batter!, largeView: $largeView)
+                    .presentationBackground(alignment: .top) {
+                        LinearGradient(colors: [Color.gray, Color.green], startPoint: .bottomLeading, endPoint: .topTrailing)
+                    }
+                    .presentationCornerRadius(50)
+            }
+            .sheet(isPresented: $showPlayerPA, onDismiss: {
+                return
+            }) {
+                PlateAppearanceView(gameViewModel: gameViewModel, player: gameViewModel.batter!)
+            }
+            .frame(maxWidth: .infinity)
         }
-        .sheet(isPresented: $showPlayerPA, onDismiss: {
-            return 
-        }) {
-            PlateAppearanceView(gameViewModel: gameViewModel, player: gameViewModel.batter!)
-        }
-    }
+        
+    
     func checkBatter(inning: Inning, player: OffensivePlateAppearance) -> Bool {
         if (teamBatting && gameViewModel.halfInning == 0 && gameViewModel.inningNumber[gameViewModel.halfInning] == inning.number && gameViewModel.batterUp[gameViewModel.halfInning] == player.order) || (!teamBatting && gameViewModel.halfInning == 1 && gameViewModel.inningNumber[gameViewModel.halfInning] == inning.number && gameViewModel.batterUp[gameViewModel.halfInning] == player.order) {
             return true

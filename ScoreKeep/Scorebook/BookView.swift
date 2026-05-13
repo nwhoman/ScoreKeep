@@ -23,21 +23,23 @@ struct BookView: View {
             ZStack {
                 TabView(selection: $gameViewModel.selectedTab) {
                     
-                    BookPageView(gameViewModel: gameViewModel, lineup: gameViewModel.visitorLineup, selectedTab: gameViewModel.selectedTab)
+                    BookPageView(gameViewModel: gameViewModel, lineup: gameViewModel.visitorLineup, geo: geo, selectedTab: gameViewModel.selectedTab)
                         .tabItem {
                             Image(systemName: "person.fill")
                             Text("Visitor - \(gameViewModel.game.visitingTeam!.name)")
                         }.tag("Visitor")
-                    BookPageView(gameViewModel: gameViewModel, lineup: gameViewModel.homeLineup, selectedTab: gameViewModel.selectedTab)
+                        .padding(.leading, 5)
+                    BookPageView(gameViewModel: gameViewModel, lineup: gameViewModel.homeLineup, geo: geo, selectedTab: gameViewModel.selectedTab)
                         .tabItem {
                             Image(systemName: "person.fill")
                             Text("Home - \(gameViewModel.game.homeTeam!.name)")
                         }.tag("Home")
+                        .padding(.leading, 5)
                 }
                 VStack {
                     HStack {
                         //Space
-                    
+                        
                     }
                     //Spacer()
                 }
@@ -45,6 +47,7 @@ struct BookView: View {
                     GameSummaryView(gameViewModel: gameViewModel, game: gameViewModel.game, geo: geo)
                 }
             }
+            
         }
         .onAppear {
             if !gameViewModel.game.isStarted {
@@ -95,7 +98,7 @@ func advanceLineup() {
 #Preview {
     var game = Game.defaultGame
     let preview = Preview()
-    let gameViewModel: GameViewModel = .init(game: game, totalInnings: 3, inningRunRule: 0)
+    let gameViewModel: GameViewModel = .init(game: game, totalInnings: 5, inningRunRule: 0)
     preview.addSampleGames([game])
     preview.addSampleLineups(game: game)
     //setUpGame(game: game)

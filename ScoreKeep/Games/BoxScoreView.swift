@@ -75,8 +75,9 @@ struct BoxScoreView: View {
                     }
                     //.frame(width: geo.size.width, height: geo.size.height, alignment: .leading)
                 }
-                .padding(.horizontal)
-                .frame(maxWidth: .infinity)
+                //.padding(.horizontal, 0)
+                //.frame(maxWidth: .infinity)
+                .frame(width: geo.size.width, height: geo.size.height, alignment: .leading)
         //}
         
     }
