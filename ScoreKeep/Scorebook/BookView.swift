@@ -23,21 +23,23 @@ struct BookView: View {
             ZStack {
                 TabView(selection: $gameViewModel.selectedTab) {
                     
-                    BookPageView(gameViewModel: gameViewModel, lineup: gameViewModel.visitorLineup, selectedTab: gameViewModel.selectedTab)
+                    BookPageView(gameViewModel: gameViewModel, lineup: gameViewModel.visitorLineup, geo: geo, selectedTab: gameViewModel.selectedTab)
                         .tabItem {
                             Image(systemName: "person.fill")
                             Text("Visitor - \(gameViewModel.visitingTeam.name)")
                         }.tag("Visitor")
-                    BookPageView(gameViewModel: gameViewModel, lineup: gameViewModel.homeLineup, selectedTab: gameViewModel.selectedTab)
+                        .padding(.leading, 5)
+                    BookPageView(gameViewModel: gameViewModel, lineup: gameViewModel.homeLineup, geo: geo, selectedTab: gameViewModel.selectedTab)
                         .tabItem {
                             Image(systemName: "person.fill")
                             Text("Home - \(gameViewModel.homeTeam.name)")
                         }.tag("Home")
+                        .padding(.leading, 5)
                 }
                 VStack {
                     HStack {
                         //Space
-                    
+                        
                     }
                     //Spacer()
                 }
@@ -45,6 +47,7 @@ struct BookView: View {
                     GameSummaryView(gameViewModel: gameViewModel, geo: geo)
                 }
             }
+            
         }
         .onAppear {
             if !gameViewModel.isStarted {
