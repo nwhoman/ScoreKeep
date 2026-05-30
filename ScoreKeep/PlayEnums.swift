@@ -35,6 +35,57 @@ enum Positions: Codable, CaseIterable {
     case Flex
     case DP
     case EP
+    
+    var abbreviation: String {
+        switch self {
+        case .P: return "P"
+        case .C: return "C"
+        case .First: return "1B"
+        case .Second: return "2B"
+        case .Third: return "3B"
+        case .SS: return "SS"
+        case .LF: return "LF"
+        case .CF: return "CF"
+        case .RF: return "RF"
+        case .DP: return "DP"
+        case .EP: return "EP"
+        case .Flex: return "Flex"
+        }
+    }
+    
+    var name: String {
+        switch self {
+        case .P: return "pitcher"
+        case .C: return "catcher"
+        case .First: return "first"
+        case .Second: return "second"
+        case .Third: return "third"
+        case .SS: return "shortstop"
+        case .LF: return "left"
+        case .CF: return "center"
+        case .RF: return "right"
+        case .DP: return "DP"
+        case .EP: return "EP"
+        case .Flex: return "Flex"
+        }
+    }
+    
+    var number: Int {
+        switch self {
+        case .P: return 1
+        case .C: return 2
+        case .First: return 3
+        case .Second: return 4
+        case .Third: return 5
+        case .SS: return 6
+        case .LF: return 7
+        case .CF: return 8
+        case .RF: return 9
+        case .DP: return 10
+        case .EP: return 11
+        case .Flex: return 0
+        }
+    }
 }
 struct PositionDescription {
     var number: Int             // ie 1, 2, 3

@@ -238,7 +238,7 @@ struct RosterView: View {
             .background(Color.clear)
         }
         .sheet(isPresented: $showSubs) {
-            SwapPlayerView(lineup: $lineup, selectedPlayer: $selectedPlayer, gameVM: $gameVM, unusedPlayers: unusedPlayers, positions: unusedPositions)
+            SwapPlayerView(lineup: $lineup, selectedPlayer: $selectedPlayer, gameVM: $gameVM, unusedPlayers: unusedPlayers, positions: unusedPositions, team: nil)
               
         }
     }

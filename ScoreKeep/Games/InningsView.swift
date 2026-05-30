@@ -66,10 +66,10 @@ struct InningsListView: View {
     func deleteInning(at offsets: IndexSet){
         for offset in offsets {
             let inning = innings[offset]
-            for pa in inning.plateAppearances {
-                modelContext.delete(pa)
-                try? modelContext.save()
-            }
+//            for pa in inning.plateAppearances {
+//                modelContext.delete(pa)
+//                try? modelContext.save()
+//            }
             modelContext.delete(inning)
             try? modelContext.save()
         }

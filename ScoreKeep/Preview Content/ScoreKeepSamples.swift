@@ -76,7 +76,7 @@ extension GameViewModel {
         let home: Team = Team.defaultTeam
         let visitor: Team = Team.defaultTeam
         let location: String = home.name.components(separatedBy: " ").first ?? ("\(home.name)")
-        let game = GameViewModel(name: "\(visitor.name) v \(home.name)", totalInnings: 3, inningRunRule: 0, visitingTeam: visitor, homeTeam: home)
+        let game = GameViewModel(name: "\(visitor.name) v \(home.name)", totalInnings: 5, inningRunRule: 0, visitingTeam: visitor, homeTeam: home)
         game.location = "\(location) Stadium"
         game.homeTeam.lineup = game.createLineup(players: home.players!)
         game.visitingTeam.lineup = game.createLineup(players: visitor.players!)

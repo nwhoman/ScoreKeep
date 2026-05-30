@@ -76,12 +76,38 @@ struct PlayersView: View {
     func deletePlayer(at offsets: IndexSet){
         for offset in offsets {
             let player = players[offset]
-            modelContext.delete(player)
+            do {
+                if try checkTeamGames(team: player.team!) {
+                    modelContext.delete(player)
+                }
+            } catch {
+                print(error)
+            }
+            
         }
     }
     func sortedPlayers(players: [Player]) -> [Player]{
         return players.sorted(using: KeyPathComparator(\.number))
     }
+}
+
+func checkTeamGames(team: Team) throws -> Bool {
+    let container = try ModelContainer(for: GameViewModel.self)
+    let context = ModelContext(container)
+    let teamId = team.id
+    let predicate1 = #Predicate<GameViewModel> { $0.homeTeam.id == teamId || $0.visitingTeam.id == teamId}
+    let predicate2 = #Predicate<GameViewModel> { !$0.isComplete }
+    let combinedPredicate = #Predicate<GameViewModel> { predicate1.evaluate($0) && predicate2.evaluate($0) }
+    let descriptor = FetchDescriptor<GameViewModel>(predicate: combinedPredicate)
+    
+    let games = try context.fetch(descriptor)
+    
+    guard games.isEmpty else {
+        return false
+    }
+    return true
+    
+    
 }
 
 #Preview {

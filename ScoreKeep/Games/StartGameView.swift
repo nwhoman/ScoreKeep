@@ -99,13 +99,14 @@ struct StartGameView: View {
                     
                     do {
                         modelContext.insert(newGame!)
+                        homeTeam?.homeGames.append(newGame!)
+                        visitingTeam?.visitingGames.append(newGame!)
                         try modelContext.save()
                         nav.push(.startGame(gameViewModel: newGame!))
                     } catch {
                         print(error)
                     }
-                    homeTeam?.homeGames.append(newGame!)
-                    visitingTeam?.visitingGames.append(newGame!)
+                    
                 }
                 
             } else {

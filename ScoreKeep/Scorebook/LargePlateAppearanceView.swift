@@ -30,7 +30,8 @@ struct LargePlateAppearanceView: View {
                         .padding(.top, 25)
                     
                     VStack {
-                        ScoreView(gameViewModel: gameViewModel)
+                        ScoreView(gameViewModel: gameViewModel, geo: geo)
+                            .padding(.trailing)
                         HStack(alignment: .top) {
                             let innings = gameViewModel.halfInning == 0 ? gameViewModel.visitorInnings : gameViewModel.homeInnings
                             let playerStats = gameViewModel.getPlayerStats(plateAppearances: gameViewModel.getPlayerPA(innings: innings, player: gameViewModel.batter!.batter))

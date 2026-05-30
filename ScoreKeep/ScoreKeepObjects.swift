@@ -14,15 +14,15 @@ import SwiftUI
 @Model
 class Team: Hashable, Codable {
     enum CodingKeys: CodingKey {
-        case id, name, ageGroup, lineup, coaches, players, homeGames, visitingGames
+        case id, name, ageGroup, lineup, coaches, players
     }
     
     var id: UUID
     var name: String
     var ageGroup: String
     var lineup: [PlayerPos] = []
-    var homeGames: [GameViewModel] = []
-    var visitingGames: [GameViewModel] = []
+    @Relationship(deleteRule: .cascade, inverse: \GameViewModel.homeTeam) var homeGames: [GameViewModel] = []
+    @Relationship(deleteRule: .cascade, inverse: \GameViewModel.visitingTeam) var visitingGames: [GameViewModel] = []
     @Relationship(deleteRule: .cascade, inverse: \Coach.team) var coaches: [Coach]?
     @Relationship(deleteRule: .cascade, inverse: \Player.team) var players: [Player]?
 
@@ -42,7 +42,8 @@ class Team: Hashable, Codable {
         self.name = try values.decode(String.self, forKey: .name)
         self.ageGroup = try values.decode(String.self, forKey: .ageGroup)
         self.lineup = try values.decode([PlayerPos].self, forKey: .lineup)
-        
+        self.coaches = try values.decodeIfPresent([Coach].self, forKey: .coaches)
+        self.players = try values.decodeIfPresent([Player].self, forKey: .players)
     }
     
     func encode(to encoder: any Encoder) throws {
@@ -51,6 +52,8 @@ class Team: Hashable, Codable {
         try container.encode(name, forKey: .name)
         try container.encode(ageGroup, forKey: .ageGroup)
         try container.encode(lineup, forKey: .lineup)
+        try container.encodeIfPresent(coaches, forKey: .coaches)
+        try container.encodeIfPresent(players, forKey: .players)
     }
     
     
@@ -105,8 +108,8 @@ class Player: Codable {
     var number: String = ""
     var team: Team? = nil
     var position: String = ""
-    @Relationship(deleteRule: .cascade, inverse: \OffensivePlateAppearance.batter) var plateAppearances: [OffensivePlateAppearance]?
-    @Relationship(deleteRule: .cascade, inverse: \DefensivePlateAppearance.pitcher) var battersFaced: [DefensivePlateAppearance]?
+    @Relationship(deleteRule: .nullify, inverse: \OffensivePlateAppearance.batter) var plateAppearances: [OffensivePlateAppearance]?
+    @Relationship(deleteRule: .nullify, inverse: \PlayerPos.player) var fielder: [PlayerPos]?
     
 
     init(firstName: String, lastName: String, age: Int = 0, number: String, team: Team? = nil) {
@@ -269,8 +272,8 @@ class Inning: Codable {
     var game: GameViewModel
     var half: Int
     
-    @Relationship(deleteRule: .nullify, inverse: \OffensivePlateAppearance.inning) var plateAppearances: [OffensivePlateAppearance] = []
-    
+    //@Relationship(deleteRule: .nullify, inverse: \OffensivePlateAppearance.inning) var plateAppearances: [OffensivePlateAppearance] = []
+    var plateAppearances: [OffensivePlateAppearance] = []
    
     init(number: Int, game: GameViewModel, half: Int) {
         self.number = number
@@ -567,6 +570,28 @@ struct PlayerStats: Identifiable, Hashable {
     }
 }
 
+struct FielderStats: Identifiable, Hashable {
+    var id: UUID = UUID()
+    var assists: Int = 0
+    var putOuts: Int = 0
+    var errors: Int = 0
+    
+    var attempts: Int {
+        return self.assists + self.putOuts + self.errors
+    }
+    
+    var percentage: Double {
+        if self.attempts != 0 {
+            return (Double(self.assists) + Double(self.putOuts)) / Double(self.attempts)
+        }
+        return 0.000
+    }
+    
+    var statSummary: [Int] {
+        return [self.attempts, self.assists, self.putOuts, self.errors]
+    }
+}
+
 struct PitcherStats: Identifiable, Hashable, Codable {
     enum CodingKeys: CodingKey {
         case inningsPitched, balls, strikes, battersFaced, hits, k, bb, hp, wp, doubles, triples, homeRuns, runs, er, sac
@@ -672,6 +697,17 @@ func getPlayerStats(plateAppearances: [OffensivePlateAppearance]) -> PlayerStats
     
     return playerStats
 }
+func getFieldingStats(fieldAppearance: [PlayerPos]) -> FielderStats {
+    var fieldStats = FielderStats()
+    
+    for each in fieldAppearance {
+        fieldStats.assists += each.assists
+        fieldStats.putOuts += each.putOuts
+        fieldStats.errors += each.errors
+    }
+    
+    return fieldStats
+}
 
 
 func decomposeLineup(lineup: [[PlayerPos]]) -> [PlayerPos] {
@@ -715,12 +751,20 @@ enum PitchingStatLabels: String, Codable, CaseIterable {
     case ERA
 }
 
+enum FieldingStatLabels: String, Codable, CaseIterable {
+    case attempts = "Att"
+    case assists = "A"
+    case putouts = "PO"
+    case errors = "E"
+    case percentage = "pct"
+}
+
 struct BattingLineupView: View {
     @EnvironmentObject var nav: NavigationStateManager
-    @State var gameVM: GameViewModel
+    @Binding var gameVM: GameViewModel
     @State var showSubPages: Bool = false
     @State var showAlert: Bool = false
-    @State var battingOrder: [[PlayerPos]]
+    @Binding var battingOrder: [[PlayerPos]]
     let geo: GeometryProxy
     let team: Team
     let tab: String
@@ -782,7 +826,7 @@ struct BattingLineupView: View {
             
         })
         {
-            ShowSubsView(gameVM: gameVM, team: team, lineup: gameVM.selectedTab == "Visitor" ? gameVM.visitorCurrentLineup : gameVM.homeCurrentLineup)
+            ShowSubsView(gameVM: $gameVM, team: team, lineup: gameVM.selectedTab == "Visitor" ? $gameVM.visitorCurrentLineup : $gameVM.homeCurrentLineup)
           
         }
             
@@ -803,88 +847,79 @@ struct BattingLineupView: View {
     var lineup = gameVM.setInitialLineup(halfInning: 0)
         
     return GeometryReader { geo in
-        BattingLineupView(gameVM: gameVM, battingOrder: lineup, geo: geo, team: gameVM.homeTeam, tab: "Home")
+        BattingLineupView(gameVM: .constant(gameVM), battingOrder: .constant(lineup), geo: geo, team: gameVM.homeTeam, tab: "Home")
             .modelContainer(preview.modelContainer)
     }
     
 }
 struct ScoreView: View {
-//    @ObservedObject var gameViewModel: GameViewModel
     @State var gameViewModel: GameViewModel
-    //let innings: [Any] = setUpInnings()//[1, 2, 3, 4, 5, 6, 7, "R", "H", "E"]
+    let geo: GeometryProxy
+ 
     var body: some View {
-        HStack(alignment: .lastTextBaseline) {
-            VStack(alignment: .trailing) {
-                //Spacer()
-                Text(" ")
-                    .font(.system(size: 12, weight: .bold))
-                    .frame(width: 45.0, height: 15.0)
-                    .padding(.bottom, -5)
-                Text("Visitor:")
-                    .font(.system(size: 12, weight: .bold))
-                    .frame(width: 45.0, height: 15.0)
-                    .padding(.bottom, -5)
-                Text("Home: ")
-                    .font(.system(size: 12, weight: .bold))
-                    .frame(width: 45.0, height: 15.0)
-                    .padding(.bottom, -5)
-            }
-            .padding(.bottom, 10)
-            .frame(width: 70, height: 55)
-            .border(Color.gray, width: 0.5)
-            VStack(alignment: .leading) {
-                let score = gameViewModel.getTotalScore()
-                let hits = gameViewModel.getTeamHits()
-                let errors = gameViewModel.getTeamErrors()
-                HStack {
-                    let innings: [Any] = setUpInnings()
-                    ForEach(0..<innings.count, id: \.self) {inning in
-                        Text("\(innings[inning])")
-                            .font(.system(size: 12, weight: .bold))
-                            .frame(width: 15.0, height: 15.0)
-                    }
+        VStack(alignment: .trailing) {
+            HStack(alignment: .lastTextBaseline) {
+                VStack(spacing: 5) {
+                    //Spacer()
+                    Text(" ")
+                        .font(.system(size: 12, weight: .bold))
+                        .frame(width: 45.0, height: 15.0)
+                        //.padding(.bottom, -5)
+                    Text("Visitor:")
+                        .font(.system(size: 12, weight: .bold))
+                        .frame(width: 45.0, height: 15.0)
+                        //.padding(.bottom, -5)
+                    Text("Home: ")
+                        .font(.system(size: 12, weight: .bold))
+                        .frame(width: 45.0, height: 15.0)
+                        //.padding(.bottom, -5)
                 }
-                .padding(.bottom, -5)
-                HStack {
-                    
-                    ForEach(gameViewModel.score["visitor"]!, id: \.self) {inning in
-                        Text("\(inning)")
-                            .font(.system(size: 12, weight: .bold))
-                            .frame(width: 15.0, height: 15.0)
+                //.padding(.bottom, 10)
+                //.frame(width: 70, height: 55)
+                VStack(spacing: 5) {
+                    let score = gameViewModel.getTotalScore()
+                    let hits = gameViewModel.getTeamHits()
+                    let errors = gameViewModel.getTeamErrors()
+                    HStack {
+                        let innings: [Any] = setUpInnings()
+                        ForEach(0..<innings.count, id: \.self) {inning in
+                            Text("\(innings[inning])")
+                                .font(.system(size: 12, weight: .bold))
+                                .frame(width: 15.0, height: 15.0)
+                        }
                     }
-                    Text("\(score["visitor"] ?? 0)")
-                        .font(.system(size: 12, weight: .bold))
-                        .frame(width: 15.0, height: 15.0)
-                    Text("\(hits["visitor"] ?? 1)") // change to hits
-                        .font(.system(size: 12, weight: .bold))
-                        .frame(width: 15.0, height: 15.0)
-                    Text("\(errors["visitor"] ?? 0)") // change to errors
-                        .font(.system(size: 12, weight: .bold))
-                        .frame(width: 15.0, height: 15.0)
-                }.padding(.bottom, -5)
-                HStack {
-                    
-                    ForEach(gameViewModel.score["home"]!, id: \.self) {inning in
-                        Text("\(inning)")
-                            .font(.system(size: 12, weight: .bold))
-                            .frame(width: 15.0, height: 15.0)
+                    //.padding(.bottom, -5)
+                
+                    ForEach(Array(gameViewModel.score.keys), id: \.self) { key in
+                        HStack {
+                            ForEach(gameViewModel.score[key]!, id: \.self) {inning in
+                                Text("\(inning)")
+                                    .font(.system(size: 12, weight: .bold))
+                                    .frame(width: 15.0, height: 15.0)
+                            }
+                            Text("\(score[key] ?? 0)")
+                                .font(.system(size: 12, weight: .bold))
+                                .frame(width: 15.0, height: 15.0)
+                            Text("\(hits[key] ?? 1)") // change to hits
+                                .font(.system(size: 12, weight: .bold))
+                                .frame(width: 15.0, height: 15.0)
+                            Text("\(errors[key] ?? 0)") // change to errors
+                                .font(.system(size: 12, weight: .bold))
+                                .frame(width: 15.0, height: 15.0)
+                        }
+                        //.padding(.bottom, -5)
+                            
                     }
-                    Text("\(score["home"] ?? 0)")
-                        .font(.system(size: 12, weight: .bold))
-                        .frame(width: 15.0, height: 15.0)
-                    Text("\(hits["home"] ?? 1)") // change to hits
-                        .font(.system(size: 12, weight: .bold))
-                        .frame(width: 15.0, height: 15.0)
-                    Text("\(errors["home"] ?? 0)") // change to errors
-                        .font(.system(size: 12, weight: .bold))
-                        .frame(width: 15.0, height: 15.0)
-                }.padding(.bottom, -5)
+            
+                }
+                //.padding(.bottom, 10)
+                
+                //.frame(width: 220, height: 55)
+                .padding(.trailing, 10)
             }
-            .padding(.bottom, 10)
-            .frame(width: 220, height: 55)
-            .border(Color.gray, width: 0.5)
         }
-        .frame(width: 400, height: 75, alignment: .leading)
+        .frame(width: geo.size.width, alignment: .trailing)
+        //.padding(.trailing, 10)
     }
     func setUpInnings() -> [Any] {
         var temp:[Any] = []
@@ -894,6 +929,16 @@ struct ScoreView: View {
         }
         temp.append(contentsOf: labels)
         return temp
+    }
+}
+#Preview {
+let gameVM = GameViewModel.defaultGame
+let preview = Preview()
+preview.addSampleGames([gameVM])
+preview.addSampleLineups(game: gameVM)
+
+    return GeometryReader { geo in
+        ScoreView(gameViewModel: gameVM, geo: geo)
     }
 }
 

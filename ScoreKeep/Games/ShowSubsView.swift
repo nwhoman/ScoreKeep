@@ -18,10 +18,10 @@ struct ShowSubsView: View {
     @Environment(\.modelContext) var modelContext
     @Environment(\.dismiss) var dismiss
     @EnvironmentObject var nav: NavigationStateManager
-    @State var gameVM: GameViewModel
+    @Binding var gameVM: GameViewModel
     @State var team: Team
        
-    @State var lineup: [PlayerPos]
+    @Binding var lineup: [PlayerPos]
     @State var showAlert: Bool = false
     @State var showSubs: Bool = false
     @State var goodAlert: Bool = false
@@ -81,7 +81,7 @@ struct ShowSubsView: View {
     
     preview.addSampleGames([game])
 
-    return ShowSubsView(gameVM: game, team: game.homeTeam, lineup: game.createLineup(players: game.homeTeam.players!), showAlert: false, showSubs: false)
+    return ShowSubsView(gameVM: .constant(game), team: game.homeTeam, lineup: .constant(game.createLineup(players: game.homeTeam.players!)), showAlert: false, showSubs: false)
             .modelContainer(preview.modelContainer)
     
 }
@@ -141,6 +141,7 @@ func validateSubs(lineup: [PlayerPos]) -> Bool {
     return true
 }
 
+
 struct RosterSubsView: View {
     @Environment(\.modelContext) var modelContext
     @Environment(\.dismiss) var dismiss
@@ -152,6 +153,7 @@ struct RosterSubsView: View {
     @Binding var showSubs: Bool
     
     @Binding var lineup: [PlayerPos]
+    let teamId: Int? = nil
     
     private var unusedPositions: [String] {
         var possiblePositions = positions
@@ -228,22 +230,27 @@ struct RosterSubsView: View {
             .background(Color.clear)
         }
         .navigationDestination(isPresented: $showSubs) {
-            SwapPlayerView(lineup: $lineup, selectedPlayer: $selectedPlayer, gameVM: $gameVM, unusedPlayers: unusedPlayers, positions: unusedPositions)
+            SwapPlayerView(lineup: $lineup, selectedPlayer: $selectedPlayer, gameVM: $gameVM, unusedPlayers: unusedPlayers, positions: unusedPositions, team: teamId)
                 
             
         }
     }
 }
-func createNewLineupSlot(player: Player, selectedPlayer: PlayerPos, lineup: inout [PlayerPos], gameVM: GameViewModel) -> PlayerPos {
+func createNewLineupSlot(player: Player, selectedPlayer: PlayerPos, lineup: inout [PlayerPos], gameVM: GameViewModel, modelContext: ModelContext, team: Int?) -> PlayerPos {
     // create PlayerPos for inserted player
     let newPlayerPos = PlayerPos(player: player, position: selectedPlayer.position, batting: selectedPlayer.batting)
+    modelContext.insert(newPlayerPos)
     // insert PlayerPos into lineup
     newPlayerPos.inning = gameVM.inningNumber[gameVM.halfInning] / 10
     lineup.removeAll { $0.id == selectedPlayer.id }
     lineup.append(newPlayerPos)
-    gameVM.insertSubIntoLineup(newPlayerPos: newPlayerPos, selectedPlayer: selectedPlayer)
+    gameVM.insertSubIntoLineup(newPlayerPos: newPlayerPos, selectedPlayer: selectedPlayer, team: team)
     lineup = lineup.sorted(by: { $0.batting < $1.batting })
-
+    do {
+        try modelContext.save()
+    } catch {
+        print(error)
+    }
     return newPlayerPos
 }
 
@@ -254,7 +261,7 @@ func positionChangeOnly(player: Player, position: String, batting: Int, lineup: 
     newPlayerPos.inning = gameVM.inningNumber[gameVM.halfInning] / 10
     lineup.removeAll { $0.player.id == player.id }
     lineup.append(newPlayerPos)
-    gameVM.insertSubIntoLineup(newPlayerPos: newPlayerPos, selectedPlayer: selectedPlayer)
+    gameVM.insertSubIntoLineup(newPlayerPos: newPlayerPos, selectedPlayer: selectedPlayer, team: nil)
     lineup = lineup.sorted(by: { $0.batting < $1.batting })
 
     return newPlayerPos
@@ -276,6 +283,7 @@ struct SwapPlayerView: View {
     @Binding var gameVM: GameViewModel
     var unusedPlayers: [Player]
     var positions: [String]
+    let team: Int?
     
     var body: some View {
         HStack {
@@ -294,7 +302,7 @@ struct SwapPlayerView: View {
                         .padding(.horizontal, 15)
                         .onTapGesture {
                             print("home: \(lineup)")
-                            selectedPlayer = createNewLineupSlot(player: player, selectedPlayer: selectedPlayer, lineup: &lineup, gameVM: gameVM)
+                            selectedPlayer = createNewLineupSlot(player: player, selectedPlayer: selectedPlayer, lineup: &lineup, gameVM: gameVM, modelContext: modelContext, team: team)
                             
                             print("newhome: \(lineup)")
                         }

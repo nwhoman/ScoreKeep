@@ -19,6 +19,8 @@ var baseRunnningOptionNodes = ["E", "SB", "XB", "WP", "PB", "TO"]
 var strikeoutNodes = ["WP", "PB", "E"]
 var sacNodes = ["B", "FO", "EHit"]
 
+
+
 func toggleNodes(nodes: [String], bool: Bool, in scene: SKScene) {
     for each in nodes {
         scene.enumerateChildNodes(withName: each) { node, _ in
@@ -122,11 +124,12 @@ func placeBaseRunners(basepathNode: SKShapeNode, baseOccupied: Int, plateAppeara
             path.addLine(to: outPoint(p1: firstBase, p2: secondBase, scaleFactor: 0.8)) //(to: thirdBase2)
             
             pathNode = outLine(p1: firstBase, p2: outPoint(p1: firstBase, p2: secondBase, scaleFactor: 0.7), plateAppearance: plateAppearance, scene: scene)
-            addOutcomes(plateAppearance: plateAppearance, scene: scene)
             //addOutX(base: thirdBase2, scene: scene)
         } else {
             path.addLine(to: secondBase)
         }
+        addOutcomes(plateAppearance: plateAppearance, scene: scene)
+
         basepathNode.path = path
         basepathNode.strokeColor = plateAppearance.re != 1 ? .blue : .red
         basepathNode.lineWidth = 3
@@ -176,6 +179,52 @@ func placeBaseRunners(basepathNode: SKShapeNode, baseOccupied: Int, plateAppeara
     }
     scene.addChild(basepathNode)
     scene.addChild(pathNode)
+}
+func addBaserunningLabels(plateAppearance: OffensivePlateAppearance, scene: SKScene) {
+    var firstBase: CGPoint { CGPoint(x: scene.frame.maxX*0.75, y: scene.frame.maxY*0.68) }
+    var secondBase: CGPoint { CGPoint(x: scene.frame.maxX*0.25, y: scene.frame.maxY*0.68) }
+    var thirdBase: CGPoint { CGPoint(x: scene.frame.maxX*0.275, y: scene.frame.midY*0.95) }
+    for outcome in ["first", "second", "third"] {
+        let labelNode = SKLabelNode(fontNamed: "Trebuchet MS")
+        labelNode.fontSize = 6
+        labelNode.fontColor = .white
+        labelNode.isHidden = false
+        labelNode.zPosition = 100
+        switch outcome {
+        case "first":
+            labelNode.position = firstBase
+        case "second":
+            labelNode.position = secondBase
+        case "third":
+            labelNode.position = thirdBase
+        default:
+            break
+        }
+        //labelNode.setScale(0.35)
+        guard let outcomeText = plateAppearance.outcome[outcome] else {
+            print("did not get outcome")
+            return }
+        if outcomeText.contains(/^WP/) {
+            labelNode.text = "WP"
+            labelNode.name = "WP" + "_" + outcome
+            scene.addChild(labelNode)
+
+        } else if outcomeText.contains(/^PB/) {
+            labelNode.text = "PB"
+            labelNode.name = "PB" + "_" + outcome
+            scene.addChild(labelNode)
+
+        } else if outcomeText.contains(/^Stole/) {
+            labelNode.text = "SB"
+            labelNode.name = "SB" + "_" + outcome
+            scene.addChild(labelNode)
+
+        }
+
+            
+    }
+        
+    
 }
 
 func placeKLabel(plateAppearance: OffensivePlateAppearance, scene: SKScene) {
@@ -321,6 +370,25 @@ func addPositionNodes(positionNames: [PositionDescription], lineup: [PlayerPos],
         scene.addChild(secondNode)
     }
 }
+func getPlayerPosForPositionNode(node: SKLabelNode, lineup: [PlayerPos]) -> PlayerPos? {
+    for player in lineup {
+        if player.player.number == node.text {
+            return player
+        }
+    }
+    return nil
+}
+
+func getPlayerPosForPositionNumber(positionNumber: Int, lineup: [PlayerPos]) -> PlayerPos? {
+    for each in Positions.allCases {
+        if positionNumber == each.number {
+            let player = lineup.first(where: { $0.position == each.abbreviation })
+            return player
+        }
+    }
+    return nil
+}
+
 func resetPositionNodes(scene: SKScene, positions: [PositionDescription]) {
     for child in scene.children {
         

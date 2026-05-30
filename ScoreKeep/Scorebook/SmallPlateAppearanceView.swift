@@ -74,18 +74,18 @@ struct SmallPlateAppearanceView: View {
                     VStack(alignment: .leading, spacing: 0) {
                         VStack(alignment: .leading) {
                     
-                            Text("\(player.outcome["home"] ?? "")")
-                                .font(.system(size: 8))
-                                .frame(width: 50, height: 1)
-                            Text("\(player.outcome["first"] ?? "")")
-                                .font(.system(size: 8))
-                                .frame(width: 50, height: 1)
-                            Text("\(player.outcome["second"] ?? "")")
-                                .font(.system(size: 8))
-                                .frame(width: 50, height: 1)
-                            Text("\(player.outcome["third"] ?? "")")
-                                .font(.system(size: 8))
-                                .frame(width: 50, height: 1)
+//                            Text("\(player.outcome["home"] ?? "")")
+//                                .font(.system(size: 8))
+//                                .frame(width: 50, height: 1)
+//                            Text("\(player.outcome["first"] ?? "")")
+//                                .font(.system(size: 8))
+//                                .frame(width: 50, height: 1)
+//                            Text("\(player.outcome["second"] ?? "")")
+//                                .font(.system(size: 8))
+//                                .frame(width: 50, height: 1)
+//                            Text("\(player.outcome["third"] ?? "")")
+//                                .font(.system(size: 8))
+//                                .frame(width: 50, height: 1)
                         }
                         .frame(width: 50, height: geo.size.height*0.25, alignment: .topLeading)
                         .padding(0)
@@ -188,6 +188,7 @@ class BasePathScene: SKScene, SKPhysicsContactDelegate {
         placeField(scene: self)
         
         placeBaseRunners(basepathNode: self.basepathNode, baseOccupied: baseOccupied, plateAppearance: plateAppearance, scene: self)
+        addBaserunningLabels(plateAppearance: plateAppearance, scene: self)
 //
           
         addGenericNode(center: CGPoint(x: self.frame.maxX*0.11, y: self.frame.maxY*0.37), size: self.frame.maxX*0.1, name: "1B", hidden: plateAppearance.hit == 1 ? false : true, color: .black, scene: self)

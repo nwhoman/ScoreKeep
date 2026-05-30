@@ -35,6 +35,7 @@ struct QuickEntryView: View {
                         Text("Team Name")
                             .foregroundStyle(Color.blue)
                     }
+                    .focused($isFocused)
                     .autocorrectionDisabled()
                     .foregroundStyle(Color.blue)
                     .padding(10)
@@ -44,6 +45,7 @@ struct QuickEntryView: View {
                         Text("Coach Name")
                             .foregroundStyle(Color.blue)
                     }
+                    .focused($isFocused)
                     .autocorrectionDisabled()
                     .foregroundStyle(Color.blue)
                     .padding(10)

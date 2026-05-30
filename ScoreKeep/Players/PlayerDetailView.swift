@@ -13,6 +13,7 @@ struct PlayerDetailView: View {
     @Environment(\.dismiss) var dismiss
     @EnvironmentObject var nav: NavigationStateManager
     @Query(sort: \OffensivePlateAppearance.batter.lastName) private var plateAppearances: [OffensivePlateAppearance]
+    
     @Bindable var player: Player
     @State private var teamName: String = ""
     @State private var team: Team?
@@ -23,8 +24,9 @@ struct PlayerDetailView: View {
     
     init(player: Player){
         self.player = player
+        let id = player.id
         self._plateAppearances = Query(filter: #Predicate {
-            $0.id == player.id
+            $0.batter.id == id
         })
     }
 
@@ -107,7 +109,7 @@ struct PlayerDetailView: View {
                 }
                 Section {
                     Text("Active PA")
-                    ForEach(playerPA, id: \.self) { pa in
+                    ForEach(plateAppearances, id: \.self) { pa in
                         if pa.active {
                             Text("\(pa.batter.lastName), \(pa.batter.firstName)")
                         }
@@ -115,13 +117,13 @@ struct PlayerDetailView: View {
                 }
                 Section {
                     Text("Inactive PA")
-                    ForEach(playerPA, id: \.self) { pa in
+                    ForEach(plateAppearances, id: \.self) { pa in
                         if !pa.active {
                             Text("\(pa.batter.lastName), \(pa.batter.firstName)")
                         }
                     }
                     Button {
-                        for each in playerPA {
+                        for each in plateAppearances {
                             if !each.active {
                                 modelContext.delete(each)
                             }

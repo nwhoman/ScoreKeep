@@ -19,73 +19,57 @@ struct BookMenuView: View {
     @State var gameViewModel: GameViewModel
     
     var body: some View {
-        //NavigationStack{
-            GeometryReader { geo in
-                ZStack {
-                    TabView(selection: $selectedTab) {
-                        
-                        ForEach(SideMenuOptionModel.allCases) { each in
-                            if each == .bookview {
-                                BookView(gameViewModel: $gameViewModel)
-                                    //.frame(maxWidth: .infinity)
-                                    //.padding(.horizontal, -15)
-                                    .tag(each.id)
-                            } else if each == .boxscore {
-                                BoxScoreView(gameViewModel: gameViewModel, geo: geo)
-                                    .padding(.horizontal, 10)
-                                    .toolbar(.hidden, for: .tabBar)
-                            } else if each == .gameoptions {
-                                VStack {
-                                    HStack {
-                                        TextField("Inning Run Rule", value: $gameViewModel.inningRunRule, format: .number)
-                                        TextField("Game Run Rule", value: $gameViewModel.inningRunRule, format: .number)
-                                        TextField("Game innings", value: $gameViewModel.totalInnings, format: .number)
-                                    }
-                                    HStack {
-                                        Button { // add plate appearances to inning
-                                            gameViewModel.inningNumber[gameViewModel.halfInning] += 1
-                                            gameViewModel.addInning(inning: Inning(number: gameViewModel.inningNumber[gameViewModel.halfInning], game: gameViewModel, half: gameViewModel.halfInning), lineup: gameViewModel.halfInning == 0 ? gameViewModel.visitorCurrentLineup : gameViewModel.homeCurrentLineup, halfInning: gameViewModel.halfInning)
-                                        } label: {
-                                            Image(systemName: "plus.rectangle")
-                                        }
-                                        Button { // leave game
-                                            //print("leaving game: " + gameViewModel.saveViewModelAsJSON())
-                                            Task {
-                                                try? modelContext.save()
-                                            }
-                                            nav.path.removeLast()
-                                        } label: {
-                                            Image(systemName: "backward.fill")
-                                        }
-                                    }
-                                }
-                            } else {
-                                Text(each.title)
-                                    .tag(each.id)
-                            }
-                        }
-                    }
-                    SlideoutMenuView(isShowing: $showMenu, selectedTab: $selectedTab, navTitle: $navTitle, geo: geo)
-                }
-                .frame(width: geo.size.width)
-                .toolbar(showMenu ? .hidden : .visible, for: .navigationBar)
-                .toolbar(.hidden, for: .tabBar)
-                .navigationTitle(navTitle)
-                .navigationBarTitleDisplayMode(.inline)
-                .toolbar {
-                    ToolbarItem(placement: .topBarLeading) {
-                        Button {
-                            showMenu.toggle()
-                        } label: {
-                            Image(systemName: "line.3.horizontal")
+        GeometryReader { geo in
+            ZStack {
+                TabView(selection: $selectedTab) {
+                    
+                    ForEach(SideMenuOptionModel.allCases) { each in
+                        if each == .bookview {
+                            BookView(gameViewModel: gameViewModel)
+                                .frame(maxWidth: .infinity)
+                                .padding(.horizontal, -5)
+                                .toolbar(.hidden, for: .tabBar)
+                        } else if each == .boxscore {
+                            BoxScoreView(gameViewModel: gameViewModel, geo: geo)
+                                .padding(.horizontal, 10)
+                                .toolbar(.hidden, for: .tabBar)
+                        } else if each == .gameoptions {
+                            GameOptionsView(gameVM: $gameViewModel, geo: geo)
+                                .padding(.horizontal, 10)
+                                .toolbar(.hidden, for: .tabBar)
+                        } else if each == .quicksubs {
+                            QuickSubsView(gameVM: $gameViewModel, geo: geo)
+                                .padding(.horizontal, 10)
+                                .toolbar(.hidden, for: .tabBar)
+                        } else if each == .rules {
+                            Text(each.title)
+                                .tag(each.id)
+                        } else {
+                            Text(each.title)
+                                .tag(each.id)
                         }
                     }
                 }
-                .padding()
+                SlideoutMenuView(isShowing: $showMenu, selectedTab: $selectedTab, navTitle: $navTitle, geo: geo)
             }
-            //.ignoresSafeArea(edges: .all)
-            .navigationBarBackButtonHidden()
-        //}
+            .frame(width: geo.size.width)
+            .toolbar(showMenu ? .hidden : .visible, for: .navigationBar)
+            .toolbar(.hidden, for: .tabBar)
+            //.navigationTitle(navTitle)
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .topBarLeading) {
+                    Button {
+                        showMenu.toggle()
+                    } label: {
+                        Image(systemName: "line.3.horizontal")
+                    }
+                }
+            }
+            .padding()
+        }
+        .ignoresSafeArea(edges: .all)
+        .navigationBarBackButtonHidden()
     }
         
 }
@@ -101,7 +85,8 @@ struct BookMenuView: View {
 }
 
 struct SlideoutMenuView: View {
-    
+    @EnvironmentObject var nav: NavigationStateManager
+
     @Binding var isShowing: Bool
     @State private var selectedOption: SideMenuOptionModel? = nil
     @Binding var selectedTab: Int
@@ -123,14 +108,23 @@ struct SlideoutMenuView: View {
                         MenuHeaderView()
                         VStack {
                             ForEach(SideMenuOptionModel.allCases) { each in
-                                Button {
-                                    selectedOption = each
-                                    selectedTab = each.id
-                                    isShowing.toggle()
-                                    navTitle = each.title
-                                } label: {
-                                    SideMenuRowView(option: each, selectedOption: $selectedOption)
+                                if each != .mainmenu {
+                                    Button {
+                                        selectedOption = each
+                                        selectedTab = each.id
+                                        isShowing.toggle()
+                                        navTitle = each.title
+                                    } label: {
+                                        SideMenuRowView(option: each, selectedOption: $selectedOption)
+                                    }
+                                } else {
+                                    Button {
+                                        nav.popToRoot()
+                                    } label: {
+                                        SideMenuRowView(option: each, selectedOption: $selectedOption)
+                                    }
                                 }
+                                
                                 
                             }
                         }
@@ -144,7 +138,6 @@ struct SlideoutMenuView: View {
                 }
                 .transition(.move(edge: .leading))
             }
-
         }
         
         .animation(.easeInOut, value: isShowing)
@@ -153,9 +146,11 @@ struct SlideoutMenuView: View {
         
 }
 
-//#Preview {
-//    SlideoutMenuView(isShowing: .constant(true))
-//}
+#Preview {
+    return GeometryReader { geo in
+        SlideoutMenuView(isShowing: .constant(true), selectedTab: .constant(0), navTitle: .constant("neal"), geo: geo)
+    }
+}
 
 struct MenuHeaderView: View {
     
@@ -223,9 +218,9 @@ enum SideMenuOptionModel: Int, CaseIterable, Identifiable {
     case bookview
     case boxscore
     case gameoptions
-    case profile
-    case search
-    case notifications
+    case quicksubs
+    case rules
+    case mainmenu
     
     var id: Int { self.rawValue }
     
@@ -234,9 +229,9 @@ enum SideMenuOptionModel: Int, CaseIterable, Identifiable {
         case .bookview: return "BookView"
         case .boxscore: return "Boxscore"
         case .gameoptions: return "Game Options"
-        case .profile: return "Profile"
-        case .search: return "Search"
-        case .notifications: return "Notifications"
+        case .quicksubs: return "Quick Substitutions"
+        case .rules: return "Rule Book"
+        case .mainmenu: return "Main Menu"
         }
     }
     
@@ -245,9 +240,9 @@ enum SideMenuOptionModel: Int, CaseIterable, Identifiable {
         case .bookview: return "book"
         case .boxscore: return "filemenu.and.cursorarrow"
         case .gameoptions: return "chart.bar"
-        case .profile: return "person"
-        case .search: return "magnifyingglass"
-        case .notifications: return "bell"
+        case .quicksubs: return "person"
+        case .rules: return "magnifyingglass"
+        case .mainmenu: return "backward.fill"
         }
     }
 }

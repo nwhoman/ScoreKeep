@@ -23,13 +23,13 @@ struct BookView: View {
             ZStack {
                 TabView(selection: $gameViewModel.selectedTab) {
                     
-                    BookPageView(gameViewModel: gameViewModel, lineup: gameViewModel.visitorLineup, geo: geo, selectedTab: gameViewModel.selectedTab)
+                    BookPageView(gameViewModel: $gameViewModel, lineup: $gameViewModel.visitorLineup, geo: geo, selectedTab: gameViewModel.selectedTab)
                         .tabItem {
                             Image(systemName: "person.fill")
                             Text("Visitor - \(gameViewModel.visitingTeam.name)")
                         }.tag("Visitor")
                         .padding(.leading, 5)
-                    BookPageView(gameViewModel: gameViewModel, lineup: gameViewModel.homeLineup, geo: geo, selectedTab: gameViewModel.selectedTab)
+                    BookPageView(gameViewModel: $gameViewModel, lineup: $gameViewModel.homeLineup, geo: geo, selectedTab: gameViewModel.selectedTab)
                         .tabItem {
                             Image(systemName: "person.fill")
                             Text("Home - \(gameViewModel.homeTeam.name)")
@@ -56,6 +56,8 @@ struct BookView: View {
             }
         }
         .navigationBarBackButtonHidden()
+        .ignoresSafeArea()
+        .toolbar(.hidden, for: .tabBar)
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
                 if !gameViewModel.isStarted {

@@ -41,6 +41,7 @@ struct AddPlayerView: View {
                     Text("\(player.number) \(player.firstName) \(player.lastName)")
                 } else {
                     TextField("Player's Number:", text: $number)
+                        .keyboardType(.numberPad)
                     TextField("Player's First Name:", text: $firstName)
                         .autocorrectionDisabled()
                     TextField("Player's Last Name:", text: $lastName)

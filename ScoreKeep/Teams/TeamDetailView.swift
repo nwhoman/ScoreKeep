@@ -12,8 +12,9 @@ struct TeamDetailView: View {
     @Environment(\.modelContext) var modelContext
     @Environment(\.dismiss) var dismiss
     @EnvironmentObject var nav: NavigationStateManager
-    @Query(sort: \GameViewModel.id) private var viewModels: [GameViewModel]
-    
+    @Query(sort: \GameViewModel.date) private var homeViewModels: [GameViewModel]
+    @Query(sort: \GameViewModel.date) private var visitorViewModels: [GameViewModel]
+
     @Query(sort: \Team.name) var teams: [Team]
     @State private var showDeleteAlert = false
     //@Binding var path: NavigationPath
@@ -26,14 +27,12 @@ struct TeamDetailView: View {
     
     @State var team: Team
     
-    var completeGames: [GameViewModel] {
-        return viewModels.filter( { $0.isComplete })
-    }
-    
     init(team: Team) {
         self.team = team
-        self._viewModels = Query(filter: #Predicate { $0.homeTeam.id == team.id || $0.visitingTeam.id == team.id }, sort: \.date, order: .reverse)
-        
+        let teamId = team.id
+        self._homeViewModels = Query(filter: #Predicate { $0.homeTeam.id == teamId }, sort: \.date, order: .reverse)
+        self._visitorViewModels = Query(filter: #Predicate { $0.visitingTeam.id == teamId }, sort: \.date, order: .reverse)
+
     }
     
     var body: some View {
@@ -168,15 +167,6 @@ struct TeamDetailView: View {
                                     .fontWeight(.bold)
                                     .font(.system(size: 15))
                             }
-//                            Button {
-//                                
-//
-//                                showLineupView.toggle()
-//                            } label: {
-//                                Text("Default Lineup")
-//                                    .fontWeight(.bold)
-//                                    .font(.system(size: 15))
-//                            }
                         }
                         ToolbarItem(placement: .topBarTrailing){
                             Button {
@@ -198,14 +188,9 @@ struct TeamDetailView: View {
                         }
                     }
                 }
-                //.frame(height: geo.size.height*3.0)
             }
             .frame(maxWidth: .infinity)
-//            .sheet(isPresented: $showLineupView, onDismiss: {
-//        
-//            }) {
-//                TeamLineupView(team: $team, lineup: team.lineup)
-//            }
+
             .sheet(isPresented: $showEditScreen){
                 EditTeamView(team: $team)
             }
@@ -216,36 +201,7 @@ struct TeamDetailView: View {
                 PlayersView(teamId: team.id)
             }
             .sheet(isPresented: $showGamesScreen){
-                ScrollView {
-                    Text("Visiting Games")
-                    List {
-                        ForEach(completeGames, id: \.self) { game in
-                            NavigationLink(value: game) {
-                                VStack(alignment: .leading) {
-                                    Text("\(game.name) - \(game.location)")
-                                    Text("\(game.date.formatted(date: .complete, time: .omitted))")
-                                    Text("\(game.date.formatted(date: .omitted, time: .shortened))")
-                                }
-                                .font(.system(size: 8))
-                            }
-                        }
-                    }
-                    Text("Home Games")
-                    List {
-                        ForEach(team.homeGames, id: \.self) { vm in
-                            NavigationLink(value: vm) {
-                                VStack(alignment: .leading) {
-                                    Text("\(vm.name) - \(vm.location)")
-                                    Text("\(vm.date.formatted(date: .complete, time: .omitted))")
-                                    Text("\(vm.date.formatted(date: .omitted, time: .shortened))")
-                                }
-                                .font(.system(size: 8))
-                            }
-                        }
-                    }
-                }
-                .presentationDetents([.medium, .large, .fraction(0.25)])
-                .padding(20)
+                TeamGamesView(teamId: team.id)
             }
         }
     }
@@ -282,3 +238,48 @@ func displayJSON(team: Team) -> String {
 //} else {
     
 //}
+struct TeamGamesView: View {
+    @Environment(\.modelContext) var modelContext
+    @Environment(\.dismiss) var dismiss
+    @EnvironmentObject var nav: NavigationStateManager
+    @Query var viewModels: [GameViewModel]
+    @Query(sort: \GameViewModel.date) var homeViewModels: [GameViewModel]
+    @Query(sort: \GameViewModel.date) var visitorViewModels: [GameViewModel]
+    @Query var team: [Team]
+    
+    @State private var showGamesScreen = false
+    
+    
+    let teamId: UUID
+    
+    init(teamId: UUID) {
+        self.teamId = teamId
+        
+        self._homeViewModels = Query(filter: #Predicate { $0.homeTeam.id == teamId }, sort: \.date, order: .reverse)
+        self._visitorViewModels = Query(filter: #Predicate { $0.visitingTeam.id == teamId }, sort: \.date, order: .reverse)
+        self._team = Query(filter: #Predicate { $0.id == teamId })
+    }
+    
+    var body: some View {
+        ScrollView {
+            Text("Team Games - \(team.first?.name ?? "no team")")
+            ForEach(Array([visitorViewModels, homeViewModels].enumerated()), id: \.offset) { index, vm in
+                Text(index == 0 ? "Visiting Games" : "Home Games")
+                ForEach(vm, id: \.self) { game in
+                    HStack(alignment: .top) {
+                        VStack(alignment: .leading) {
+                            Text("\(game.name) - \(game.location)")
+                            Text("\(game.date.formatted(date: .complete, time: .omitted))")
+                            Text("\(game.date.formatted(date: .omitted, time: .shortened))")
+                        }
+                        .font(.system(size: 12))
+                        Text(game.isComplete ? "Completed" : "Incomplete")
+                            .font(.system(size: 8))
+                    }
+                }
+            }
+        }
+        .presentationDetents([.medium, .large, .fraction(0.25)])
+        .padding(20)
+    }
+}

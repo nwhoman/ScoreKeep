@@ -27,22 +27,26 @@ struct GamesView: View {
         List {
             ForEach(viewModels, id: \.id) { vm in //.sorted(by: { $0.game.date < $1.game.date })
                 
-                NavigationLink(value: vm) {
+                Button {
+                    nav.push(.bookView(gameViewModel: vm))
+
+                } label: {
+                    
                     HStack {
                         VStack(alignment: .leading) {
                             HStack {
-                                Text("\(vm.id)")
+                                Text("\(vm.name)")
                                     .font(.headline)
                                 
                                 Spacer()
-//                                if vm.game.isComplete {
-//                                    Text("X")
-//                                } else {
-//                                    Text("O")
-//                                }
+                                if vm.isComplete {
+                                    Text("X")
+                                } else {
+                                    Text("O")
+                                }
                             }
-//                            Text("\(vm.game.date.formatted(date: .complete, time: .shortened))")
-//                                .foregroundStyle(.secondary)
+                            Text("\(vm.date.formatted(date: .complete, time: .shortened))")
+                                .foregroundStyle(.secondary)
                         }
                     }
                 }
@@ -53,17 +57,6 @@ struct GamesView: View {
             
             
             .navigationTitle("ScoreKeep Games")
-            
-            .navigationDestination(for: GameViewModel.self) { vm in
-                if !vm.isComplete{
-                    BookView(gameViewModel: vm)
-                } else {
-                    BoxScoreView(gameViewModel: vm, geo: geo)
-                }
-                
-                
-            
-            }
             .toolbar{
                 
                 ToolbarItem(placement: .topBarLeading){
@@ -91,8 +84,12 @@ struct GamesView: View {
     
     func deleteVM(at offsets: IndexSet){
         for offset in offsets {
-            //let viewModel = viewModels[offset]
-            let viewModel = viewModels.sorted(by: { $0.date < $1.date })[offset]
+            let viewModel = viewModels[offset]
+            //let viewModel = viewModels.sorted(by: { $0.date < $1.date })[offset]
+            for each in viewModel.innings {
+                viewModel.innings.remove(at: offset)
+                modelContext.delete(each)
+            }
             modelContext.delete(viewModel)
         }
         do {

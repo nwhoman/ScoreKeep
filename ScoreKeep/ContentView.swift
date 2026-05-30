@@ -26,7 +26,7 @@ struct ContentView: View {
                 case .player(let player): PlayerDetailView(player: player)
                 case .teamPlayers(let id): PlayersView(teamId: id)
                 case .startGame(let gameViewModel): GameLineupsView(gameViewModel: gameViewModel)
-                case .bookView(let gameViewModel): BookView(gameViewModel: gameViewModel)
+                case .bookView(let gameViewModel): BookMenuView(gameViewModel: gameViewModel)
                 }
             }
         }
