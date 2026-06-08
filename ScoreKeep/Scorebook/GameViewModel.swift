@@ -196,8 +196,7 @@ class GameViewModel: Codable, Identifiable {
             addInning(inning: vInning, lineup: visitorCurrentLineup, halfInning: 0)
             addInning(inning: hInning, lineup: homeCurrentLineup, halfInning: 1)
         }
-//        self.pitcherStats.append(PitcherStats(pitcherID: getCurrentPitcher(i: 0)))
-//        self.pitcherStats.append(PitcherStats(pitcherID: getCurrentPitcher(i: 1)))
+
         print("start game: \(self.batterCount[0]) \(self.batterCount[1])")
         print("start game: \(self.visitorInnings.count) \(self.homeInnings.count)")
     }
@@ -262,10 +261,20 @@ class GameViewModel: Codable, Identifiable {
             
             inning.plateAppearances.append(plateAppearance)
             batter.player.plateAppearances?.append(plateAppearance)
+            pitcher.player.pitchingAppearances?.append(plateAppearance)
             order += 1
         }
         
         self.innings.append(inning)
+        do {
+            try modelContext?.save()
+        } catch {
+            if halfInning == 0 {
+                print("save VInning error \(error), \(error._domain)")
+            } else {
+                print("save HInning error \(error), \(error._domain)")
+            }
+        }
     }
 
     func setInitialLineup(halfInning: Int) -> [[PlayerPos]]{
@@ -370,7 +379,7 @@ class GameViewModel: Codable, Identifiable {
         if self.batter?.batter.id == selectedPlayer.player.id {
             self.batter?.batter = newPlayerPos.player
         }
-        func helper() {
+        func helper() { //adds playerpos to both lineup and currentlineup
             for each in lineup {
                 if each.player.id == selectedPlayer.player.id {
                     temp.append(newPlayerPos)
@@ -561,73 +570,7 @@ class GameViewModel: Codable, Identifiable {
         return playerStats
     }
     
-    func getPitcherPA(innings: [Inning], pitcher: Player) -> [OffensivePlateAppearance] {
-        var plateAppearances: [OffensivePlateAppearance] = []
-        
-        for inning in innings {
-            plateAppearances.append(contentsOf: inning.plateAppearances.filter { $0.pitcher.id == pitcher.id } )
-        }
-        return plateAppearances
-    }
     
-    func getPitcherStats(plateAppearances: [OffensivePlateAppearance]) -> PitcherStats {
-        var pitcherStats = PitcherStats()
-        var minInning = 200
-        var maxInning = 10
-        print("pa: \(plateAppearances.count)")
-        for appearance in plateAppearances {
-            if appearance.active {
-                if appearance.inning.number < minInning {
-                    minInning = appearance.inning.number
-                } else if appearance.inning.number > maxInning {
-                    maxInning = appearance.inning.number
-                }
-                print("min: \(minInning) max: \(maxInning)")
-                for pitch in appearance.pitches {
-                    if pitch == .ball {
-                        pitcherStats.balls += 1
-                    } else if pitch != .ball {
-                        pitcherStats.strikes += 1
-                    }
-                }
-                print("pitches: \(appearance.pitches.count)")
-                pitcherStats.battersFaced += 1
-                if appearance.hit != 0 {
-                    pitcherStats.hits += 1
-                    if appearance.hit == 2 {
-                        pitcherStats.doubles += 1
-                    } else if appearance.hit == 3 {
-                        pitcherStats.triples += 1
-                    } else if appearance.hit == 4 {
-                        pitcherStats.homeRuns += 1
-                    }
-                }
-                
-                if appearance.run {
-                    print("add run")
-                    pitcherStats.runs += 1
-                    if appearance.earnedRun {
-                        pitcherStats.er += 1
-                    }
-                }
-                
-                pitcherStats.bb += appearance.bb
-                pitcherStats.k += appearance.k
-                
-                pitcherStats.hp += appearance.hp
-                pitcherStats.sac += appearance.sac
-                pitcherStats.wp += appearance.wp
-            }
-
-        }
-        pitcherStats.inningsPitched = Double(maxInning/10 - minInning/10) + Double(self.outs)/3
-        if pitcherStats.inningsPitched < 0 {
-            pitcherStats.inningsPitched = 0.0
-        }
-            
-        print("IP: \(pitcherStats.inningsPitched) \(self.outs)")
-        return pitcherStats
-    }
 //    func updatePitcherStats() {
 //        let innings = self.halfInning == 0 ? self.visitorInnings : self.homeInnings
 //        let pa = self.getPitcherPA(innings: innings)

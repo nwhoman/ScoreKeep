@@ -244,6 +244,7 @@ func createNewLineupSlot(player: Player, selectedPlayer: PlayerPos, lineup: inou
     newPlayerPos.inning = gameVM.inningNumber[gameVM.halfInning] / 10
     lineup.removeAll { $0.id == selectedPlayer.id }
     lineup.append(newPlayerPos)
+    player.fielder?.append(newPlayerPos)
     gameVM.insertSubIntoLineup(newPlayerPos: newPlayerPos, selectedPlayer: selectedPlayer, team: team)
     lineup = lineup.sorted(by: { $0.batting < $1.batting })
     do {
@@ -261,6 +262,7 @@ func positionChangeOnly(player: Player, position: String, batting: Int, lineup: 
     newPlayerPos.inning = gameVM.inningNumber[gameVM.halfInning] / 10
     lineup.removeAll { $0.player.id == player.id }
     lineup.append(newPlayerPos)
+    player.fielder?.append(newPlayerPos)
     gameVM.insertSubIntoLineup(newPlayerPos: newPlayerPos, selectedPlayer: selectedPlayer, team: nil)
     lineup = lineup.sorted(by: { $0.batting < $1.batting })
 

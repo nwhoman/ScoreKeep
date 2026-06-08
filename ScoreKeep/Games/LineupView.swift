@@ -297,6 +297,7 @@ struct RosterItemView: View {
                 
                 do {
                     lineup.append(newPlayer)
+                    player.fielder?.append(newPlayer)
                     try modelContext.save()
                 } catch {
                     print("error inserting PlayerPos \(error)")

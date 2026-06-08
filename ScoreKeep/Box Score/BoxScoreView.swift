@@ -102,45 +102,5 @@ struct StatLabelView: View {
     }
 }
 
-struct StatLineView: View {
-    @Environment(\.modelContext) var modelContext
-    @Environment(\.dismiss) var dismiss
-    @State var geo: GeometryProxy
-    let spacing: CGFloat = CGFloat(StatLabels.allCases.count)
-    var player: Player? = nil
-    var plateAppearances: [OffensivePlateAppearance]
-    //var playerStats: PlayerStats = PlayerStats()
-    var playerStats: PlayerStats {
-        return getPlayerStats(plateAppearances: plateAppearances)
-    }
-    
-    var body: some View {
-        VStack(alignment: .leading) {
-            HStack {
-                if let player = player {
-                    Text("\(player.lastName), \(player.firstName.prefix(1))")
-                        .frame(width: geo.size.width * 0.3, alignment: .init(horizontal: .leading, vertical: .center))
-                        .minimumScaleFactor(0.5)
 
-                } else {
-                    Text("Totals")
-                        .frame(width: geo.size.width * 0.3, alignment: .init(horizontal: .leading, vertical: .center))
-                        .border(Color.gray, width: 1)
-                }
-                
-                
-                HStack {
-                    ForEach(playerStats.statSummary, id: \.self) { stat in
-                        Text("\(stat)")
-                            .frame(width: geo.size.width / spacing)
-                    }
-                    Spacer()
-                }
-                
-            }
-        }
-        .font(.caption2)
-        .frame(maxWidth: .infinity)
-    }
-}
 
