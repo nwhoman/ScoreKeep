@@ -19,6 +19,7 @@
 		6A648C1A2D862298001000A3 /* ScoreKeepSamples.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6A648C192D862298001000A3 /* ScoreKeepSamples.swift */; };
 		6A648C1C2D8623D1001000A3 /* Preview.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6A648C1B2D8623D1001000A3 /* Preview.swift */; };
 		6A64E4CD2DAEF20000E0018F /* SmallPlateAppearanceView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6A64E4CC2DAEF20000E0018F /* SmallPlateAppearanceView.swift */; };
+		6A721EB52FCB80A3000E38D5 /* PitcherFunctions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6A721EB42FCB80A3000E38D5 /* PitcherFunctions.swift */; };
 		6A85B0482F74426B009C0569 /* QuickEntryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6A85B0472F74426B009C0569 /* QuickEntryView.swift */; };
 		6A85B04E2F78713D009C0569 /* Animations.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6A85B04D2F787136009C0569 /* Animations.swift */; };
 		6A8A3D802BB2372300BC7E32 /* ScoreKeepApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6A8A3D7F2BB2372300BC7E32 /* ScoreKeepApp.swift */; };
@@ -67,6 +68,7 @@
 		6A648C1B2D8623D1001000A3 /* Preview.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Preview.swift; sourceTree = "<group>"; };
 		6A64E4CC2DAEF20000E0018F /* SmallPlateAppearanceView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SmallPlateAppearanceView.swift; sourceTree = "<group>"; };
 		6A721E4C2FC2548B000E38D5 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		6A721EB42FCB80A3000E38D5 /* PitcherFunctions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PitcherFunctions.swift; sourceTree = "<group>"; };
 		6A85B0472F74426B009C0569 /* QuickEntryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuickEntryView.swift; sourceTree = "<group>"; };
 		6A85B04D2F787136009C0569 /* Animations.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Animations.swift; sourceTree = "<group>"; };
 		6A8A3D7C2BB2372300BC7E32 /* ScoreKeep.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ScoreKeep.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -154,6 +156,7 @@
 				6A8A3D912BB3509900BC7E32 /* PlayOutcomeView.swift */,
 				6A8A3D952BB3598E00BC7E32 /* ScoreKeepObjects.swift */,
 				6A8A3DA92BBE09C600BC7E32 /* MainMenuView.swift */,
+				6A721EB42FCB80A3000E38D5 /* PitcherFunctions.swift */,
 			);
 			path = ScoreKeep;
 			sourceTree = "<group>";
@@ -336,6 +339,7 @@
 				6A07B0462D8DDD8F005B7AEE /* BookPageView.swift in Sources */,
 				6A64E4CD2DAEF20000E0018F /* SmallPlateAppearanceView.swift in Sources */,
 				6A07B06C2D987424005B7AEE /* GameViewModel.swift in Sources */,
+				6A721EB52FCB80A3000E38D5 /* PitcherFunctions.swift in Sources */,
 				6A8A3DBD2BDAE54900BC7E32 /* BookView.swift in Sources */,
 				6A8A3D802BB2372300BC7E32 /* ScoreKeepApp.swift in Sources */,
 				6A8A3DA82BBDD4B900BC7E32 /* PlayerDetailView.swift in Sources */,
