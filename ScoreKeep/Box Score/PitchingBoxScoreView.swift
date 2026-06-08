@@ -140,4 +140,5 @@ struct PitchersBoxScoreView: View {
         print("\(tempPitchers)")
         return tempPitchers
     }
+    
 }
