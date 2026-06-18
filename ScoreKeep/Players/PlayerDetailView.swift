@@ -12,22 +12,18 @@ struct PlayerDetailView: View {
     @Environment(\.modelContext) var modelContext
     @Environment(\.dismiss) var dismiss
     @EnvironmentObject var nav: NavigationStateManager
-    @Query(sort: \OffensivePlateAppearance.batter.lastName) private var plateAppearances: [OffensivePlateAppearance]
+//    @Query(sort: \OffensivePlateAppearance.batter.lastName) private var plateAppearances: [OffensivePlateAppearance]
     
     @Bindable var player: Player
     @State private var teamName: String = ""
     @State private var team: Team?
     
-    var playerPA: [OffensivePlateAppearance] {
-        return plateAppearances.filter({$0.batter.id == player.id})
-    }
-    
     init(player: Player){
         self.player = player
         let id = player.id
-        self._plateAppearances = Query(filter: #Predicate {
-            $0.batter.id == id
-        })
+//        self._plateAppearances = Query(filter: #Predicate {
+//            $0.batter.id == id
+//        })
     }
 
     var body: some View {
@@ -94,12 +90,35 @@ struct PlayerDetailView: View {
                     }
                 }
                 Section {
-                    var stats: PlayerStats {
-                        return getPlayerStats(plateAppearances: player.plateAppearances ?? [])
+                    Label("Stats", systemImage: "chart.bar.fill")
+                        .font(.title3)
+                    Section {
+                        Label("Batting", systemImage: "rectangle.and.square.stack.3d.down.fill")
+                            .font(.system(size: 14))
+                        ScrollView(Axis.Set.horizontal) {
+                            StatLabelView(geo: geo)
+                            StatLineView(geo: geo, player: player, plateAppearances: player.plateAppearances ?? [])
+                        }
                     }
-                    ScrollView(Axis.Set.horizontal) {
-                        StatLabelView(geo: geo)
-                        StatLineView(geo: geo, player: player, plateAppearances: player.plateAppearances ?? [])
+                    Section {
+                        Label("Fielding", systemImage: "")
+                            .font(.system(size: 14))
+                        ScrollView(Axis.Set.horizontal) {
+                            VStack(alignment: .leading) {
+                                FieldingStatLabelView(geo: geo)
+                                FieldingStatLineView(geo: geo, player: player, fieldAppearances: player.fielder ?? [])
+                            }
+                        }
+                    }
+                    if let pitchingAppearances = player.pitchingAppearances {
+                        Section {
+                            Label("Pitching", systemImage: "")
+                                .font(.system(size: 14))
+                            ScrollView(Axis.Set.horizontal) {
+                                PitchersStatLabelView(geo: geo)
+                                PitchersStatLineView(geo: geo, player: player, plateAppearances: pitchingAppearances)
+                            }
+                        }
                     }
                     
                 }
@@ -109,7 +128,7 @@ struct PlayerDetailView: View {
                 }
                 Section {
                     Text("Active PA")
-                    ForEach(plateAppearances, id: \.self) { pa in
+                    ForEach(player.plateAppearances ?? [], id: \.self) { pa in
                         if pa.active {
                             Text("\(pa.batter.lastName), \(pa.batter.firstName)")
                         }
@@ -117,13 +136,13 @@ struct PlayerDetailView: View {
                 }
                 Section {
                     Text("Inactive PA")
-                    ForEach(plateAppearances, id: \.self) { pa in
+                    ForEach(player.plateAppearances ?? [], id: \.self) { pa in
                         if !pa.active {
                             Text("\(pa.batter.lastName), \(pa.batter.firstName)")
                         }
                     }
                     Button {
-                        for each in plateAppearances {
+                        for each in player.plateAppearances ?? [] {
                             if !each.active {
                                 modelContext.delete(each)
                             }

@@ -86,9 +86,7 @@ struct PlayersView: View {
             
         }
     }
-    func sortedPlayers(players: [Player]) -> [Player]{
-        return players.sorted(using: KeyPathComparator(\.number))
-    }
+    
 }
 
 func checkTeamGames(team: Team) throws -> Bool {

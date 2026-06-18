@@ -21,16 +21,16 @@ struct PitchingBoxScoreView: View {
     var body: some View {
         
             ScrollView(.horizontal) {
-                VStack(alignment: .leading) {
+                VStack(alignment: .leading, spacing: 2.0) {
+                    PitchersStatLabelView(geo: geo)
                     
-                    HStack {
-                        PitchersBoxScoreView(gameViewModel: gameViewModel, geo: geo, team: team)
-                            .padding(.horizontal)
-                        //Divider()
-                        Spacer()
-                    }
+                    PitchersBoxScoreView(gameViewModel: gameViewModel, geo: geo, team: team)
+                        
+                    Spacer()
                 }
-                .border(Color.gray, width: 1)
+                .padding(.horizontal)
+                .frame(maxWidth: .infinity)
+                .font(.caption2)
             }
             
         }
@@ -42,7 +42,7 @@ struct PitchingBoxScoreView: View {
     let preview = Preview()
     preview.addSampleGames([game])
     preview.addSampleLineups(game: game)
-    //setUpGame(game: game)
+    game.setUpGame()
     
     return GeometryReader { geo in
         PitchingBoxScoreView(gameViewModel: game, team: game.visitingTeam, geo: geo)
@@ -61,7 +61,7 @@ struct PitchersBoxScoreView: View {
     }
     
     var pitcherStats: [Player:PitcherStats] {
-        getPitcherStats()
+        getPitcherStatsHelper(pitchers: pitchers)
     }
     
     let team: Team
@@ -70,56 +70,20 @@ struct PitchersBoxScoreView: View {
     var body: some View {
         
     
-        VStack(alignment: .leading, spacing: 2.0) {
+        VStack(alignment: .leading, spacing: 1.0) {
 //                var pitcherStats: PitcherStats = getPitcherStats(index: index)
                 
-            HStack {
-                Text("Pitcher")
-                    .frame(width: geo.size.width * 0.3, alignment: .init(horizontal: .leading, vertical: .center))
-                    .border(Color.gray, width: 1)
-
-                ForEach(PitchingStatLabels.allCases, id: \.self) { stat in
-                    Text("\(stat.rawValue)")
-                        .frame(width: geo.size.width / spacing)
-                }
-                Spacer()
-            }
-            //.font(.caption2)
+            
             ForEach(Array(pitcherStats.keys), id: \.self) { key in
                 
-                
-                HStack {
-                    Text("\(key.lastName), \(key.firstName.prefix(1))")
-                        .frame(width: geo.size.width * 0.3, alignment: .init(horizontal: .leading, vertical: .center))
-                        .minimumScaleFactor(0.5)
-                    Text("\(pitcherStats[key]?.inningsPitched ?? 0.00, specifier: "%.2f")")
-                        
-                        .frame(width: geo.size.width / spacing)
-                        
-                    ForEach(pitcherStats[key]?.statSummary ?? [0], id: \.self) { stat in
-                        Text("\(stat)")
-                            .frame(width: geo.size.width / spacing)
-                    }
-                    Text("\(pitcherStats[key]?.era ?? 0.00, specifier: "%.2f")")
-                        .frame(width: geo.size.width / spacing)
-                        
-                }
+                PitchersStatLineView(geo: geo, player: key, pitcherStats: pitcherStats[key] ?? PitcherStats())
                 Spacer()
             }
         }
-        .frame(maxWidth: .infinity)
-        .font(.caption2)
+        
         
     }
-    func getPitcherStats() -> [Player:PitcherStats] {
-        
-        var returnStats:[Player:PitcherStats] = [:]
-        
-        for pitcher in pitchers.keys {
-            returnStats[pitcher] = gameViewModel.getPitcherStats(plateAppearances: pitchers[pitcher]!)
-        }
-        return returnStats
-   }
+    
     
     func getTeamPitchers() -> [Player: [OffensivePlateAppearance]] {
         var tempPitchers: [Player: [OffensivePlateAppearance]] = [:]
@@ -137,7 +101,73 @@ struct PitchersBoxScoreView: View {
                 tempPitchers[appearance.pitcher]?.append(appearance)
             }
         }
-        print("\(tempPitchers)")
         return tempPitchers
+    }
+}
+
+struct PitchersStatLabelView: View {
+    let geo: GeometryProxy
+    let spacing: CGFloat = CGFloat(PitchingStatLabels.allCases.count)
+    
+    var body: some View {
+        
+        HStack {
+            Text("Pitcher")
+                .frame(width: geo.size.width * 0.3, alignment: .init(horizontal: .leading, vertical: .center))
+            
+            ForEach(PitchingStatLabels.allCases, id: \.self) { stat in
+                Text("\(stat.rawValue)")
+                .frame(width: geo.size.width / spacing)
+            }
+            Spacer()
+        }
+        .frame(maxWidth: .infinity)
+        .font(.caption2)
+        
+    }
+}
+
+struct PitchersStatLineView: View {
+    let geo: GeometryProxy
+    let spacing: CGFloat = CGFloat(PitchingStatLabels.allCases.count)
+    var player: Player
+    var plateAppearances: [OffensivePlateAppearance]?
+    //var playerStats: PlayerStats = PlayerStats()
+    var pitcherStats: PitcherStats?
+    
+    init(geo: GeometryProxy, player: Player, plateAppearances: [OffensivePlateAppearance]? = nil, pitcherStats: PitcherStats? = nil) {
+        self.geo = geo
+        self.player = player
+        self.plateAppearances = plateAppearances
+        if let plateAppearances {
+            self.pitcherStats = getPitcherStats(plateAppearances: plateAppearances)
+        } else {
+            self.pitcherStats = pitcherStats
+        }
+    }
+    
+    var body: some View {
+        
+                
+        HStack {
+            Text("\(player.lastName), \(player.firstName.prefix(1))")
+                .frame(width: geo.size.width * 0.3, alignment: .init(horizontal: .leading, vertical: .center))
+                .minimumScaleFactor(0.5)
+            Text("\(pitcherStats?.inningsPitched ?? 0.00, specifier: "%.2f")")
+                
+                .frame(width: geo.size.width / spacing)
+                
+            ForEach(pitcherStats?.statSummary ?? [], id: \.self) { stat in
+                Text("\(stat)")
+                    .frame(width: geo.size.width / spacing)
+            }
+            Text("\(pitcherStats?.era ?? 0.00, specifier: "%.2f")")
+                .frame(width: geo.size.width / spacing)
+                
+        }
+        .font(.caption2)
+        .frame(maxWidth: .infinity)
+        Spacer()
+        
     }
 }

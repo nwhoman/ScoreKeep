@@ -146,7 +146,6 @@ struct RosterItemView2: View {
                 do {
                     try modelContext.save()
                     lineup.append(newPlayer)
-                    print("\(player.number) added to lineup at \(position)")
                 } catch {
                     print("error inserting PlayerPos \(error)")
                 }

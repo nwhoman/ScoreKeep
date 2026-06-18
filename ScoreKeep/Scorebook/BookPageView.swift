@@ -145,7 +145,7 @@ struct InningsView: View {
                 HStack(alignment: .top) {
                     VStack(alignment: .leading) {
                         Text("\(inning.number/10)")//--\(inning.number/10)")
-                            .frame(width: 75, height: 50, alignment: .center)
+                            .frame(width: 85, height: 50, alignment: .center)
                             .border(Color.blue)
                         //                            Text("\(gameViewModel.inningNumber[gameViewModel.halfInning])-\(gameViewModel.batterUp[gameViewModel.halfInning])/\(gameViewModel.batterCount[gameViewModel.halfInning])")
                         //                                .border(Color.blue)
@@ -181,7 +181,7 @@ struct InningsView: View {
                                 }
                             
                         }
-                        .frame(width: 75, height: 75, alignment: .topLeading)
+                        .frame(width: 85, height: 75, alignment: .topLeading)
                         //.border(Color.black)
                         Spacer()
                     }
@@ -210,7 +210,7 @@ struct InningsView: View {
                     .presentationBackground(alignment: .top) {
                         LinearGradient(colors: [Color.gray, Color.green], startPoint: .bottomLeading, endPoint: .topTrailing)
                     }
-                    .presentationCornerRadius(50)
+                    .presentationCornerRadius(20)
             }
             .sheet(isPresented: $showPlayerPA, onDismiss: {
                 return

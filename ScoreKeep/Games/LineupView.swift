@@ -42,49 +42,25 @@ struct LineupView: View {
     
     var body: some View {
        
-            VStack(alignment: .leading) {
-                HStack {
-                    
-                    Spacer()
-                    
-                    Button("Save Lineup"){
-                        invalidLineup = validateLineup(lineup: lineup, team: selectedTab.lowercased())
-                        if !invalidLineup.0 {
-                            
-                            for batter in lineup.sorted(by: { $0.batting < $1.batting }) {
-                                print("\(batter.batting) \(batter.player.lastName)")
-                            }
-                            if selectedTab == "Visitor" {
-                                gameVM.visitorCurrentLineup = lineup.sorted(by: { $0.batting < $1.batting })
-                            } else {
-                                gameVM.homeCurrentLineup = lineup.sorted(by: { $0.batting < $1.batting })
-                            }
-                            team.lineup.removeAll()
-                            team.lineup.append(contentsOf: lineup)
-//                            for i in 0..<lineup.count {
-//                                lineup[i].batting = i+1
-//                            }
-                            //team.lineup = lineup
-//                            if selectedTab == "Home" {
-//                                //game.homeTeam!.lineup.removeAll()
-//                                gameVM.homeCurrentLineup = lineup.sorted(by: { $0.batting < $1.batting })
-//                            } else {
-//                                //game.visitingTeam!.lineup.removeAll()
-//                                gameVM.visitorCurrentLineup = lineup.sorted(by: { $0.batting < $1.batting })
-//                            }
-//                            do {
-//                                try modelContext.save()
-//                            } catch {
-//                                print("\(error)")
-//                            }
+        VStack(alignment: .leading) {
+            HStack {
+                
+                Spacer()
+                
+                Button("Save Lineup"){
+                    invalidLineup = validateLineup(lineup: lineup, team: selectedTab.lowercased())
+                    if !invalidLineup.0 {
+                        if selectedTab == "Visitor" {
+                            gameVM.visitorCurrentLineup = lineup.sorted(by: { $0.batting < $1.batting })
+                        } else {
+                            gameVM.homeCurrentLineup = lineup.sorted(by: { $0.batting < $1.batting })
                         }
-//                        else {
-//                            showAlert = true
-//                            showTeamAlert = true
-//                        }
+                        team.lineup.removeAll()
+                        team.lineup.append(contentsOf: lineup)
+                        
                     }
                 }
-                
+            }
                 .padding(10)
                 
                 RosterView(gameVM: gameVM, team: team, selectedTab: $selectedTab, lineup: $lineup, editPlayers: $editPlayers, selectedPlayer: lineup.first ?? PlayerPos.defaultPos)
@@ -135,6 +111,9 @@ struct RosterView: View {
     @Binding var editPlayers: Bool
     @State var showSubs: Bool = false
     @State var selectedPlayer: PlayerPos
+    @State var changedPlayers:[[PlayerPos]] = []
+    @State var subCard: SubCard = SubCard()
+    @State var sub: Sub = Sub()
     
     private var unusedPositions: [String] {
         var possiblePositions = positions
@@ -146,21 +125,6 @@ struct RosterView: View {
         players = team.players!.filter({ pos in !playerUsed(player: pos, lineup: lineup)  })
         return players
     }
-//    var lineup: [PlayerPos] {
-//        if selectedTab == "Home" {
-//            var temp: [PlayerPos] = []
-//            for each in gameVM.homeLineup {
-//                temp.append(each.last!)
-//            }
-//            return temp
-//        } else {
-//            var temp: [PlayerPos] = []
-//            for each in gameVM.visitorLineup {
-//                temp.append(each.last!)
-//            }
-//            return temp
-//        }
-//    }
     
     var body: some View {
         GeometryReader { geo in
@@ -238,7 +202,7 @@ struct RosterView: View {
             .background(Color.clear)
         }
         .sheet(isPresented: $showSubs) {
-            SwapPlayerView(lineup: $lineup, selectedPlayer: $selectedPlayer, gameVM: $gameVM, unusedPlayers: unusedPlayers, positions: unusedPositions, team: nil)
+            SwapPlayerView(lineup: $lineup, selectedPlayer: $selectedPlayer, gameVM: $gameVM, changedPlayers: $changedPlayers, subCard: $subCard, sub: $sub, unusedPlayers: unusedPlayers, positions: unusedPositions, team: nil)
               
         }
     }

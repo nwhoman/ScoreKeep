@@ -109,6 +109,7 @@ class Player: Codable {
     var team: Team? = nil
     var position: String = ""
     @Relationship(deleteRule: .nullify, inverse: \OffensivePlateAppearance.batter) var plateAppearances: [OffensivePlateAppearance]?
+    @Relationship(deleteRule: .nullify, inverse: \OffensivePlateAppearance.pitcher) var pitchingAppearances: [OffensivePlateAppearance]?
     @Relationship(deleteRule: .nullify, inverse: \PlayerPos.player) var fielder: [PlayerPos]?
     
 
@@ -272,8 +273,8 @@ class Inning: Codable {
     var game: GameViewModel
     var half: Int
     
-    //@Relationship(deleteRule: .nullify, inverse: \OffensivePlateAppearance.inning) var plateAppearances: [OffensivePlateAppearance] = []
-    var plateAppearances: [OffensivePlateAppearance] = []
+    @Relationship(deleteRule: .nullify, inverse: \OffensivePlateAppearance.inning) var plateAppearances: [OffensivePlateAppearance] = []
+    //var plateAppearances: [OffensivePlateAppearance] = []
    
     init(number: Int, game: GameViewModel, half: Int) {
         self.number = number
@@ -504,6 +505,7 @@ class PlayerPos: Identifiable, Hashable, Codable {
     var assists: Int = 0
     var putOuts: Int = 0
     var errors: Int = 0
+    var pb: Int = 0
     var flex: Bool = false
     
     init(player: Player, position: String, batting: Int = 0) {
@@ -536,6 +538,20 @@ class PlayerPos: Identifiable, Hashable, Codable {
     }
 }
 
+struct SubEntry {
+    var pos: String
+    var player: PlayerPos?
+}
+
+struct Sub {
+    var id: Int = 0
+    var playerOut: SubEntry = SubEntry(pos: "")
+    var playerIn: SubEntry = SubEntry(pos: "")
+}
+
+struct SubCard {
+    var list: [Sub] = []
+}
 struct PlayerStats: Identifiable, Hashable {
     var id: UUID
     var plateAppearances: Int = 0
@@ -575,6 +591,7 @@ struct FielderStats: Identifiable, Hashable {
     var assists: Int = 0
     var putOuts: Int = 0
     var errors: Int = 0
+    var pb: Int = 0
     
     var attempts: Int {
         return self.assists + self.putOuts + self.errors
@@ -588,7 +605,7 @@ struct FielderStats: Identifiable, Hashable {
     }
     
     var statSummary: [Int] {
-        return [self.attempts, self.assists, self.putOuts, self.errors]
+        return [self.attempts, self.assists, self.putOuts, self.errors, self.pb]
     }
 }
 
@@ -660,56 +677,6 @@ struct TeamStats: Identifiable, Hashable {
     }
 }
 
-func getPlayerStats(plateAppearances: [OffensivePlateAppearance]) -> PlayerStats {
-    var playerStats = PlayerStats()
-    
-    for appearance in plateAppearances {
-        if appearance.active {
-            
-            
-            playerStats.plateAppearances += 1
-            if appearance.hit != 0 {
-                playerStats.hits += 1
-                if appearance.hit == 2 {
-                    playerStats.doubles += 1
-                } else if appearance.hit == 3 {
-                    playerStats.triples += 1
-                } else if appearance.hit == 4 {
-                    playerStats.homeRuns += 1
-                }
-            }
-            playerStats.rbi += appearance.rbi
-            if appearance.run {
-                playerStats.runs += 1
-            }
-            playerStats.bb += appearance.bb
-            
-            if appearance.pitches.count(where: {$0 == .strikeLooking || $0 == .strikeSwinging || $0 == .foul}) >= 3 && appearance.pitches.last == .strikeLooking || appearance.pitches.last == .strikeSwinging {
-                playerStats.k += 1
-            }
-            playerStats.hp += appearance.hp
-            playerStats.sac += appearance.sac
-            
-        }
-        
-    }
-    //var atBats: Int = 0
-    
-    return playerStats
-}
-func getFieldingStats(fieldAppearance: [PlayerPos]) -> FielderStats {
-    var fieldStats = FielderStats()
-    
-    for each in fieldAppearance {
-        fieldStats.assists += each.assists
-        fieldStats.putOuts += each.putOuts
-        fieldStats.errors += each.errors
-    }
-    
-    return fieldStats
-}
-
-
 func decomposeLineup(lineup: [[PlayerPos]]) -> [PlayerPos] {
     var tempArray:[PlayerPos] = []
     for orderPosition in lineup {
@@ -756,6 +723,7 @@ enum FieldingStatLabels: String, Codable, CaseIterable {
     case assists = "A"
     case putouts = "PO"
     case errors = "E"
+    case passedBalls = "PB"
     case percentage = "pct"
 }
 
@@ -792,7 +760,7 @@ struct BattingLineupView: View {
                                     Text("\(player.player.number) - \(player.player.lastName), \(String(player.player.firstName.first ?? " "))")
                                     Spacer(minLength: 10)
                                     Text("\(player.position)")
-                                    Text("\(player.inning)").font(.system(size: 6).italic())
+                                    Text("\(player.inning)").font(.system(size: 8).italic())
                                 }
                                 .font(.system(size: 12))
                                 .padding(.horizontal, 5)
@@ -826,7 +794,7 @@ struct BattingLineupView: View {
             
         })
         {
-            ShowSubsView(gameVM: $gameVM, team: team, lineup: gameVM.selectedTab == "Visitor" ? $gameVM.visitorCurrentLineup : $gameVM.homeCurrentLineup)
+            ShowSubsView(gameVM: $gameVM, team: team, lineup: gameVM.selectedTab == "Visitor" ? $gameVM.visitorCurrentLineup : $gameVM.homeCurrentLineup, battingOrder: $battingOrder)
           
         }
             
@@ -859,28 +827,30 @@ struct ScoreView: View {
     var body: some View {
         VStack(alignment: .trailing) {
             HStack(alignment: .lastTextBaseline) {
-                VStack(spacing: 5) {
-                    //Spacer()
-                    Text(" ")
-                        .font(.system(size: 12, weight: .bold))
-                        .frame(width: 45.0, height: 15.0)
-                        //.padding(.bottom, -5)
-                    Text("Visitor:")
-                        .font(.system(size: 12, weight: .bold))
-                        .frame(width: 45.0, height: 15.0)
-                        //.padding(.bottom, -5)
-                    Text("Home: ")
-                        .font(.system(size: 12, weight: .bold))
-                        .frame(width: 45.0, height: 15.0)
-                        //.padding(.bottom, -5)
-                }
+//                VStack(spacing: 5) {
+//                    //Spacer()
+//                    Text(" ")
+//                        .font(.system(size: 12, weight: .bold))
+//                        .frame(width: 45.0, height: 15.0)
+//                        //.padding(.bottom, -5)
+//                    Text("Visitor:")
+//                        .font(.system(size: 12, weight: .bold))
+//                        .frame(width: 45.0, height: 15.0)
+//                        //.padding(.bottom, -5)
+//                    Text("Home: ")
+//                        .font(.system(size: 12, weight: .bold))
+//                        .frame(width: 45.0, height: 15.0)
+//                        //.padding(.bottom, -5)
+//                }
                 //.padding(.bottom, 10)
                 //.frame(width: 70, height: 55)
-                VStack(spacing: 5) {
+                VStack(alignment: .trailing, spacing: 5) {
                     let score = gameViewModel.getTotalScore()
                     let hits = gameViewModel.getTeamHits()
                     let errors = gameViewModel.getTeamErrors()
                     HStack {
+//                        Spacer()
+//                            .frame(width: 50.0, height: 15.0)
                         let innings: [Any] = setUpInnings()
                         ForEach(0..<innings.count, id: \.self) {inning in
                             Text("\(innings[inning])")
@@ -890,8 +860,11 @@ struct ScoreView: View {
                     }
                     //.padding(.bottom, -5)
                 
-                    ForEach(Array(gameViewModel.score.keys), id: \.self) { key in
+                    ForEach(Array(gameViewModel.score).sorted(by: { $0.key > $1.key }), id: \.key) { key, value in
                         HStack {
+                            Text("\(key.capitalized):")
+                                .font(.system(size: 12, weight: .bold))
+                                .frame(width: 45.0, height: 15.0)
                             ForEach(gameViewModel.score[key]!, id: \.self) {inning in
                                 Text("\(inning)")
                                     .font(.system(size: 12, weight: .bold))

@@ -25,6 +25,9 @@ struct ShowSubsView: View {
     @State var showAlert: Bool = false
     @State var showSubs: Bool = false
     @State var goodAlert: Bool = false
+    @State var changedPlayers: [[PlayerPos]] = []
+    @Binding var battingOrder: [[PlayerPos]]
+    @State var subCard: SubCard = SubCard()
     
     var body: some View {
         NavigationStack {
@@ -35,12 +38,9 @@ struct ShowSubsView: View {
                     
                     Button("Save Lineup"){
                         if validateSubs(lineup: lineup) {
-                            team.lineup.removeAll()
-                            team.lineup = lineup
-                            for i in 0..<lineup.count {
-                                lineup[i].batting = i+1
-                            }
-                            team.lineup = lineup
+                            // write lineup to batting order
+                            writeLineupToBattingOrder(lineup: lineup, battingOrder: &battingOrder, subCard: subCard, viewModel:  gameVM)
+                            updateBaseRunners(subCard: subCard, viewModel: gameVM)
                             
                             do {
                                 try modelContext.save()
@@ -53,7 +53,6 @@ struct ShowSubsView: View {
                                 lineup[i].batting = i+1
                             }
                             team.lineup = lineup
-                            print("false")
                             showAlert = true
                         }
                     }
@@ -63,7 +62,7 @@ struct ShowSubsView: View {
                 }
                 
                 .padding(10)
-                RosterSubsView(gameVM: gameVM, team: team, showSubs: $showSubs, lineup: $lineup)
+                RosterSubsView(gameVM: gameVM, team: team, showSubs: $showSubs, lineup: $lineup, changedPlayers: $changedPlayers, subCard: $subCard)
                 
             }
             .background(Color.clear)
@@ -81,7 +80,7 @@ struct ShowSubsView: View {
     
     preview.addSampleGames([game])
 
-    return ShowSubsView(gameVM: .constant(game), team: game.homeTeam, lineup: .constant(game.createLineup(players: game.homeTeam.players!)), showAlert: false, showSubs: false)
+    return ShowSubsView(gameVM: .constant(game), team: game.homeTeam, lineup: .constant(game.createLineup(players: game.homeTeam.players!)), showAlert: false, showSubs: false, changedPlayers: [], battingOrder: .constant([]))
             .modelContainer(preview.modelContainer)
     
 }
@@ -153,11 +152,17 @@ struct RosterSubsView: View {
     @Binding var showSubs: Bool
     
     @Binding var lineup: [PlayerPos]
+    @Binding var changedPlayers: [[PlayerPos]]
+    @Binding var subCard: SubCard
+    @State var sub: Sub = Sub()
+    
     let teamId: Int? = nil
     
     private var unusedPositions: [String] {
         var possiblePositions = positions
-        possiblePositions = positions.filter({ pos in !posUsed(position: pos, lineup: lineup)  })
+        if !gameVM.isStarted {
+            possiblePositions = positions.filter({ pos in !posUsed(position: pos, lineup: lineup)  })
+        }
         return possiblePositions
     }
     private var unusedPlayers: [Player] {
@@ -210,14 +215,22 @@ struct RosterSubsView: View {
                                             //Text("#\(player.batting)")
                                             
                                         }
+                                        .frame(height: 35)
                                         .padding(.horizontal, -5)
+                                        .padding(.top, -10)
+                                        .padding(.bottom, -10)
                                         .font(.caption)
                                         .onTapGesture {
                                             selectedPlayer = player
+                                            sub.id = subCard.list.count + 1
+                                            let subEntry = SubEntry(pos: player.position, player: player)
+                                            sub.playerOut = subEntry
                                             showSubs.toggle()
                                         }
                                     }
+                                    
                                 }
+                                
                             }
                             .padding(.horizontal, -5)
                             .listStyle(.plain)
@@ -225,27 +238,50 @@ struct RosterSubsView: View {
                     }
                     .clipShape(.rect(cornerRadius: 20))
                 }
+                .frame(height: geo.size.height*0.75)
                 .padding(10)
+                GroupBox(label: Text("Changes")) {
+                    // list of changes
+                    ScrollView{
+                        ForEach(subCard.list, id:\Sub.id) { sub in
+                            HStack {
+                                VStack(alignment: .leading){
+                                    Text("out: \(sub.playerOut.player?.player.number ?? "no name")-\(sub.playerOut.player?.player.lastName ?? "no name") \(sub.playerOut.pos)")
+                                }
+                                VStack(alignment: .leading){
+                                    Text("in: \(sub.playerIn.player?.player.number ?? "no name")-\(sub.playerIn.player?.player.lastName ?? "no name") \(sub.playerIn.pos)")
+                                }
+                                Button {
+                                    //remove change and revert lineup
+                                } label: {
+                                    HStack {
+                                        Text("Delete")
+                                        Image(systemName: "trash")
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
             }
             .background(Color.clear)
         }
         .navigationDestination(isPresented: $showSubs) {
-            SwapPlayerView(lineup: $lineup, selectedPlayer: $selectedPlayer, gameVM: $gameVM, unusedPlayers: unusedPlayers, positions: unusedPositions, team: teamId)
+            SwapPlayerView(lineup: $lineup, selectedPlayer: $selectedPlayer, gameVM: $gameVM, changedPlayers: $changedPlayers, subCard: $subCard, sub: $sub, unusedPlayers: unusedPlayers, positions: unusedPositions, team: teamId )
                 
             
         }
     }
 }
-func createNewLineupSlot(player: Player, selectedPlayer: PlayerPos, lineup: inout [PlayerPos], gameVM: GameViewModel, modelContext: ModelContext, team: Int?) -> PlayerPos {
+func createNewLineupSlot(player: Player, selectedPlayer: PlayerPos, lineup: inout [PlayerPos], gameVM: GameViewModel, modelContext: ModelContext) -> PlayerPos {          //team: Int?
     // create PlayerPos for inserted player
     let newPlayerPos = PlayerPos(player: player, position: selectedPlayer.position, batting: selectedPlayer.batting)
     modelContext.insert(newPlayerPos)
+    player.fielder?.append(newPlayerPos)
     // insert PlayerPos into lineup
     newPlayerPos.inning = gameVM.inningNumber[gameVM.halfInning] / 10
-    lineup.removeAll { $0.id == selectedPlayer.id }
+    lineup = lineup.filter( {$0.batting != selectedPlayer.batting})
     lineup.append(newPlayerPos)
-    gameVM.insertSubIntoLineup(newPlayerPos: newPlayerPos, selectedPlayer: selectedPlayer, team: team)
-    lineup = lineup.sorted(by: { $0.batting < $1.batting })
     do {
         try modelContext.save()
     } catch {
@@ -254,18 +290,105 @@ func createNewLineupSlot(player: Player, selectedPlayer: PlayerPos, lineup: inou
     return newPlayerPos
 }
 
-func positionChangeOnly(player: Player, position: String, batting: Int, lineup: inout [PlayerPos], gameVM: GameViewModel, selectedPlayer: PlayerPos) -> PlayerPos {
-    // create PlayerPos for inserted player
-    let newPlayerPos = PlayerPos(player: player, position: position, batting: batting)
-    // insert PlayerPos into lineup
-    newPlayerPos.inning = gameVM.inningNumber[gameVM.halfInning] / 10
-    lineup.removeAll { $0.player.id == player.id }
-    lineup.append(newPlayerPos)
-    gameVM.insertSubIntoLineup(newPlayerPos: newPlayerPos, selectedPlayer: selectedPlayer, team: nil)
-    lineup = lineup.sorted(by: { $0.batting < $1.batting })
-
-    return newPlayerPos
+func writeLineupToBattingOrder(lineup: [PlayerPos], battingOrder: inout [[PlayerPos]], subCard: SubCard, viewModel: GameViewModel) {
+    var pitcher: PlayerPos?
+    var newPitcher: PlayerPos?
+    print("sub count-\(subCard.list.count)")
+    for sub in subCard.list {              // sub: out/in: [ "pos", PlayerPos ]
+        var temp:[[PlayerPos]] = []
+        let order = sub.playerOut.player?.batting
+        print("order: \(order)")
+        if let player = sub.playerOut.player, let newPlayer = sub.playerIn.player {
+            if sub.playerOut.pos == "P" {
+                pitcher = player
+                print("0-\(pitcher?.position) \(pitcher?.player.lastName)")
+            }
+            if sub.playerIn.pos == "P" {
+                newPitcher = newPlayer
+                print("1-\(newPitcher?.position) \(newPitcher?.player.lastName)")
+            }
+            for each in battingOrder {
+                var slot = each
+                print("in order: \(each.last!.batting)")
+                if each.last!.batting == order {
+                    if let newPlayer = sub.playerIn.player {
+                        print("playerIn exists: \(newPlayer.player.lastName)-\(newPlayer.batting)")
+                        slot.append(newPlayer)
+                    }
+                    
+                }
+                temp.append(slot)
+            }
+            battingOrder = temp
+            
+            if player.id != newPlayer.id {
+                updateBatterInPlateAppearances(batter: player.player, newBatter: newPlayer, viewModel: viewModel)
+                viewModel.batter?.batter = newPlayer.player
+            }
+        }
+    }
+    if let pitcher, let newPitcher {
+            print("in update")
+        updatePitcherInPlateAppearances(pitcher: pitcher.player, newPitcher: newPitcher, innings: viewModel.innings)
+        viewModel.batter?.pitcher = newPitcher.player
+    }
 }
+
+func updateBatterInPlateAppearances(batter: Player, newBatter: PlayerPos, viewModel: GameViewModel) {
+    for inning in viewModel.innings {
+        for app in inning.plateAppearances {
+            
+            if !app.active || (app.active && app.outcome["home"] == "") {
+                batter.plateAppearances?.removeAll(where: {$0.id == app.id})
+                if app.batter.id == batter.id {
+                    app.batter = newBatter.player
+                    newBatter.player.plateAppearances?.append(app)
+                }
+            }
+            if viewModel.baseRunners.contains(where: {$0.id == app.id}) {
+                viewModel.baseRunners = viewModel.baseRunners.filter( { $0.id != app.id })
+                viewModel.baseRunners.append(app)
+            }
+            
+        }
+    }
+}
+
+func updatePitcherInPlateAppearances(pitcher: Player, newPitcher: PlayerPos, innings: [Inning]) {
+    for inning in innings {
+        for app in inning.plateAppearances {
+            
+            if !app.active || (app.active && app.outcome["home"] == "") {
+                
+                if app.pitcher.id == pitcher.id {
+                    app.pitcher = newPitcher.player
+                    newPitcher.player.pitchingAppearances?.append(app)
+                }
+            }
+        }
+        pitcher.pitchingAppearances?.removeAll(where: { !$0.active || ($0.active && $0.outcome["home"] == "") })
+    }
+}
+
+func updateBaseRunners(subCard: SubCard, viewModel: GameViewModel) {
+    for sub in subCard.list {
+        if let oldRunner = sub.playerOut.player?.player  {
+            for runner in viewModel.baseRunners {
+                if oldRunner.number == runner.batter.number {
+                    let order = runner.order
+                    let inning = runner.inning
+                    viewModel.baseRunners.removeAll(where: { $0.batter.number == oldRunner.number })
+                    for each in inning.plateAppearances {
+                        if each.order == order {
+                            viewModel.baseRunners.append(each)
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+ 
 func deleteOrderSlot(lineup: inout [PlayerPos], player: PlayerPos) {
     lineup = popPlayerFromLineup(lineup: lineup, player: player)
     
@@ -281,12 +404,15 @@ struct SwapPlayerView: View {
     @Binding var lineup: [PlayerPos]
     @Binding var selectedPlayer: PlayerPos
     @Binding var gameVM: GameViewModel
+    @Binding var changedPlayers: [[PlayerPos]]
+    @Binding var subCard: SubCard
+    @Binding var sub: Sub
     var unusedPlayers: [Player]
     var positions: [String]
     let team: Int?
     
     var body: some View {
-        HStack {
+        HStack(alignment: .top) {
             GroupBox(label: Text("Available Players")) {
                 VStack {
                     ForEach(unusedPlayers, id: \.id) { player in
@@ -301,10 +427,11 @@ struct SwapPlayerView: View {
                         .padding(.top, 15)
                         .padding(.horizontal, 15)
                         .onTapGesture {
-                            print("home: \(lineup)")
-                            selectedPlayer = createNewLineupSlot(player: player, selectedPlayer: selectedPlayer, lineup: &lineup, gameVM: gameVM, modelContext: modelContext, team: team)
+                            let newPlayer = createNewLineupSlot(player: player, selectedPlayer: selectedPlayer, lineup: &lineup, gameVM: gameVM, modelContext: modelContext)
                             
-                            print("newhome: \(lineup)")
+                            selectedPlayer = newPlayer
+                            let subEntry = SubEntry(pos: selectedPlayer.position, player: newPlayer)
+                            sub.playerIn = subEntry
                         }
                     }
                 }
@@ -334,13 +461,13 @@ struct SwapPlayerView: View {
                         TextField("batting", value: $selectedPlayer.batting, format: .number)
                             
                     }
-                    RosterSubsItemView(gameVM: $gameVM, player: selectedPlayer, lineup: $lineup, unusedPositions: positions, position: "")
+                    RosterSubsItemView(gameVM: $gameVM, player: $selectedPlayer, lineup: $lineup, changedPlayers: $changedPlayers, subCard: $subCard, sub: $sub, unusedPositions: positions, position: "")
                         .padding(.leading, -15)
                 }
             }
         }
         .onDisappear {
-            print("reorder lineup")
+            subCard.list.append(sub)
             var order = 1
             lineup = lineup.sorted(by: { $0.batting < $1.batting })
             for i in 0..<lineup.count {
@@ -350,6 +477,22 @@ struct SwapPlayerView: View {
         }
     }
 }
+#Preview {
+    var game = GameViewModel.defaultGame
+    let preview = Preview()
+    var players: [Player] {
+        var temp: [Player] = []
+        for i in 0..<4 {
+            temp.append(game.homeTeam.players![i])
+        }
+        return temp
+    }
+    preview.addSampleGames([game])
+
+    return SwapPlayerView(lineup: .constant(game.createLineup(players: game.homeTeam.players!)), selectedPlayer: .constant(game.homeTeam.lineup[6]), gameVM: .constant(game), changedPlayers: .constant([]), subCard: .constant(SubCard()), sub: .constant(Sub()), unusedPlayers: players, positions: ["P"], team: 0)
+            .modelContainer(preview.modelContainer)
+    
+}
 
 struct RosterSubsItemView: View {
     @Environment(\.modelContext) var modelContext
@@ -357,22 +500,26 @@ struct RosterSubsItemView: View {
     @Query private var players: [Player]
     @Binding var gameVM: GameViewModel
     
-    //@Binding var player: PlayerPos
-    var player: PlayerPos
+    @Binding var player: PlayerPos
+    //var player: PlayerPos
     @Binding var lineup: [PlayerPos]
+    @Binding var changedPlayers: [[PlayerPos]]
+    @Binding var subCard: SubCard
+    @Binding var sub: Sub
     var unusedPositions: [String]
     @State var position: String
 
-    init(gameVM: Binding<GameViewModel>, player: PlayerPos, lineup: Binding<[PlayerPos]>, unusedPositions: [String], position: String) {
+    init(gameVM: Binding<GameViewModel>, player: Binding<PlayerPos>, lineup: Binding<[PlayerPos]>, changedPlayers: Binding<[[PlayerPos]]>, subCard: Binding<SubCard>, sub: Binding<Sub>, unusedPositions: [String], position: String) {
         _gameVM = gameVM
-        self.player = player
+        self._player = player
         _lineup = lineup
+        _changedPlayers = changedPlayers
+        _subCard = subCard
+        _sub = sub
         self.unusedPositions = unusedPositions
         self.position = position
         let id = player.player.id
-        print("\(id)")
-        //_players = Query(filter: #Predicate<Player> {$0.id == id})
-        print("\(players.count)")
+        
     }
     
     var body: some View {
@@ -399,10 +546,17 @@ struct RosterSubsItemView: View {
             //.frame(width: 5, height: 200)
             .padding(.horizontal, -5)
             .onChange(of: position) {
+                var tempArray: [PlayerPos] = [player]
+                lineup = lineup.sorted(by: { $0.batting < $1.batting })
                 player.position = position
+                let newPlayer = createNewLineupSlot(player: player.player, selectedPlayer: player, lineup: &lineup, gameVM: gameVM, modelContext: modelContext)
+                tempArray.append(newPlayer)
+                changedPlayers.append(tempArray)
+                let subEntry = SubEntry(pos: position, player: newPlayer)
+                sub.playerIn = subEntry
+
+                player = newPlayer
                 
-                //lineup = lineup.sorted(by: { $0.batting < $1.batting })
-//                let newPlayer = positionChangeOnly(player: player.player, position: position, batting: player.batting, lineup: &lineup, gameVM: gameVM, selectedPlayer: player)
             }
         
     }

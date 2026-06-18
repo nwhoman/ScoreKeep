@@ -36,7 +36,6 @@ struct AddCoachView: View {
                     let newCoach = Coach(firstName: firstName, lastName: lastName, yearsCoaching: yearsCoaching)
                     team.coaches!.append(newCoach)
                     try? modelContext.save()
-                    //print("IN button")
                     dismiss()
                 }
             }

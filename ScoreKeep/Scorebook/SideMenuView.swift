@@ -25,7 +25,7 @@ struct BookMenuView: View {
                     
                     ForEach(SideMenuOptionModel.allCases) { each in
                         if each == .bookview {
-                            BookView(gameViewModel: gameViewModel)
+                            BookView(gameViewModel: $gameViewModel)
                                 .frame(maxWidth: .infinity)
                                 .padding(.horizontal, -5)
                                 .toolbar(.hidden, for: .tabBar)

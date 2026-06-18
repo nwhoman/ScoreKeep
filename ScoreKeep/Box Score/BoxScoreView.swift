@@ -11,7 +11,7 @@ import SwiftUI
 struct BoxScoreView: View {
     @Environment(\.modelContext) var modelContext
     @Environment(\.dismiss) var dismiss
-    @State var gameViewModel: GameViewModel
+    var gameViewModel: GameViewModel
     
     @State var selectedTab: Int = 0
     var totalPA: [OffensivePlateAppearance] = []
@@ -109,7 +109,7 @@ struct StatLineView: View {
     let spacing: CGFloat = CGFloat(StatLabels.allCases.count)
     var player: Player? = nil
     var plateAppearances: [OffensivePlateAppearance]
-    //var playerStats: PlayerStats = PlayerStats()
+
     var playerStats: PlayerStats {
         return getPlayerStats(plateAppearances: plateAppearances)
     }
@@ -125,7 +125,6 @@ struct StatLineView: View {
                 } else {
                     Text("Totals")
                         .frame(width: geo.size.width * 0.3, alignment: .init(horizontal: .leading, vertical: .center))
-                        .border(Color.gray, width: 1)
                 }
                 
                 

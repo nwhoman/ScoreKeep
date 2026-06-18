@@ -103,6 +103,7 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
+		6A48E8C42FD8730A00016CF0 /* Stat Functions */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = "Stat Functions"; sourceTree = "<group>"; };
 		6A721EA92FC8D32C000E38D5 /* Box Score */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = "Box Score"; sourceTree = "<group>"; };
 		6AB41A202F71B7CE00DE2630 /* Navigation */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = Navigation; sourceTree = "<group>"; };
 /* End PBXFileSystemSynchronizedRootGroup section */
@@ -137,6 +138,7 @@
 		6A8A3D7E2BB2372300BC7E32 /* ScoreKeep */ = {
 			isa = PBXGroup;
 			children = (
+				6A48E8C42FD8730A00016CF0 /* Stat Functions */,
 				6A721EA92FC8D32C000E38D5 /* Box Score */,
 				6A721E4C2FC2548B000E38D5 /* Info.plist */,
 				6AB41A202F71B7CE00DE2630 /* Navigation */,
@@ -252,6 +254,7 @@
 			dependencies = (
 			);
 			fileSystemSynchronizedGroups = (
+				6A48E8C42FD8730A00016CF0 /* Stat Functions */,
 				6A721EA92FC8D32C000E38D5 /* Box Score */,
 				6AB41A202F71B7CE00DE2630 /* Navigation */,
 			);

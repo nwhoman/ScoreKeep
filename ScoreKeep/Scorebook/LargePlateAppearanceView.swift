@@ -31,11 +31,11 @@ struct LargePlateAppearanceView: View {
                     
                     VStack {
                         ScoreView(gameViewModel: gameViewModel, geo: geo)
-                            .padding(.trailing)
+                            //.padding(.trailing)
                         HStack(alignment: .top) {
                             let innings = gameViewModel.halfInning == 0 ? gameViewModel.visitorInnings : gameViewModel.homeInnings
-                            let playerStats = gameViewModel.getPlayerStats(plateAppearances: gameViewModel.getPlayerPA(innings: innings, player: gameViewModel.batter!.batter))
-                            let pitcherStats = gameViewModel.getPitcherStats(plateAppearances: gameViewModel.getPitcherPA(innings: innings, pitcher: gameViewModel.batter!.pitcher))
+                            let playerStats = getPlayerStats(plateAppearances: getPlayerPA(innings: innings, player: gameViewModel.batter!.batter))
+                            let pitcherStats = getPitcherStats(plateAppearances: getPitcherPA(innings: innings, pitcher: gameViewModel.batter!.pitcher))
                             VStack(alignment: .leading) {
                                 Text("#\(gameViewModel.batter!.batter.number) - \(gameViewModel.batter!.batter.lastName), \(gameViewModel.batter!.batter.firstName)")
                                 Text("\(playerStats.hits)/\(playerStats.atBats) \(playerStats.doubles > 0 ? String(playerStats.doubles) + " 2B" : "")")
@@ -69,14 +69,14 @@ struct LargePlateAppearanceView: View {
                         HStack {
                             if gameViewModel.batter!.rbi > 0 {
                                 VStack(alignment: .center) {
-                                    Text("RBI")
-                                    //Text("\(player.rbi)")
-                                        .padding(.leading,-0)
-                                        .font(.system(size: 30).bold())
-                                        
-                                        .foregroundColor(Color.black)
-                    
-                                        .padding(.top, -10)
+//                                    Text("RBI")
+//                                    //Text("\(player.rbi)")
+//                                        .padding(.leading,-0)
+//                                        .font(.system(size: 30).bold())
+//                                        
+//                                        .foregroundColor(Color.black)
+//                    
+//                                        .padding(.top, -10)
                                 }
                                 .frame(width: geo.size.width*0.4, height: geo.size.height*0.15)
                             }
@@ -97,33 +97,37 @@ struct LargePlateAppearanceView: View {
         .scaleEffect(scale)
         .onAppear {
             let innings = gameViewModel.halfInning == 0 ? gameViewModel.visitorInnings : gameViewModel.homeInnings
-            self.playerStats = gameViewModel.getPlayerStats(plateAppearances: gameViewModel.getPlayerPA(innings: innings, player: gameViewModel.batter!.batter))
-            self.pitcherStats = gameViewModel.getPitcherStats(plateAppearances: gameViewModel.getPitcherPA(innings: innings, pitcher: gameViewModel.batter!.pitcher))
+            self.playerStats = getPlayerStats(plateAppearances: getPlayerPA(innings: innings, player: gameViewModel.batter!.batter))
+            self.pitcherStats = getPitcherStats(plateAppearances: getPitcherPA(innings: innings, pitcher: gameViewModel.batter!.pitcher))
         }
     }
     func getStats(player: OffensivePlateAppearance) -> PlayerStats {
         var stats = PlayerStats()
-        let plateAppearances = gameViewModel.getPlayerPA(innings: gameViewModel.innings, player: player.batter)
-        stats = gameViewModel.getPlayerStats(plateAppearances: plateAppearances)
+        let plateAppearances = getPlayerPA(innings: gameViewModel.innings, player: player.batter)
+        stats = getPlayerStats(plateAppearances: plateAppearances)
         
         return stats
     }
 }
 
-//#Preview {
-//    @Previewable @State var player: OffensivePlateAppearance
-//    var game = Game.defaultGame
-//    let preview = Preview()
-//    preview.addSampleGames([game])
-//    preview.addSampleLineups(game: game)
-//    let gameVM = GameViewModel(game: game) 
-//    gameVM.setUpGame()
-//    gameVM.getBatter()
-//    gameVM.getPitcher()
-//    let player = OffensivePlateAppearance.defaultPlateAppearance
-//    let pitcher = DefensivePlateAppearance.defaultPlateAppearance
-//    //var player = game.innings[0].visitorOffense[0]
-//    
-//     LargePlateAppearanceView(gameViewModel: gameVM, player: $player, largeView: .constant(false))
-//        .modelContainer(preview.modelContainer)
-//}
+#Preview {
+    //@Previewable @State var player: OffensivePlateAppearance
+    var gameVM = GameViewModel.defaultGame
+    let preview = Preview()
+    gameVM.totalInnings = 7
+    preview.addSampleGames([gameVM])
+    preview.addSampleLineups(game: gameVM)
+    //let gameVM = GameViewModel(game: game)
+    
+    gameVM.setUpGame()
+    gameVM.getBatter()
+    //gameVM.getPitcher()
+    let player = OffensivePlateAppearance.defaultPlateAppearance
+    let pitcher = DefensivePlateAppearance.defaultPlateAppearance
+    //var player = game.innings[0].visitorOffense[0]
+    
+    return GeometryReader { geo in
+        LargePlateAppearanceView(gameViewModel: gameVM, player: player, largeView: .constant(false))
+            .modelContainer(preview.modelContainer)
+    }
+}

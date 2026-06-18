@@ -13,7 +13,7 @@ struct AddPlayerView: View {
     @EnvironmentObject var nav: NavigationStateManager
     @Environment(\.dismiss) var dismiss
 
-    @Query var teams: [Team]
+    @Query(filter: #Predicate<Team> { _ in false }) var teams: [Team]
     
     //@Binding var team: Team?
     @State var player: Player? // = Player(firstName: "", lastName: "", number: "")
@@ -32,6 +32,11 @@ struct AddPlayerView: View {
                 $0.id == id
             })
         }
+//        else {
+//            self._teams = Query(filter: #Predicate {
+//                _ in false
+//            })
+//        }
     }
     
     var body: some View {
@@ -74,14 +79,12 @@ struct AddPlayerView: View {
                             let newPlayer = Player(firstName: firstName, lastName: lastName, age: age, number: number)
                             modelContext.insert(newPlayer)
                             try? modelContext.save()
+                            dismiss()
                             return
                         }
-                        print("\(boundTeam.name), count \(boundTeam.players?.count ?? 100)")
                         if player != nil {
-                            //print("a p: \(player?.lastName ?? "no player") t: \($team??.name ?? "no team")")
                             boundTeam.players?.append(player!)
                         } else {
-                            //print("b p: \(player?.lastName ?? "no player") t: \(team?.name ?? "no team")")
                             let newPlayer = Player(firstName: firstName, lastName: lastName, age: age, number: number)
                             modelContext.insert(newPlayer)
                             try? modelContext.save()
@@ -89,7 +92,6 @@ struct AddPlayerView: View {
                             boundTeam.players?.append(newPlayer)
                             
                         }
-                        print("\(boundTeam.name), count \(boundTeam.players?.count ?? 100)")
                         try? modelContext.save()
                         dismiss()
                     }

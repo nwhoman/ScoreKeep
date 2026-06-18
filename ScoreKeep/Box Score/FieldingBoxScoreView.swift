@@ -26,16 +26,17 @@ struct FieldingBoxScoreView: View {
                     FieldingStatLabelView(geo: geo)
                     ForEach(selectTeam(teamID: team.id), id: \.self) { player in
                         FieldingStatLineView(geo: geo, player: player.player, fieldAppearances: [player])
-                            .padding(.horizontal)
+                            
                     }
                 }
+                .padding(.horizontal)
             }
         }
         .frame(width: geo.size.width, height: geo.size.height, alignment: .leading)
 
     }
     func selectTeam(teamID: UUID) -> [PlayerPos] {
-        return teamID == gameViewModel.visitingTeam.id ? decomposeLineup(lineup: gameViewModel.homeLineup) : decomposeLineup(lineup: gameViewModel.visitorLineup)
+        return teamID == gameViewModel.visitingTeam.id ? decomposeLineup(lineup: gameViewModel.visitorLineup) : decomposeLineup(lineup: gameViewModel.homeLineup)
     }
 
 }

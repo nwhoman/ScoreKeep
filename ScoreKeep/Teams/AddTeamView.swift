@@ -98,7 +98,6 @@ struct AddTeamView: View {
                         }
                         Spacer(minLength: 20)
                         Button {
-                            print("\(undoManager?.undoCount)")
                             undoManager?.undo()
                         } label: {
                             Text("Undo")

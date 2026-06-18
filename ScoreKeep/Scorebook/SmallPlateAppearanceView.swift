@@ -35,48 +35,56 @@ struct SmallPlateAppearanceView: View {
                 
                     case 1:
                         SpriteView(scene: BasePathScene(size: CGSize(width: geo.size.width*0.5, height: geo.size.height*0.5), gameVM: gameViewModel, baseOccupied: 1, plateAppearance: player,))
-                            .frame(width: geo.size.width*0.75, height: geo.size.height*1.25)
+                            .frame(width: geo.size.width*0.7, height: geo.size.height*1.25)
                             .scaledToFill()
                             .background(.clear)
                             .ignoresSafeArea(edges: .bottom)
                     case 2:
                         SpriteView(scene: BasePathScene(size: CGSize(width: geo.size.width*0.5, height: geo.size.height*0.5), gameVM: gameViewModel, baseOccupied: 2, plateAppearance: player,))
-                            .frame(width: geo.size.width*0.75, height: geo.size.height*1.25)
+                            .frame(width: geo.size.width*0.7, height: geo.size.height*1.25)
                             .scaledToFill()
                             .background(.clear)
                             .ignoresSafeArea(edges: .bottom)
                     case 3:
                         SpriteView(scene: BasePathScene(size: CGSize(width: geo.size.width*0.5, height: geo.size.height*0.5), gameVM: gameViewModel, baseOccupied: 3, plateAppearance: player,))
-                            .frame(width: geo.size.width*0.75, height: geo.size.height*1.25)
+                            .frame(width: geo.size.width*0.7, height: geo.size.height*1.25)
                             .scaledToFill()
                             .background(.clear)
                             .ignoresSafeArea(edges: .bottom)
                     case 4:
                         SpriteView(scene: BasePathScene(size: CGSize(width: geo.size.width*0.5, height: geo.size.height*0.5), gameVM: gameViewModel, baseOccupied: 4, plateAppearance: player,))
-                            .frame(width: geo.size.width*0.75, height: geo.size.height*1.25)
+                            .frame(width: geo.size.width*0.7, height: geo.size.height*1.25)
                             .scaledToFill()
                             .background(.clear)
                             .ignoresSafeArea(edges: .bottom)
                     case 5:
                         SpriteView(scene: BasePathScene(size: CGSize(width: geo.size.width*0.5, height: geo.size.height*0.5), gameVM: gameViewModel, baseOccupied: 5, plateAppearance: player,))
-                            .frame(width: geo.size.width*0.75, height: geo.size.height*1.25)
+                            .frame(width: geo.size.width*0.7, height: geo.size.height*1.25)
                             .scaledToFill()
                             .background(.clear)
                             .ignoresSafeArea(edges: .bottom)
                     default:
                         SpriteView(scene: BasePathScene(size: CGSize(width: geo.size.width*0.5, height: geo.size.height*0.5), gameVM: gameViewModel, baseOccupied: 0, plateAppearance: player,))
-                                .frame(width: geo.size.width*0.75, height: geo.size.height*1.25)
+                                .frame(width: geo.size.width*0.7, height: geo.size.height*1.25)
                                 .scaledToFill()
                                 .background(.clear)
                                 .ignoresSafeArea(edges: .bottom)
                     }
                                             
-                    VStack(alignment: .leading, spacing: 0) {
-                        VStack(alignment: .leading) {
+                    VStack(alignment: .trailing, spacing: 0) {
+                        VStack(alignment: .trailing) {
+                            ForEach (addOutcomes(plateAppearance: player, scene: BasePathScene(size: CGSize(width: geo.size.width*0.5, height: geo.size.height*0.5), gameVM: gameViewModel, baseOccupied: 0, plateAppearance: player,), base: 0), id: \.self) { outcome in
+                                Text("\(outcome)")
+                                    .font(.system(size: 10))
+                                    .foregroundStyle(.red)
+                                    .frame(width: 50, alignment: .trailing)
+                                    //.border(Color.red, width: 0.5)
+                            }
                     
 //                            Text("\(player.outcome["home"] ?? "")")
 //                                .font(.system(size: 8))
-//                                .frame(width: 50, height: 1)
+//                                .foregroundStyle(.red)
+//                                .frame(width: 50)
 //                            Text("\(player.outcome["first"] ?? "")")
 //                                .font(.system(size: 8))
 //                                .frame(width: 50, height: 1)
@@ -125,11 +133,13 @@ struct SmallPlateAppearanceView: View {
                     }
                     
                 }
-                .frame(width: 75, height: 75, alignment: .topLeading)
                 
-                .overlay(player.outcome["home"] == "" ? Rectangle().fill(Color.gray).opacity(0.8) : nil)
+                
+                
 
             }
+            .frame(width: 85, height: 75, alignment: .topLeading)
+            .overlay(player.outcome["home"] == "" ? Rectangle().fill(Color.gray).opacity(0.8) : nil)
         }
     }
     
@@ -191,13 +201,13 @@ class BasePathScene: SKScene, SKPhysicsContactDelegate {
         addBaserunningLabels(plateAppearance: plateAppearance, scene: self)
 //
           
-        addGenericNode(center: CGPoint(x: self.frame.maxX*0.11, y: self.frame.maxY*0.37), size: self.frame.maxX*0.1, name: "1B", hidden: plateAppearance.hit == 1 ? false : true, color: .black, scene: self)
-        addGenericNode(center: CGPoint(x: self.frame.maxX*0.11, y: self.frame.maxY*0.37), size: self.frame.maxX*0.1, name: "2B", hidden: plateAppearance.hit == 2 ? false : true, color: .black, scene: self)
-        addGenericNode(center: CGPoint(x: self.frame.maxX*0.11, y: self.frame.maxY*0.37), size: self.frame.maxX*0.1, name: "3B", hidden: plateAppearance.hit == 3 ? false : true, color: .black, scene: self)
-        addGenericNode(center: CGPoint(x: self.frame.maxX*0.11, y: self.frame.maxY*0.37), size: self.frame.maxX*0.1, name: "HR", hidden: plateAppearance.hit == 4 ? false : true, color: .black, scene: self)
-        addGenericNode(center: CGPoint(x: self.frame.maxX*0.11, y: self.frame.maxY*0.37), size: self.frame.maxX*0.1, name: "E", hidden: true, color: .red, scene: self)
-        addGenericNode(center: CGPoint(x: self.frame.maxX*0.8, y: self.frame.maxY*0.37), size: self.frame.maxX*0.1, name: "HBP", hidden: plateAppearance.outcome["home"] != "HBP", color: .blue, scene: self)
-        addGenericNode(center: CGPoint(x: self.frame.maxX*0.8, y: self.frame.maxY*0.37), size: self.frame.maxX*0.1, name: "BB", hidden: plateAppearance.bb != 1, color: .blue, scene: self)
+        addPlateAppearanceNode(center: CGPoint(x: self.frame.maxX*0.11, y: self.frame.maxY*0.37), size: self.frame.maxX*0.1, name: "1B", hidden: plateAppearance.hit == 1 ? false : true, color: .black, scene: self)
+        addPlateAppearanceNode(center: CGPoint(x: self.frame.maxX*0.11, y: self.frame.maxY*0.37), size: self.frame.maxX*0.1, name: "2B", hidden: plateAppearance.hit == 2 ? false : true, color: .black, scene: self)
+        addPlateAppearanceNode(center: CGPoint(x: self.frame.maxX*0.11, y: self.frame.maxY*0.37), size: self.frame.maxX*0.1, name: "3B", hidden: plateAppearance.hit == 3 ? false : true, color: .black, scene: self)
+        addPlateAppearanceNode(center: CGPoint(x: self.frame.maxX*0.11, y: self.frame.maxY*0.37), size: self.frame.maxX*0.1, name: "HR", hidden: plateAppearance.hit == 4 ? false : true, color: .black, scene: self)
+        addPlateAppearanceNode(center: CGPoint(x: self.frame.maxX*0.11, y: self.frame.maxY*0.37), size: self.frame.maxX*0.1, name: "E", hidden: true, color: .red, scene: self)
+        addPlateAppearanceNode(center: CGPoint(x: self.frame.maxX*0.8, y: self.frame.maxY*0.37), size: self.frame.maxX*0.1, name: "HBP", hidden: plateAppearance.outcome["home"] != "HBP", color: .blue, scene: self)
+        addPlateAppearanceNode(center: CGPoint(x: self.frame.maxX*0.8, y: self.frame.maxY*0.37), size: self.frame.maxX*0.1, name: "BB", hidden: plateAppearance.bb != 1, color: .blue, scene: self)
     
         addHitLoc(plateAppearance: plateAppearance, scene: self)
     }

@@ -44,16 +44,11 @@ struct BattingBoxScoreView: View {
                     }
                    
                 }
-                //.padding(10)
-                .border(Color.gray, width: 1)
             }
                 
             
         }
-        //.padding(.horizontal, 0)
-        //.frame(maxWidth: .infinity)
         .frame(width: geo.size.width, alignment: .leading)
-//}
 
     }
     func selectTeam(teamID: UUID) -> [PlayerPos] {
@@ -61,16 +56,14 @@ struct BattingBoxScoreView: View {
     }
     func getPlateAppearances(teamID: UUID, player: PlayerPos) -> [OffensivePlateAppearance] {
         var innings: [Inning] = []
-        var plateAppearances: [OffensivePlateAppearance] = []
 
         if teamID == gameViewModel.visitingTeam.id {
             innings = gameViewModel.visitorInnings
         } else {
             innings = gameViewModel.homeInnings
         }
-        plateAppearances.append(contentsOf: gameViewModel.getPlayerPA(innings: innings, player: player.player))
 
-        return gameViewModel.getPlayerPA(innings: innings, player: player.player)
+        return getPlayerPA(innings: innings, player: player.player)
     }
     func getTeamStats(teamID: UUID) -> [OffensivePlateAppearance] {
         var players: [PlayerPos] = []
@@ -86,7 +79,7 @@ struct BattingBoxScoreView: View {
         }
 
         for player in players {
-            plateAppearances.append(contentsOf: gameViewModel.getPlayerPA(innings: innings, player: player.player))
+            plateAppearances.append(contentsOf: getPlayerPA(innings: innings, player: player.player))
         }
         return plateAppearances
     }

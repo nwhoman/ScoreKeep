@@ -157,6 +157,26 @@ struct GameOptionsView: View {
     }
 }
 
+struct QuickSubsItemView: View {
+    @Environment(\.modelContext) var modelContext
+    @Environment(\.undoManager) var undoManager
+    @Environment(\.dismiss) var dismiss
+    @EnvironmentObject var nav: NavigationStateManager
+    
+    @State var currentState: SubType? = nil
+    @State var selectedTab: Int = 0
+    @State var selectedPitcher: PlayerPos?
+    @State var selectedPlayer: PlayerPos?
+    @State var subCard: SubCard = SubCard()
+    @State var sub: Sub = Sub()
+    @Binding var gameVM: GameViewModel
+    let geo: GeometryProxy
+    
+    var body: some View {
+        
+    }
+}
+
 struct QuickSubsView: View {
     @Environment(\.modelContext) var modelContext
     @Environment(\.undoManager) var undoManager
@@ -165,8 +185,10 @@ struct QuickSubsView: View {
     
     @State var currentState: SubType? = nil
     @State var selectedTab: Int = 0
+    @State var selectedPitcher: PlayerPos?
     @State var selectedPlayer: PlayerPos?
-    
+    @State var subCard: SubCard = SubCard()
+    @State var sub: Sub = Sub()
     @Binding var gameVM: GameViewModel
     let geo: GeometryProxy
     
@@ -175,172 +197,263 @@ struct QuickSubsView: View {
         VStack(alignment: .leading) {
             Section(header: Text("Substitutions")
                 .padding(.horizontal, 10)) {
-                ZStack {
-                    if currentState != nil {
+                    ZStack {
                         
-                        
-                        ForEach(SubType.allCases, id: \.self) { subType in
-                            
+                        if currentState != nil {
                             if currentState == .pitcher {
                                 
                                 if gameVM.halfInning == 0 {
-                                    QuickSubsDetailView(selectedPlayer: $selectedPlayer, currentState: $currentState, lineup: $gameVM.homeCurrentLineup, gameVM: $gameVM, geo: geo, team: 1)
+                                    QuickSubsDetailView(subCard: $subCard, sub: $sub, selectedPlayer: $selectedPitcher, currentState: $currentState, lineup: $gameVM.homeCurrentLineup, gameVM: $gameVM, geo: geo, team: 1)
                                 } else {
-                                    QuickSubsDetailView(selectedPlayer: $selectedPlayer, currentState: $currentState, lineup: $gameVM.visitorCurrentLineup, gameVM: $gameVM, geo: geo, team: 0)
+                                    QuickSubsDetailView(subCard: $subCard, sub: $sub, selectedPlayer: $selectedPitcher, currentState: $currentState, lineup: $gameVM.visitorCurrentLineup, gameVM: $gameVM, geo: geo, team: 0)
                                 }
-                                
-                                
-                            } else if currentState == .batter {
-                                
-                                if gameVM.halfInning == 0 {
-                                    QuickSubsDetailView(selectedPlayer: $selectedPlayer, currentState: $currentState, lineup: $gameVM.visitorCurrentLineup, gameVM: $gameVM, geo: geo, team: 0)
-                                } else {
-                                    QuickSubsDetailView(selectedPlayer: $selectedPlayer, currentState: $currentState, lineup: $gameVM.homeCurrentLineup, gameVM: $gameVM, geo: geo, team: 1)
-                                }
-                            } else if currentState == .runner {
-                                if gameVM.halfInning == 0 {
-                                    QuickSubsDetailView(selectedPlayer: $selectedPlayer, currentState: $currentState, lineup: $gameVM.visitorCurrentLineup, gameVM: $gameVM, geo: geo, team: 0)
-                                } else {
-                                    QuickSubsDetailView(selectedPlayer: $selectedPlayer, currentState: $currentState, lineup: $gameVM.homeCurrentLineup, gameVM: $gameVM, geo: geo, team: 1)
-                                }
-                                
                             }
+                        
+//                            ForEach(SubType.allCases, id: \.self) { subType in
+//                                
+//                                if currentState == .pitcher {
+//                                    
+//                                    if gameVM.halfInning == 0 {
+//                                        QuickSubsDetailView(subCard: $subCard, sub: $sub, selectedPlayer: $selectedPitcher, currentState: $currentState, lineup: $gameVM.homeCurrentLineup, gameVM: $gameVM, geo: geo, team: 1)
+//                                    } else {
+//                                        QuickSubsDetailView(subCard: $subCard, sub: $sub, selectedPlayer: $selectedPitcher, currentState: $currentState, lineup: $gameVM.visitorCurrentLineup, gameVM: $gameVM, geo: geo, team: 0)
+//                                    }
+//                                    
+//                                    
+//                                } else if currentState == .batter {
+//                                    
+//                                    if gameVM.halfInning == 0 {
+//                                        QuickSubsDetailView(subCard: $subCard, sub: $sub, selectedPlayer: $selectedPlayer, currentState: $currentState, lineup: $gameVM.visitorCurrentLineup, gameVM: $gameVM, geo: geo, team: 0)
+//                                    } else {
+//                                        QuickSubsDetailView(subCard: $subCard, sub: $sub, selectedPlayer: $selectedPlayer, currentState: $currentState, lineup: $gameVM.homeCurrentLineup, gameVM: $gameVM, geo: geo, team: 1)
+//                                    }
+//                                } else if currentState == .runner {
+//                                    if gameVM.halfInning == 0 {
+//                                        QuickSubsDetailView(subCard: $subCard, sub: $sub, selectedPlayer: $selectedPlayer, currentState: $currentState, lineup: $gameVM.visitorCurrentLineup, gameVM: $gameVM, geo: geo, team: 0)
+//                                    } else {
+//                                        QuickSubsDetailView(subCard: $subCard, sub: $sub, selectedPlayer: $selectedPlayer, currentState: $currentState, lineup: $gameVM.homeCurrentLineup, gameVM: $gameVM, geo: geo, team: 1)
+//                                    }
+//                                    
+//                                }
+//                                
+//                            }
                             
-                        }
-                        
-                        
-                    } else {
-                        VStack(alignment: .leading) {
-                            ForEach(SubType.allCases, id: \.self) { subType in
-                                switch subType {
-                                case .pitcher:
+                            
+                        } else {
+                            VStack(alignment: .leading) {
+                                HStack {
+                                    Text("pitcher:")
                                     
-                                    HStack {
-                                        Text("\(subType.description):")
-                                        
+                                    if selectedPitcher == nil {
                                         
                                         Button { // open sub page for pitcher
-                                            if currentState != subType {
-                                                currentState = subType
-                                                selectedTab = subType.id
-                                                let pitcher = gameVM.batter?.pitcher
+                                            currentState = .pitcher
                                                 if gameVM.halfInning == 1 {
-                                                    self.selectedPlayer = gameVM.getPlayerPosForPlayer(player: pitcher!, lineup: gameVM.visitorCurrentLineup).first!
+                                                    selectedPitcher = gameVM.getPlayerPosForPlayer(player: gameVM.batter!.pitcher, lineup: gameVM.visitorCurrentLineup).first!
                                                 } else {
-                                                    selectedPlayer = gameVM.getPlayerPosForPlayer(player: pitcher!, lineup: gameVM.homeCurrentLineup).first!
+                                                    selectedPitcher = gameVM.getPlayerPosForPlayer(player: gameVM.batter!.pitcher, lineup: gameVM.homeCurrentLineup).first!
                                                 }
-                                            } else {
-                                                currentState = nil
-                                            }
-                                        } label: {
+                                                let subEntry = SubEntry(pos: "P", player: selectedPitcher)
+                                                sub.playerOut = subEntry
                                             
+                                        } label: {
                                             HStack {
-                                                Text("#\(gameVM.batter?.pitcher.number ?? "")")
-                                                Text("\(gameVM.batter?.pitcher.lastName ?? ""), \(gameVM.batter?.pitcher.firstName ?? "")")
+                                                Text("#\(String(describing: gameVM.batter?.pitcher.number))")
+                                                Text("\(String(describing: gameVM.batter?.pitcher.lastName)), \(String(describing: gameVM.batter?.pitcher.firstName))")
                                                 Image("blue-sphere")
                                                     .resizable()
                                                     .frame(width: 30, height: 25)
                                             }
                                         }
-                                        
-                                        
-                                        Spacer()
-                                    }
-                                    
-                                case .batter:
-                                    
-                                    HStack {
-                                        Text("\(subType.description):")
-                                        
-                                        
-                                        Button { // open sub page for pitcher
-                                            if currentState != subType {
-                                                currentState = subType
-                                                let batter = gameVM.batter?.batter
-                                                if gameVM.halfInning == 0 {
-                                                    self.selectedPlayer = gameVM.getPlayerPosForPlayer(player: batter!, lineup: gameVM.visitorCurrentLineup).first!
-                                                } else {
-                                                    selectedPlayer = gameVM.getPlayerPosForPlayer(player: batter!, lineup: gameVM.homeCurrentLineup).first!
-                                                }
-                                            } else {
-                                                currentState = nil
-                                            }
-                                        } label: {
-                                            
-                                            HStack {
-                                                Text("#\(gameVM.batter?.batter.number ?? "")")
-                                                Text("\(gameVM.batter?.batter.lastName ?? ""), \(gameVM.batter?.batter.firstName ?? "")")
-                                                Image("blue-sphere")
-                                                    .resizable()
-                                                    .frame(width: 30, height: 25)
-                                            }
-                                        }
-                                        
-                                        
-                                        Spacer()
-                                    }
-                                    
-                                case .runner:
-                                    
-                                    HStack(alignment: .top, spacing: 10) {
-                                        Text("\(subType.description):")
-                                        let runners: [OffensivePlateAppearance] = gameVM.baseRunners.filter { each in
-                                            each.baseOccupied != 0
-                                        }
-                                        VStack{
-                                            ForEach(runners, id: \.self) { runner in
-                                                Button { // open sub page for pitcher
-                                                    if currentState != subType {
-                                                        currentState = subType
-                                                        if gameVM.halfInning == 0 {
-                                                            self.selectedPlayer = gameVM.getPlayerPosForPlayer(player: runner.batter, lineup: gameVM.visitorCurrentLineup).first!
-                                                        } else {
-                                                            selectedPlayer = gameVM.getPlayerPosForPlayer(player: runner.batter, lineup: gameVM.homeCurrentLineup).first!
-                                                        }
-                                                    } else {
-                                                        currentState = nil
-                                                    }
-                                                } label: {
-                                                    
-                                                    HStack {
-                                                        Text("#\(runner.batter.number)")
-                                                        Text("\(runner.batter.lastName), \(runner.batter.firstName)")
-                                                        Image("blue-sphere")
-                                                            .resizable()
-                                                            .frame(width: 30, height: 25)
-                                                    }
-                                                }
-                                            }
-                                            
-                                            
-                                            
-                                            Spacer()
+                                    } else {
+                                        HStack {
+                                            Text("#\(selectedPitcher?.player.number ?? "")")
+                                            Text("\(selectedPitcher?.player.lastName ?? ""), \(selectedPitcher?.player.firstName ?? "")")
+//                                                    Image("blue-sphere")
+//                                                        .resizable()
+//                                                        .frame(width: 30, height: 25)
                                         }
                                     }
+                                    
+                                    Spacer()
                                 }
-                                VStack {
-                                    
-                                }
-                                //                                if currentState == subType {
-                                //                                    subType.viewToUse(currentState: $currentState, subType: subType, gameVm: gameVM, geo: geo).padding()
-                                //                                }
-                                
+//                                ForEach(SubType.allCases, id: \.self) { subType in
+//                                    switch subType {
+//                                    case .pitcher:
+//                                        
+//                                        HStack {
+//                                            Text("\(subType.description):")
+//                                            
+//                                            if selectedPitcher == nil {
+//                                                
+//                                                Button { // open sub page for pitcher
+//                                                    if currentState != subType {
+//                                                        currentState = subType
+//                                                        selectedTab = subType.id
+//                                                        if gameVM.halfInning == 1 {
+//                                                            selectedPitcher = gameVM.getPlayerPosForPlayer(player: gameVM.batter!.pitcher, lineup: gameVM.visitorCurrentLineup).first!
+//                                                        } else {
+//                                                            selectedPitcher = gameVM.getPlayerPosForPlayer(player: gameVM.batter!.pitcher, lineup: gameVM.homeCurrentLineup).first!
+//                                                        }
+//                                                        let subEntry = SubEntry(pos: "P", player: selectedPitcher)
+//                                                        sub.playerOut = subEntry
+//                                                    } else {
+//                                                        currentState = nil
+//                                                    }
+//                                                } label: {
+//                                                    HStack {
+//                                                        Text("#\(gameVM.batter!.pitcher.number)")
+//                                                        Text("\(gameVM.batter!.pitcher.lastName), \(gameVM.batter!.pitcher.firstName)")
+//                                                        Image("blue-sphere")
+//                                                            .resizable()
+//                                                            .frame(width: 30, height: 25)
+//                                                    }
+//                                                }
+//                                            } else {
+//                                                HStack {
+//                                                    Text("#\(selectedPitcher?.player.number ?? "")")
+//                                                    Text("\(selectedPitcher?.player.lastName ?? ""), \(selectedPitcher?.player.firstName ?? "")")
+////                                                    Image("blue-sphere")
+////                                                        .resizable()
+////                                                        .frame(width: 30, height: 25)
+//                                                }
+//                                            }
+//                                            
+//                                            Spacer()
+//                                        }
+//                                        
+//                                    case .batter:
+//                                        
+//                                        HStack {
+//                                            Text("\(subType.description):")
+//                                        }
+////
+////                                            
+////                                            Button { // open sub page for pitcher
+////                                                if currentState != subType {
+////                                                    currentState = subType
+////                                                    let batter = gameVM.batter?.batter
+////                                                    if gameVM.halfInning == 0 {
+////                                                        selectedPlayer = gameVM.getPlayerPosForPlayer(player: batter!, lineup: gameVM.visitorCurrentLineup).first!
+////                                                    } else {
+////                                                        selectedPlayer = gameVM.getPlayerPosForPlayer(player: batter!, lineup: gameVM.homeCurrentLineup).first!
+////                                                    }
+////                                                    let subEntry = SubEntry(pos: selectedPlayer?.position ?? "", player: selectedPlayer)
+////                                                    sub.playerOut = subEntry
+////                                                    
+////                                                } else {
+////                                                    currentState = nil
+////                                                }
+////                                            } label: {
+////                                                
+////                                                HStack {
+////                                                    Text("#\(gameVM.batter?.batter.number ?? "")")
+////                                                    Text("\(gameVM.batter?.batter.lastName ?? ""), \(gameVM.batter?.batter.firstName ?? "")")
+////                                                    Image("blue-sphere")
+////                                                        .resizable()
+////                                                        .frame(width: 30, height: 25)
+////                                                }
+////                                            }
+////                                            
+////                                            
+////                                            Spacer()
+////                                        }
+//                                        
+//                                    case .runner:
+//                                        HStack {
+//                                            Text("\(subType.description):")
+//                                        }
+//                                        
+////                                        HStack(alignment: .top, spacing: 10) {
+////                                            Text("\(subType.description):")
+////                                            let runners: [OffensivePlateAppearance] = gameVM.baseRunners.filter { each in
+////                                                each.baseOccupied != 0
+////                                            }
+////                                            VStack{
+////                                                ForEach(runners, id: \.self) { runner in
+////                                                    Button { // open sub page for pitcher
+////                                                        if currentState != subType {
+////                                                            currentState = subType
+////                                                            if gameVM.halfInning == 0 {
+////                                                                selectedPlayer = gameVM.getPlayerPosForPlayer(player: runner.batter, lineup: gameVM.visitorCurrentLineup).first!
+////                                                            } else {
+////                                                                selectedPlayer = gameVM.getPlayerPosForPlayer(player: runner.batter, lineup: gameVM.homeCurrentLineup).first!
+////                                                            }
+////                                                            let subEntry = SubEntry(pos: selectedPlayer?.position ?? "", player: selectedPlayer)
+////                                                            sub.playerOut = subEntry
+////                                                        } else {
+////                                                            currentState = nil
+////                                                        }
+////                                                    } label: {
+////                                                        
+////                                                        HStack {
+////                                                            Text("#\(runner.batter.number)")
+////                                                            Text("\(runner.batter.lastName), \(runner.batter.firstName)")
+////                                                            Image("blue-sphere")
+////                                                                .resizable()
+////                                                                .frame(width: 30, height: 25)
+////                                                        }
+////                                                    }
+////                                                }
+////                                                
+////                                                
+////                                                
+////                                                Spacer()
+////                                            }
+////                                        }
+//                                    }
+//                                    VStack {
+//                                        
+//                                    }
+//                                }
                             }
                         }
                     }
+                    .padding(25)
+                    
+                    
+                    
+                    Divider()
+                    
+                        .padding(5)
+                    
+                    
+                    
                 }
-                .padding(25)
-                
-                
-                
-                Divider()
-                
-                    .padding(5)
-                
-                
-                
+            if currentState == nil {
+                Button {
+                    var lineup: [PlayerPos] = []
+                    var battingOrder: [[PlayerPos]] = []
+                    if gameVM.halfInning == 1 {
+                        lineup = gameVM.visitorCurrentLineup
+                        battingOrder = gameVM.visitorLineup
+                    } else {
+                        lineup = gameVM.homeCurrentLineup
+                        battingOrder = gameVM.homeLineup
+                    }
+                    if validateSubs(lineup: lineup) {
+                        print("validated")
+//                        writeLineupToBattingOrder(lineup: lineup, battingOrder: &battingOrder, subCard: subCard, viewModel: gameVM)
+                        if gameVM.halfInning == 0 {
+                            writeLineupToBattingOrder(lineup: gameVM.homeCurrentLineup, battingOrder: &gameVM.homeLineup, subCard: subCard, viewModel: gameVM)
+                        } else {
+                            writeLineupToBattingOrder(lineup: gameVM.visitorCurrentLineup, battingOrder: &gameVM.visitorLineup, subCard: subCard, viewModel: gameVM)
+                        }
+                        do {
+                            try modelContext.save()
+                        } catch {
+                            print("\(error)")
+                        }
+                        currentState = nil
+                    } else {
+                        print("not validated")
+                    }
+                } label: {
+                    Text("Save Change")
+                }
             }
         }
+        
     }
 }
 #Preview {
@@ -367,15 +480,15 @@ struct QuickSubsDetailView: View {
     @EnvironmentObject var nav: NavigationStateManager
     
     @State private var positions: [String] = ["P", "C", "1B", "2B", "3B", "SS", "LF", "CF", "RF", "DP", "F", "EP"]
+    @State var changedPlayers:[[PlayerPos]] = []
+    @Binding var subCard: SubCard
+    @Binding var sub: Sub
     @Binding var selectedPlayer: PlayerPos?
     @Binding var currentState: SubType?
     @Binding var lineup: [PlayerPos]
     
     @Binding var gameVM: GameViewModel
-//    @State var batterSubs: Bool = false
-//    @State var baserunnerSubs: Bool = false
-    
-    //var gameVM: GameViewModel
+
     let geo: GeometryProxy
     let team: Int
     
@@ -394,20 +507,31 @@ struct QuickSubsDetailView: View {
         return players
     }
     
-    
-    //SwapPlayerView(lineup: $gameVM.homeCurrentLineup, selectedPlayer: $selectedPlayer, gameVM: $gameVM, unusedPlayers: unusedPlayers, positions: unusedPositions)
-    
     var body: some View {
         VStack {
             
             Button {
-                validateSubs(lineup: lineup)
-                currentState = nil
+//                if validateSubs(lineup: lineup) {
+//                    print("validated")
+//                    if team == 0 {
+//                        writeLineupToBattingOrder(lineup: lineup, battingOrder: &gameVM.visitorLineup, subCard: subCard, viewModel: gameVM)
+//                    } else {
+//                        writeLineupToBattingOrder(lineup: lineup, battingOrder: &gameVM.homeLineup, subCard: subCard, viewModel: gameVM)
+//                    }
+//                    do {
+//                        try modelContext.save()
+//                    } catch {
+//                        print("\(error)")
+//                    }
+                    currentState = nil
+//                } else {
+//                    print("not validated")
+//                }
             } label: {
-                Text("Save Change")
+                Text("Back")
             }
             if let player = Binding($selectedPlayer) {
-                SwapPlayerView(lineup: $lineup, selectedPlayer: player, gameVM: $gameVM, unusedPlayers: unusedPlayers, positions: unusedPositions, team: team)
+                SwapPlayerView(lineup: $lineup, selectedPlayer: player, gameVM: $gameVM, changedPlayers: $changedPlayers, subCard: $subCard, sub: $sub, unusedPlayers: unusedPlayers, positions: unusedPositions, team: team)
             }
         }
         

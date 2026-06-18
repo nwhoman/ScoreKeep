@@ -106,7 +106,6 @@ struct QuickEntryView: View {
     func addTeam() {
         newTeam = Team(name: teamName)
         let splitLine = coachName.split(separator: " ") // split refers to the number of parts, not how many spaces
-        print("splitCoach: ",splitLine.count)
         if splitLine.count == 2 {                               //first and last
             newTeam?.coaches?.append(Coach(firstName: String(splitLine[0]), lastName: String(splitLine[1])))
         } else if splitLine.count == 1 {                        //Last only
@@ -119,7 +118,6 @@ struct QuickEntryView: View {
                     var lastName = ""
                     var number = ""
                     let splitLine = each.split(separator: " ")
-                    print("splitPlayer: ",splitLine.count)
                     if splitLine.count == 3 {                   //first, last and number
                         firstName = String(splitLine[0])
                         lastName = String(splitLine[1])
@@ -138,7 +136,6 @@ struct QuickEntryView: View {
                     playerInfo = ["firstName": firstName, "lastName": lastName, "number": number]
                     
                     let player = Player(firstName: firstName, lastName: lastName, number: number)
-                    print("player #- ",player.number)
                     newTeam!.players?.append(player)
                 }
             }

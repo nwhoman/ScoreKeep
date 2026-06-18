@@ -16,7 +16,7 @@ struct BookView: View {
     //@Query private var games: [Game]
     
     @State private var selectedTab: String = "Visitor"
-    @State var gameViewModel: GameViewModel
+    @Binding var gameViewModel: GameViewModel
 
     var body: some View {
         GeometryReader { geo in
@@ -105,7 +105,7 @@ struct BookView: View {
     //setUpGame(game: game)
     
     return NavigationStack {
-        BookView(gameViewModel: gameViewModel)
+        BookView(gameViewModel: .constant(gameViewModel))
             .modelContainer(preview.modelContainer)
     }
    
