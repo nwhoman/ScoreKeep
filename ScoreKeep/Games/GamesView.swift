@@ -87,9 +87,9 @@ struct GamesView: View {
             let viewModel = viewModels[offset]
             //let viewModel = viewModels.sorted(by: { $0.date < $1.date })[offset]
             for each in viewModel.innings {
-                viewModel.innings.remove(at: offset)
                 modelContext.delete(each)
             }
+            viewModel.innings.removeAll()
             modelContext.delete(viewModel)
         }
         do {

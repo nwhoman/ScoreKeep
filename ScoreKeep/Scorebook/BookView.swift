@@ -17,7 +17,7 @@ struct BookView: View {
     
     @State private var selectedTab: String = "Visitor"
     @Binding var gameViewModel: GameViewModel
-
+    
     var body: some View {
         GeometryReader { geo in
             ZStack {

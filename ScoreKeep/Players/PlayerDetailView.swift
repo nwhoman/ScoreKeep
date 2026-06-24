@@ -44,6 +44,7 @@ struct PlayerDetailView: View {
                     HStack(content: {
                         Text("Number:")
                         TextField("Player's Number:", text: $player.number)
+                            .keyboardType(.numberPad)
                     })
                     
                 }

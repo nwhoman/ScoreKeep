@@ -17,6 +17,7 @@ var strikeNodes = ["Looking", "Swinging", "Foul"]
 var inplayNodes = ["EHit", "Hit", "GO", "FO", "HBP", "SAC"]
 var hitNodes = ["1B", "2B", "3B", "HR"]
 var baseRunnningOptionNodes = ["E", "SB", "XB", "WP", "PB", "TO"]
+var afterHitBaseRunningOptionNodes = ["E", "XB", "TO"]
 var strikeoutNodes = ["WP", "PB", "EHit", "TO"]
 var sacNodes = ["B", "FO", "EHit"]
 
@@ -646,6 +647,13 @@ func placeBaseRunnerNodes(gameVM: GameViewModel, scene: SKScene) {
         scene.addChild(node)
     }
 }
+struct PhysicsCategories {
+    static let none: UInt32 = 0
+    static let home: UInt32 = 1 << 0
+    static let first: UInt32 = 1 << 1
+    static let second: UInt32 = 1 << 2
+    static let third: UInt32 = 1 << 3
+}
 func createBaseRunnerNode(player: OffensivePlateAppearance, scene: SKScene) -> SKLabelNode {
     var homePlate: CGPoint { CGPoint(x: scene.frame.midX, y: scene.frame.maxY*0.45) }
     var firstBase: CGPoint { CGPoint(x: scene.frame.midX*1.64, y: scene.frame.maxY*0.62) }
@@ -655,7 +663,7 @@ func createBaseRunnerNode(player: OffensivePlateAppearance, scene: SKScene) -> S
     node.fontColor = .blue
 
 
-    node.physicsBody = SKPhysicsBody(circleOfRadius: 25)
+    node.physicsBody = SKPhysicsBody(circleOfRadius: 10)
     node.physicsBody?.affectedByGravity = false
 
     node.text = "#\(player.batter.number)"
@@ -669,63 +677,38 @@ func createBaseRunnerNode(player: OffensivePlateAppearance, scene: SKScene) -> S
     node.userData = ["player": player]
     switch player.baseOccupied {
     case 0:
-        node.physicsBody?.categoryBitMask = (1 << 0)
-        node.physicsBody?.contactTestBitMask = (1 << 1)
-        node.physicsBody?.collisionBitMask = (1 << 0)
+        node.physicsBody?.categoryBitMask = PhysicsCategories.none
+        node.physicsBody?.contactTestBitMask = PhysicsCategories.none
+        node.physicsBody?.collisionBitMask = PhysicsCategories.none
         node.position = homePlate
+        node.zPosition = 500
     case 1:
-//        node.physicsBody?.categoryBitMask = (1 << 1)
-//        node.physicsBody?.contactTestBitMask = (1 << 1)
-//        node.physicsBody?.collisionBitMask = (1 << 1)
-        node.physicsBody?.categoryBitMask = (1 << 1)
-        node.physicsBody?.contactTestBitMask = (1 << 0) | (1 << 1)
-//        node.physicsBody?.collisionBitMask = (1 << 1)
+        node.physicsBody?.categoryBitMask = PhysicsCategories.first
+        node.physicsBody?.contactTestBitMask = PhysicsCategories.home
+        node.physicsBody?.collisionBitMask = PhysicsCategories.none
         node.position = firstBase
+        node.zPosition = 100
     case 2:
-//        node.physicsBody?.categoryBitMask = (1 << 1)
-//        node.physicsBody?.contactTestBitMask = (1 << 1)
-//        node.physicsBody?.collisionBitMask = (1 << 1)
-        node.physicsBody?.categoryBitMask = (1 << 2)
-        node.physicsBody?.contactTestBitMask = (1 << 1) | (1 << 0)
-//        node.physicsBody?.collisionBitMask = (1 << 2)
+
+        node.physicsBody?.categoryBitMask = PhysicsCategories.second
+        node.physicsBody?.contactTestBitMask = 0b111
+        node.physicsBody?.collisionBitMask = PhysicsCategories.none
         node.position = secondBase
+        node.zPosition = 100
     case 3:
-//        node.physicsBody?.categoryBitMask = (1 << 1)
-//        node.physicsBody?.contactTestBitMask = (1 << 1)
-//        node.physicsBody?.collisionBitMask = (1 << 1)
-        node.physicsBody?.categoryBitMask = (1 << 3)
-        node.physicsBody?.contactTestBitMask = (1 << 2) | (1 << 1) //| (1 << 0)
-        node.physicsBody?.collisionBitMask = (1 << 3)
+
+        node.physicsBody?.categoryBitMask = PhysicsCategories.third
+        node.physicsBody?.contactTestBitMask = 0b111
+        node.physicsBody?.collisionBitMask = PhysicsCategories.none
         node.position = thirdBase
+        node.zPosition = 100
+    
         default :
         break
     }
-    node.zPosition = 100
+    
     return node
     
-}
-
-func updateBaseRunnerNode(node: SKNode, player: OffensivePlateAppearance) {
-    switch player.baseOccupied {
-    case 0:
-        node.physicsBody?.categoryBitMask = (1 << 0)
-        node.physicsBody?.contactTestBitMask = (1 << 1)
-        node.physicsBody?.collisionBitMask = (1 << 0)
-    case 1:
-        node.physicsBody?.categoryBitMask = (1 << 1)
-        node.physicsBody?.contactTestBitMask = (1 << 2)
-    case 2:
-        
-        node.physicsBody?.categoryBitMask = (1 << 2)
-        node.physicsBody?.contactTestBitMask = (1 << 3)
-    case 3:
-        
-        node.physicsBody?.categoryBitMask = (1 << 3)
-        node.physicsBody?.contactTestBitMask = (1 << 4)
-        node.physicsBody?.collisionBitMask = (1 << 3)
-    default :
-        break
-    }
 }
 
 func resetCount(scene: SKScene, plateAppearance: OffensivePlateAppearance, gameVM: GameViewModel) {

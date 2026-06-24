@@ -50,7 +50,10 @@ extension Team {
         
         let team = Team(name: getName)
         for _ in 0..<13 {
-            team.players?.append(Player.newPlayer)
+            let player = Player.newPlayer
+            if !(team.players?.contains( where: { $0.number == player.number}) ?? true) {
+                team.players?.append(player)
+            }
         }
         var ageGroup: String {
             var newNum: [String] = []
