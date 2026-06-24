@@ -90,7 +90,7 @@ struct BookPageView: View {
                     Button {
                         
                         gameViewModel.isComplete = true
-                        gameViewModel.checkGameComplete()
+                        gameViewModel.completeGame()
                         try? modelContext.save()
                     } label: {
                         Text("Complete Game")

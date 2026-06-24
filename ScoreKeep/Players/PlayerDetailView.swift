@@ -76,7 +76,7 @@ struct PlayerDetailView: View {
                             .background(Color.gray.opacity(0.4))
                             .clipShape(RoundedRectangle(cornerRadius: 10.0, style: .continuous))
                         if !teamName.isEmpty {
-                            PickerView(searchString: $teamName, selection: $team, player: player)
+                            TeamPickerView(searchString: $teamName, selection: $team, player: player)
                             
                         }
                         

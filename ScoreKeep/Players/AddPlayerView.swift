@@ -145,10 +145,16 @@ struct PlayerPickerView: View {
                                                 //try? modelContext.save()
                                             } label: {
                                                 HStack {
-                                                    Image(systemName: "circle")
-                                                    Text("\(player.lastName), \(player.firstName)")
-                                                    
+                                                    Text("# \(player.number)")
+                                                    Text("\(player.firstName)")
+                                                        
+                                                    Text("\(player.lastName)")
+                                                        
+                                                    Spacer()
+                                                    Text("\(player.team?.name ?? "Unknown Team")")
                                                 }
+                                                .font(.system(size: 14))
+                                                .minimumScaleFactor(0.5)
                                             }
                                             Spacer()
                                         }

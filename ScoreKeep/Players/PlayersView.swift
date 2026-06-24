@@ -19,7 +19,8 @@ struct PlayersView: View {
     @Query(sort: (\Player.lastName)) var players: [Player]
     @Query var teams: [Team]
     @State private var showAddPlayerScreen = false
-    
+    @State var playerName: String = ""
+    @State var selectedPlayer: Player?
     
     init(teamId: UUID?){
         self.teamId = teamId
@@ -34,44 +35,82 @@ struct PlayersView: View {
     }
 
     var body: some View {
-            List {
-                ForEach(players) { player in
+        VStack {
+            if let choice = selectedPlayer {
+                HStack {
+                    Text("# \(choice.number)")
+                    Text("\(choice.firstName)")
+                    
+                    Text("\(choice.lastName)")
+                    
+                    Spacer()
+                    Text("\(choice.team?.name ?? "Unknown Team")")
                     Button {
-                        nav.push(.player(player: player))
+                        nav.push(.player(player: choice))
+                        selectedPlayer = nil
+                        playerName = ""
                     } label: {
                         HStack {
-                            Text("# \(player.number)")
-                            Text("\(player.firstName)")
-                                
-                            Text("\(player.lastName)")
-                                
-                            Spacer()
-                            Text("\(player.team?.name ?? "Unknown Team")")
+                            Image(systemName: "person.fill.viewfinder")
                         }
                         .font(.system(size: 14))
                         .minimumScaleFactor(0.5)
                     }
+                }
+                .font(.system(size: 14))
+                .minimumScaleFactor(0.5)
+                .padding()
+                Spacer()
+            } else {
+                TextField("Player Name", text: $playerName)
+                    .autocorrectionDisabled()
+                    .padding()
+                HStack {
+                    PlayerPickerView(searchLastName: playerName, searchFirstName: playerName, selection: $selectedPlayer)
                     
                 }
-                .onDelete(perform: deletePlayer)
+                Spacer()
+            }
+            if playerName == "" {
+                List {
+                    ForEach(players) { player in
+                        Button {
+                            nav.push(.player(player: player))
+                        } label: {
+                            HStack {
+                                Text("# \(player.number)")
+                                Text("\(player.firstName)")
+                                
+                                Text("\(player.lastName)")
+                                
+                                Spacer()
+                                Text("\(player.team?.name ?? "Unknown Team")")
+                            }
+                            .font(.system(size: 14))
+                            .minimumScaleFactor(0.5)
+                        }
+                        
+                    }
+                    .onDelete(perform: deletePlayer)
+                }
+            }
+        }
+        .toolbar{
+            
+            ToolbarItem(placement: .topBarTrailing){
+                Button("Add Player", systemImage: "plus"){
+                    showAddPlayerScreen.toggle()
+                }
+            }
+        }
+        .sheet(isPresented: $showAddPlayerScreen) {
+            if let teamId {
+                AddPlayerView(teamId: teamId)
+            } else {
+                AddPlayerView(teamId: nil)
             }
             
-            .toolbar{
-                
-                ToolbarItem(placement: .topBarTrailing){
-                    Button("Add Player", systemImage: "plus"){
-                        showAddPlayerScreen.toggle()
-                    }
-                }
-            }
-            .sheet(isPresented: $showAddPlayerScreen) {
-                if let teamId {
-                    AddPlayerView(teamId: teamId)
-                } else {
-                    AddPlayerView(teamId: nil)
-                }
-                
-            }
+        }
     }
     func deletePlayer(at offsets: IndexSet){
         for offset in offsets {
@@ -109,7 +148,7 @@ func checkTeamGames(team: Team) throws -> Bool {
 }
 
 #Preview {
-    @Previewable @State var team = Team(name: "", ageGroup: "")
+    @Previewable @State var team = Team.defaultTeam
     let preview = Preview()
     let game = GameViewModel.defaultGame
     preview.addSampleGames([game])
@@ -120,3 +159,4 @@ func checkTeamGames(team: Team) throws -> Bool {
             .environmentObject(NavigationStateManager())
     }
 }
+

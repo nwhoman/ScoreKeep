@@ -58,7 +58,7 @@ struct StartGameView: View {
                         .background(Color.gray.opacity(0.4))
                         .clipShape(RoundedRectangle(cornerRadius: 10.0, style: .continuous))
                     if !homeTeamName.isEmpty {
-                        PickerView(searchString: $homeTeamName, selection: $homeTeam, player: nil)
+                        TeamPickerView(searchString: $homeTeamName, selection: $homeTeam, player: nil)
                     }
                     Picker("pick team", selection: $homeTeam){
                         ForEach(teams.sorted {$0.name < $1.name}, id: \.name){team in
@@ -76,7 +76,7 @@ struct StartGameView: View {
                         .clipShape(RoundedRectangle(cornerRadius: 10.0, style: .continuous))
                         
                     if !visitorTeamName.isEmpty {
-                        PickerView(searchString: $visitorTeamName, selection: $visitingTeam, player: nil)
+                        TeamPickerView(searchString: $visitorTeamName, selection: $visitingTeam, player: nil)
                     }
                     Picker("pick team", selection: $visitingTeam){
                         ForEach(teams, id: \.name){team in
@@ -147,7 +147,7 @@ struct StartGameView: View {
    // StartGameView()
 }
 
-struct PickerView: View {
+struct TeamPickerView: View {
     @Query var teams: [Team]
     @Binding var selection: Team?
 //    @Binding var list: [Team]
